@@ -123,3 +123,9 @@ a bit of extra scope here: what you've created in `StatusGrid` is what I see as 
 
 ### [2026-10-23 10:50:00] Claude
 Moved the status-grid pattern into `NoteGrid` (`packages/ui/src/components/note-grid.tsx`): the grid is always a `bg-card shadow-hard` block floating on the page; new props `label` (card with count hanging above, as wide as the block, 42px reserved above the drawing area), `align` ('center' | 'start'), `ref` (the block, for `useDotLattice`); an empty `notes` array shows the same block with "no notes". Removed `frame` and `inset` (the svg's 3px stroke room is subtracted from the layout instead). `SyncGrids.tsx` is now a thin wrapper (column width, reference grid, dot lattice); `apps/web/src/CacheNoteGrid.tsx` no longer wraps in a Card and its "no notes in the cache" message became the empty state. Design board: new guideline "floating note grid"; the note grid section's heading and controls sit on a card, the grids float below (interactive grid plus one / a few / many / empty states). `CLAUDE.md` updated. Tests updated and added (ui, web, electron). Checked in browser previews of the board and the Electron renderer: labels match grid widths, first squares on the dots, no scroll.
+
+### [2026-10-23 11:30:00] User
+one other thing: you've made a suggested change to the app header which I'd like to reflect in the design system - to have it floating centered vs full width
+
+### [2026-10-23 11:40:00] Claude
+`AppHeader` (`packages/ui`) now floats by default: `sticky top-4 mx-4 mt-4`, full border and `shadow-hard`, opaque (was `top-0` with `border-b`, full width). Electron's per-app override is removed. Design board: new "floating header" guideline and the app header demo sits on the dot background. Test added; checks pass; checked on the board.

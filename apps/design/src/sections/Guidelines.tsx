@@ -22,6 +22,11 @@ const guidelines = [
     example: '16px dot spacing · densest card sets the cell · set by --grid-size',
   },
   {
+    name: 'floating header',
+    rule: 'the app header floats on the page background, centered with an equal margin on both sides, instead of spanning the full width. it is opaque with a border and the hard shadow, and stays pinned below the top edge while the page scrolls under it.',
+    example: '16px margin · border · 4px black shadow · opaque',
+  },
+  {
     name: 'floating note grid',
     rule: 'the note grid always floats on the page background with its own hard shadow, never on or inside a card. a label card may hang above it, exactly as wide as the grid, and an empty set shows the same block with an empty message.',
     example: 'grid block · 4px black shadow · label above · no notes',

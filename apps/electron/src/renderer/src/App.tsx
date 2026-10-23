@@ -68,7 +68,7 @@ export function App() {
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader title="md-viz" className="mx-4 mt-4 border shadow-hard">
+      <AppHeader title="md-viz">
         <Button onClick={() => void chooseFolder()} disabled={busy}>
           choose folder
         </Button>

@@ -18,7 +18,7 @@ function AppHeader({
     <header
       data-slot="app-header"
       className={cn(
-        'sticky top-0 z-10 flex items-center justify-between gap-4 border-b bg-card px-6 py-3 text-card-foreground',
+        'sticky top-4 z-10 mx-4 mt-4 flex items-center justify-between gap-4 border bg-card px-6 py-3 text-card-foreground shadow-hard',
         className,
       )}
       {...props}
