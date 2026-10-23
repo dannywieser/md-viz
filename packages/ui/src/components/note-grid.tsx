@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cn } from 'cn'
+import { Card } from './card'
 import { layoutGrid } from '../lib/note-grid-layout'
 import { useElementSize } from '../lib/use-element-size'
 
@@ -13,19 +14,27 @@ export type Note = {
 }
 
 type NoteGridProps = {
+  /** the grid blocks, one square per note. An empty array shows the empty state instead. */
   notes: Note[]
   /** height of the drawing area in px; squares shrink so every note fits inside it. Omit to fill the container's height. */
   height?: number
-  /** wraps the drawn grid, e.g. in a card that hugs it; see `inset`. */
-  frame?: (grid: React.ReactNode) => React.ReactNode
-  /** px the frame adds on each side of the grid; kept out of the space the grid is laid out in. */
-  inset?: number
+  /** shown on a small card hanging above the grid, with the note count; room for it is added above the drawing area. */
+  label?: string
+  /** where the grid sits in its container; the container is the drawing area, so a grid that does not fill it floats in it. */
+  align?: 'center' | 'start'
   /** use only whole multiples of this cell, so grids next to each other share a lattice. */
   cellStep?: number
   /** called with the cell size (px) whenever the layout changes it. */
   onCellChange?: (cell: number) => void
+  /** the grid block (the shadowed element holding the squares), e.g. to line the page's dots up with it. */
+  ref?: React.Ref<HTMLDivElement>
   className?: string
 }
+
+/** the grid's own stroke room: squares sit 1.5px in from the svg edge on each side. */
+const STROKE_ROOM = 3
+/** px reserved above the drawing area for the label card: one text line, its padding and border, and a gap. */
+const LABEL_ROOM = 42
 
 type CellsProps = { notes: Note[]; columns: number; cell: number }
 
@@ -65,16 +74,17 @@ const Cells = React.memo(function Cells({ notes, columns, cell }: CellsProps) {
 function NoteGrid({
   notes,
   height: fixedHeight,
-  frame,
-  inset = 0,
+  label,
+  align = 'center',
   cellStep,
   onCellChange,
+  ref,
   className,
 }: NoteGridProps) {
   const areaRef = React.useRef<HTMLDivElement>(null)
   const size = useElementSize(areaRef)
-  const width = Math.max(0, size.width - 2 * inset)
-  const height = Math.max(0, (fixedHeight ?? size.height) - 2 * inset)
+  const width = Math.max(0, size.width - STROKE_ROOM)
+  const height = Math.max(0, (fixedHeight ?? size.height) - STROKE_ROOM)
   const [hovered, setHovered] = React.useState<number | null>(null)
   const { columns, rows, cell } = layoutGrid({
     count: notes.length,
@@ -103,13 +113,25 @@ function NoteGrid({
     setHovered(inside && index < notes.length ? index : null)
   }
 
-  const grid = (
-    <div className="relative shrink-0">
+  // the grid is always a shadowed block floating on the page, never inside a card; the label card hangs above it.
+  const block = (content: React.ReactNode, extra?: string) => (
+    <div ref={ref} className={cn('relative shrink-0 bg-card shadow-hard', extra)}>
+      {label && (
+        <Card className="absolute inset-x-0 bottom-full mb-3 flex-row items-baseline gap-2 whitespace-nowrap px-3 py-1 text-sm font-bold">
+          {label} <span className="font-normal text-muted-foreground">{notes.length}</span>
+        </Card>
+      )}
+      {content}
+    </div>
+  )
+
+  const grid = block(
+    <>
       <svg
         role="img"
         aria-label={`${notes.length} notes`}
-        width={gridWidth + 3}
-        height={gridHeight + 3}
+        width={gridWidth + STROKE_ROOM}
+        height={gridHeight + STROKE_ROOM}
         className="overflow-visible"
         shapeRendering="crispEdges"
         onPointerMove={handlePointerMove}
@@ -135,25 +157,33 @@ function NoteGrid({
           {notes[active].title}
         </div>
       )}
-    </div>
+    </>,
+  )
+
+  const empty = block(
+    <p className="min-w-32 border px-3 py-1 text-sm text-muted-foreground">no notes</p>,
   )
 
   return (
     <div
-      ref={areaRef}
       data-slot="note-grid"
-      className={cn(
-        'flex w-full items-center justify-center',
-        fixedHeight === undefined && 'h-full',
-        className,
-      )}
-      style={fixedHeight === undefined ? undefined : { height: fixedHeight }}
+      className={cn('flex w-full flex-col', fixedHeight === undefined && 'h-full', className)}
+      style={{
+        ...(fixedHeight === undefined
+          ? undefined
+          : { height: fixedHeight + (label ? LABEL_ROOM : 0) }),
+        ...(label ? { paddingTop: LABEL_ROOM } : undefined),
+      }}
     >
-      {notes.length === 0 ? (
-        <p className="text-sm text-muted-foreground">no notes</p>
-      ) : (
-        width > 0 && height > 0 && (frame ? frame(grid) : grid)
-      )}
+      <div
+        ref={areaRef}
+        className={cn(
+          'flex min-h-0 w-full flex-1',
+          align === 'center' ? 'items-center justify-center' : 'items-start justify-start',
+        )}
+      >
+        {notes.length === 0 ? empty : width > 0 && height > 0 && grid}
+      </div>
     </div>
   )
 }

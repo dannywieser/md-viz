@@ -85,7 +85,21 @@ describe('syncFolder', () => {
 
     const result = await syncFolder(root, { fetch: cache.fetch })
 
-    expect(result).toEqual({ scanned: 2, synced: 2, unchanged: 0, deleted: 0, failed: 0 })
+    expect(result).toEqual({
+      scanned: 2,
+      synced: 2,
+      unchanged: 0,
+      deleted: 0,
+      failed: 0,
+      notes: {
+        updated: expect.arrayContaining([
+          { id: noteId('plan.md'), title: 'plan' },
+          { id: noteId('sub/plants.md'), title: 'plants' },
+        ]) as unknown,
+        deleted: [],
+        unchanged: [],
+      },
+    })
     expect(cache.notes.get(noteId('plan.md'))).toMatchObject({ title: 'plan', body: '# plan' })
     expect(cache.notes.get(noteId('sub/plants.md'))).toMatchObject({
       title: 'plants',
@@ -105,6 +119,8 @@ describe('syncFolder', () => {
     const result = await syncFolder(root, { fetch: cache.fetch })
 
     expect(result).toMatchObject({ synced: 1, unchanged: 1, deleted: 0 })
+    expect(result.notes.updated).toEqual([{ id: noteId('b.md'), title: 'b' }])
+    expect(result.notes.unchanged).toEqual([{ id: noteId('a.md'), title: 'a' }])
     expect(cache.notes.get(noteId('b.md'))?.['body']).toBe('two edited')
   })
 
@@ -118,6 +134,7 @@ describe('syncFolder', () => {
     const result = await syncFolder(root, { fetch: cache.fetch })
 
     expect(result).toMatchObject({ synced: 0, unchanged: 1, deleted: 1 })
+    expect(result.notes.deleted).toEqual([{ id: noteId('b.md'), title: 'b' }])
     expect([...cache.notes.keys()]).toEqual([noteId('a.md')])
   })
 

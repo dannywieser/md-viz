@@ -1,6 +1,9 @@
-import { useState } from 'react'
-import { AppHeader, Button, Card, CardContent } from '@md-viz/ui'
-import type { ScanProgress, SyncProgress, SyncResult } from '../../shared/ipc'
+import { useEffect, useState } from 'react'
+import { AppHeader, Button, Card } from '@md-viz/ui'
+import type { LastSync, ScanProgress, SyncProgress } from '../../shared/ipc'
+import { SyncGrids } from './SyncGrids'
+
+const formatTime = (iso: string) => new Date(iso).toLocaleString().toLowerCase()
 
 export function App() {
   const [folder, setFolder] = useState<string | null>(null)
@@ -9,17 +12,14 @@ export function App() {
   const [scanning, setScanning] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
-  const [syncResult, setSyncResult] = useState<SyncResult | null>(null)
+  const [lastSync, setLastSync] = useState<LastSync | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const chooseFolder = async () => {
-    const picked = await window.api.pickFolder()
-    if (!picked) return
-
+  const selectFolder = async (picked: string, saved: LastSync | null = null) => {
     setFolder(picked)
+    setLastSync(saved)
     setCount(null)
     setProgress(null)
-    setSyncResult(null)
     setSyncProgress(null)
     setError(null)
     setScanning(true)
@@ -35,15 +35,27 @@ export function App() {
     }
   }
 
+  const chooseFolder = async () => {
+    const picked = await window.api.pickFolder()
+    if (picked) await selectFolder(picked)
+  }
+
+  // reopen the folder from the previous run, with its last sync.
+  useEffect(() => {
+    void window.api.loadLast().then((last) => {
+      if (last) void selectFolder(last.folder, last.lastSync)
+    })
+  }, [])
+
   const sync = async () => {
     if (!folder) return
-    setSyncResult(null)
     setSyncProgress(null)
     setError(null)
     setSyncing(true)
     const unsubscribe = window.api.onSyncProgress(setSyncProgress)
     try {
-      setSyncResult(await window.api.syncFolder(folder))
+      const result = await window.api.syncFolder(folder)
+      setLastSync({ syncedAt: new Date().toISOString(), notes: result.notes })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -56,25 +68,23 @@ export function App() {
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader title="md-viz" />
-      <main className="flex-1 overflow-auto p-4">
-        <Card className="min-h-full w-full">
-          <CardContent className="flex flex-col gap-4">
-            <div>
-              <div className="flex gap-2">
-                <Button onClick={() => void chooseFolder()} disabled={busy}>
-                  choose folder
-                </Button>
-                <Button onClick={() => void sync()} disabled={busy || !folder}>
-                  sync
-                </Button>
-              </div>
-            </div>
-            {folder && (
-              <p className="break-all text-sm" aria-label="chosen folder">
-                {folder}
-              </p>
-            )}
+      <AppHeader title="md-viz" className="mx-4 mt-4 border shadow-hard">
+        <Button onClick={() => void chooseFolder()} disabled={busy}>
+          choose folder
+        </Button>
+        <Button onClick={() => void sync()} disabled={busy || !folder}>
+          sync
+        </Button>
+      </AppHeader>
+      <main className="flex flex-1 flex-col items-start gap-8 overflow-auto p-4 pt-8">
+        {folder && (
+          <Card className="max-w-full gap-2 px-4 py-3">
+            <p className="break-all text-sm" aria-label="chosen folder">
+              {folder}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {lastSync ? `last synced ${formatTime(lastSync.syncedAt)}` : 'never synced'}
+            </p>
             {scanning && progress && (
               <p role="status" className="text-sm">
                 scanning… {progress.dirs} folders, {progress.mdFiles} notes so far
@@ -91,20 +101,16 @@ export function App() {
                 {syncProgress.total}
               </p>
             )}
-            {syncResult && (
-              <p role="status" className="text-sm">
-                synced {syncResult.synced}, deleted {syncResult.deleted}, unchanged{' '}
-                {syncResult.unchanged}
-                {syncResult.failed > 0 && `, ${syncResult.failed} unreadable`}
-              </p>
-            )}
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error.toLowerCase()}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          </Card>
+        )}
+        {lastSync && <SyncGrids notes={lastSync.notes} />}
+        {error && (
+          <Card className="px-4 py-3">
+            <p role="alert" className="text-sm text-destructive">
+              {error.toLowerCase()}
+            </p>
+          </Card>
+        )}
       </main>
     </div>
   )

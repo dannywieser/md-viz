@@ -7,6 +7,7 @@ export const IPC = {
   scanProgress: 'folder:scan-progress',
   syncFolder: 'folder:sync',
   syncProgress: 'folder:sync-progress',
+  loadLast: 'folder:load-last',
 } as const
 
 export interface ScanProgress {
@@ -29,6 +30,18 @@ export interface SyncProgress {
   total: number
 }
 
+export interface NoteRef {
+  id: string
+  title: string
+}
+
+/** the notes of one sync, by what happened to them; unreadable files are in none of the lists. */
+export interface SyncNotes {
+  updated: NoteRef[]
+  deleted: NoteRef[]
+  unchanged: NoteRef[]
+}
+
 export interface SyncResult {
   /** markdown files found in the folder. */
   scanned: number
@@ -40,6 +53,21 @@ export interface SyncResult {
   deleted: number
   /** files that could not be read and were left alone. */
   failed: number
+  /** the notes behind the counts above. */
+  notes: SyncNotes
+}
+
+/** the last completed sync of a folder, kept in the app's state file. */
+export interface LastSync {
+  /** when the sync completed, as an ISO timestamp. */
+  syncedAt: string
+  notes: SyncNotes
+}
+
+/** the folder selected when the app last ran, if it still exists. */
+export interface LastFolder {
+  folder: string
+  lastSync: LastSync | null
 }
 
 /** what the preload script exposes to the renderer as `window.api`. */
@@ -52,6 +80,8 @@ export interface Api {
   onScanProgress: (callback: (progress: ScanProgress) => void) => () => void
   /** pushes new and changed notes under `path` to the cache and deletes notes whose file is gone. */
   syncFolder: (path: string) => Promise<SyncResult>
+  /** the folder from the previous run with its last sync; null when there is none or it is gone. */
+  loadLast: () => Promise<LastFolder | null>
   /** subscribes to progress pushed by main during a sync; returns an unsubscribe function. */
   onSyncProgress: (callback: (progress: SyncProgress) => void) => () => void
 }

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { configureCacheClient, deleteNote, listNotes, upsertNotes } from '@md-viz/api-client/cache'
-import type { SyncProgress, SyncResult } from '../shared/ipc'
+import type { NoteRef, SyncProgress, SyncResult } from '../shared/ipc'
 import { walkMarkdown } from './walk'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
@@ -34,10 +34,24 @@ interface LocalNote {
   mtimeMs: number
 }
 
-/** reads the cached notes' sync times, by id; a note with no usable `synced` maps to NaN. */
-async function fetchCachedSyncTimes(): Promise<Map<string, number>> {
-  const { data: rows } = await listNotes({ query: { fields: 'synced' }, throwOnError: true })
-  return new Map(rows.map((row) => [row.id, Date.parse(row.fields['synced'] ?? '')]))
+interface CachedNote {
+  title: string
+  /** NaN when the note has no usable `synced`. */
+  synced: number
+}
+
+/** reads the cached notes' titles and sync times, by id. */
+async function fetchCachedNotes(): Promise<Map<string, CachedNote>> {
+  const { data: rows } = await listNotes({
+    query: { fields: 'synced,title' },
+    throwOnError: true,
+  })
+  return new Map(
+    rows.map((row) => [
+      row.id,
+      { title: row.fields['title'] ?? row.id, synced: Date.parse(row.fields['synced'] ?? '') },
+    ]),
+  )
 }
 
 /** walks `root` and returns its markdown files by note id, with their modification times. */
@@ -61,28 +75,30 @@ async function collectLocalNotes(root: string): Promise<Map<string, LocalNote>> 
  * cache's last sync. `synced` is stamped in whole milliseconds, so the mtime is floored to
  * compare like with like.
  */
-function needsPush(note: LocalNote, syncedAt: Map<string, number>): boolean {
-  const synced = syncedAt.get(note.id)
+function needsPush(note: LocalNote, cached: Map<string, CachedNote>): boolean {
+  const synced = cached.get(note.id)?.synced
   return synced === undefined || Number.isNaN(synced) || Math.floor(note.mtimeMs) > synced
 }
 
 /**
  * reads one batch of files and upserts them in a single request. files that cannot be read
- * are skipped; returns how many notes were pushed and how many files failed.
+ * are skipped; returns the notes that were pushed and how many files failed.
  */
-async function pushBatch(batch: LocalNote[]): Promise<{ pushed: number; failed: number }> {
+async function pushBatch(batch: LocalNote[]): Promise<{ pushed: LocalNote[]; failed: number }> {
   const notes = []
+  const pushed: LocalNote[] = []
   let failed = 0
   for (const note of batch) {
     try {
       const body = await readFile(note.absolutePath, 'utf8')
       notes.push({ id: note.id, fields: { title: noteTitle(note.relativePath), body } })
+      pushed.push(note)
     } catch {
       failed += 1
     }
   }
   if (notes.length > 0) await upsertNotes({ body: { notes }, throwOnError: true })
-  return { pushed: notes.length, failed }
+  return { pushed, failed }
 }
 
 /**
@@ -101,10 +117,12 @@ export async function syncFolder(
   await readdir(root)
 
   // compare what the cache has with what is on disk.
-  const syncedAt = await fetchCachedSyncTimes()
+  const cached = await fetchCachedNotes()
   const local = await collectLocalNotes(root)
-  const changed = [...local.values()].filter((note) => needsPush(note, syncedAt))
-  const gone = [...syncedAt.keys()].filter((id) => !local.has(id))
+  const changed = [...local.values()].filter((note) => needsPush(note, cached))
+  const changedIds = new Set(changed.map((note) => note.id))
+  const gone = [...cached.keys()].filter((id) => !local.has(id))
+  const ref = (note: LocalNote): NoteRef => ({ id: note.id, title: noteTitle(note.relativePath) })
 
   const total = changed.length + gone.length
   const result: SyncResult = {
@@ -113,6 +131,11 @@ export async function syncFolder(
     unchanged: local.size - changed.length,
     deleted: 0,
     failed: 0,
+    notes: {
+      updated: [],
+      deleted: [],
+      unchanged: [...local.values()].filter((note) => !changedIds.has(note.id)).map(ref),
+    },
   }
   const report = () => onProgress?.({ synced: result.synced, deleted: result.deleted, total })
   report()
@@ -120,7 +143,8 @@ export async function syncFolder(
   // push new and changed notes, one batch per request.
   for (let i = 0; i < changed.length; i += BATCH_SIZE) {
     const { pushed, failed } = await pushBatch(changed.slice(i, i + BATCH_SIZE))
-    result.synced += pushed
+    result.synced += pushed.length
+    result.notes.updated.push(...pushed.map(ref))
     result.failed += failed
     report()
   }
@@ -130,6 +154,7 @@ export async function syncFolder(
     const ids = gone.slice(i, i + DELETE_CONCURRENCY)
     await Promise.all(ids.map((id) => deleteNote({ path: { id }, throwOnError: true })))
     result.deleted += ids.length
+    result.notes.deleted.push(...ids.map((id) => ({ id, title: cached.get(id)?.title ?? id })))
     report()
   }
 
