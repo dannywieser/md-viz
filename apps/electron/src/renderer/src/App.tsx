@@ -3,6 +3,10 @@ import { AppHeader, Button, Card } from '@md-viz/ui'
 import type { LastSync, ScanProgress, SyncProgress } from '../../shared/ipc'
 import { SyncGrids } from './SyncGrids'
 
+// room in the header for the window controls drawn over it: the macOS traffic lights on the left,
+// the windows and linux buttons on the right.
+const headerClearance = navigator.userAgent.includes('Macintosh') ? 'pl-24' : 'pr-40'
+
 const formatTime = (iso: string) => new Date(iso).toLocaleString().toLowerCase()
 
 export function App() {
@@ -68,7 +72,7 @@ export function App() {
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader title="md-viz">
+      <AppHeader title="md-viz sync" subtitle="sync" className={headerClearance}>
         <Button onClick={() => void chooseFolder()} disabled={busy}>
           choose folder
         </Button>

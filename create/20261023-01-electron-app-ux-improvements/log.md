@@ -129,3 +129,15 @@ one other thing: you've made a suggested change to the app header which I'd like
 
 ### [2026-10-23 11:40:00] Claude
 `AppHeader` (`packages/ui`) now floats by default: `sticky top-4 mx-4 mt-4`, full border and `shadow-hard`, opaque (was `top-0` with `border-b`, full width). Electron's per-app override is removed. Design board: new "floating header" guideline and the app header demo sits on the dot background. Test added; checks pass; checked on the board.
+
+### [2026-10-23 12:00:00] User
+add a title to the electron app (using the pattern we have for "design"). The title is "sync". Does an electron app have options for dealing with the OS title bar? / let's do hidden with the titlebar as the drag
+
+### [2026-10-23 12:10:00] Claude
+Title: `AppHeader title="md-viz sync" subtitle="sync"`; window and page title "md-viz sync". Title bar: `BrowserWindow` `titleBarStyle: 'hidden'` (macOS `trafficLightPosition { x: 30, y: 33 }`, other platforms `titleBarOverlay: true`); `index.css` makes `[data-slot='app-header']` a drag region with buttons, links and inputs `no-drag`; the header gets `pl-24` on macOS (`pr-40` elsewhere) to clear the window controls. Checks and the Electron build pass; not seen in a running Electron window (traffic light alignment unverified).
+
+### [2026-10-23 12:30:00] User
+what about the icon in the task switcher? Can that be updated in dev mode, or only after packaging? / yes
+
+### [2026-10-23 12:40:00] Claude
+Added `apps/electron/scripts/make-icon.mjs` (draws `resources/icon.png`, 1024px, from the web favicon pixels, no dependencies), the generated `apps/electron/resources/icon.png`, and in `src/main/index.ts` `app.dock?.setIcon(ICON)` (macOS, works in dev) plus `icon: ICON` on the window (windows/linux). `CLAUDE.md` documents it. Checks and build pass; the dock icon is not seen in a running app.

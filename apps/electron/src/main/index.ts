@@ -2,12 +2,23 @@ import path from 'node:path'
 import { app, BrowserWindow } from 'electron'
 import { registerIpc } from './ipc'
 
+// the app icon, drawn from the logo by scripts/make-icon.mjs.
+const ICON = path.join(import.meta.dirname, '../../resources/icon.png')
+
 function createWindow(): void {
   const window = new BrowserWindow({
     width: 960,
     height: 640,
     show: false,
-    title: 'md-viz',
+    title: 'md-viz sync',
+    // windows and linux take the window icon here; macOS ignores it and uses the dock icon below.
+    icon: ICON,
+    // no native title bar: the app header is the drag area. macOS keeps its traffic lights, inset
+    // to line up with the header; windows and linux draw their window controls over the page.
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'darwin'
+      ? { trafficLightPosition: { x: 30, y: 33 } }
+      : { titleBarOverlay: true }),
     webPreferences: {
       preload: path.join(import.meta.dirname, '../preload/index.cjs'),
       contextIsolation: true,
@@ -31,6 +42,8 @@ function createWindow(): void {
 }
 
 void app.whenReady().then(() => {
+  // until the app is packaged (with an .icns) macOS shows Electron's own dock icon.
+  app.dock?.setIcon(ICON)
   registerIpc()
   createWindow()
 

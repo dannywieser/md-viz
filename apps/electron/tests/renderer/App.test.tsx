@@ -60,11 +60,11 @@ describe('App', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders the app header and a choose-folder button', () => {
+  it('renders the app header with the sync title and a choose-folder button', () => {
     stubApi()
     render(<App />)
 
-    expect(screen.getByRole('banner')).toHaveTextContent('md-viz')
+    expect(screen.getByRole('banner')).toHaveTextContent('md-viz sync')
     expect(screen.getByRole('button', { name: 'choose folder' })).toBeEnabled()
   })
 
