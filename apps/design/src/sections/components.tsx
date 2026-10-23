@@ -7,7 +7,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Message,
+  EmptyState,
+  ErrorState,
+  Loader,
+  StateBlock,
 } from '@md-viz/ui'
 import { Section } from './section'
 
@@ -53,23 +56,32 @@ export function Components() {
           <Button size="sm">action</Button>
         </CardFooter>
       </Card>
-      <h3 className="text-sm font-bold">message</h3>
-      <div className="flex flex-wrap items-start gap-4">
-        <Message>loading notes</Message>
-        <Message tone="error">could not load notes from the cache</Message>
-        <Message
-          tone="error"
-          action={
-            <a href="/" className="text-sm underline">
-              back to the board
-            </a>
-          }
-        >
-          no such page
-        </Message>
+      <h3 className="text-sm font-bold">loader, empty state and error state</h3>
+      <div className="bg-background bg-dots flex flex-wrap items-start gap-6 p-6">
+        <StateBlock>
+          <div className="p-6">
+            <Loader label="loading notes" />
+          </div>
+        </StateBlock>
+        <StateBlock>
+          <EmptyState />
+        </StateBlock>
+        <StateBlock>
+          <ErrorState detail="could not load notes from the cache" onRetry={() => undefined} />
+        </StateBlock>
       </div>
-      <div className="bg-background bg-dots h-32">
-        <Message fill>fill centres it in its container</Message>
+      <div className="bg-background bg-dots h-72 p-6">
+        <StateBlock fill>
+          <ErrorState
+            action={
+              <a href="/" className="text-sm underline">
+                back to the board
+              </a>
+            }
+          >
+            no such page
+          </ErrorState>
+        </StateBlock>
       </div>
     </Section>
   )

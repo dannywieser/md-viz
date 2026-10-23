@@ -193,11 +193,11 @@ describe('NoteGrid', () => {
   it('shows a lowercase empty state as a shadowed block, with its label', () => {
     const { container } = render(<NoteGrid notes={[]} label="deleted" />)
 
-    expect(screen.getByText('no notes')).toBeInTheDocument()
-    expect(screen.getByText('no notes').parentElement).toHaveClass('shadow-hard')
+    const text = screen.getByText('the notes went out for coffee')
+    expect(text.closest('[data-slot="empty-state"]')?.parentElement).toHaveClass('shadow-hard')
     expect(container.querySelector('[data-slot="card"]')).toHaveTextContent('deleted 0')
-    const text = container.textContent
-    expect(text).toBe(text.toLowerCase())
+    const all = container.textContent
+    expect(all).toBe(all.toLowerCase())
   })
 
   it('draws nothing until its container has a size', () => {

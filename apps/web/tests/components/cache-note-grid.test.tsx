@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { listNotesOptions } from '@md-viz/api-client/cache/react-query'
@@ -38,11 +39,11 @@ describe('CacheNoteGrid', () => {
     expect(listNotesOptions).toHaveBeenCalledWith({ query: { fields: 'title' } })
   })
 
-  it('shows a loading message while the notes load', () => {
+  it('shows the loader while the notes load', () => {
     queryReturns({ isPending: true })
     render(<CacheNoteGrid />)
 
-    expect(screen.getByText('loading notes')).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: 'loading notes' })).toBeInTheDocument()
     expect(NoteGrid).not.toHaveBeenCalled()
   })
 
@@ -50,8 +51,18 @@ describe('CacheNoteGrid', () => {
     queryReturns({ isPending: false, error: new Error('boom') })
     render(<CacheNoteGrid />)
 
-    expect(screen.getByText('could not load notes from the cache')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('could not load notes from the cache')
     expect(NoteGrid).not.toHaveBeenCalled()
+  })
+
+  it('tries the query again from the error state', async () => {
+    const refetch = vi.fn()
+    queryReturns({ isPending: false, error: new Error('boom'), refetch })
+    render(<CacheNoteGrid />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'try again' }))
+
+    expect(refetch).toHaveBeenCalledOnce()
   })
 
   it('passes one note per cached note, titled by its title or else its id', () => {

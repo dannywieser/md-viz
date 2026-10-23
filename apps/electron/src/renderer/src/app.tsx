@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AppHeader, Button, Message } from '@md-viz/ui'
+import { AppHeader, Button, ErrorState, StateBlock } from '@md-viz/ui'
 import type { LastSync } from '../../shared/ipc'
 import { FolderCard } from './components/folder-card'
 import { SyncGrids } from './components/sync-grids'
@@ -59,7 +59,11 @@ export function App() {
           />
         )}
         {sync.lastSync && <SyncGrids notes={sync.lastSync.notes} />}
-        {error && <Message tone="error">{error}</Message>}
+        {error && (
+          <StateBlock>
+            <ErrorState detail={error} />
+          </StateBlock>
+        )}
       </main>
     </div>
   )
