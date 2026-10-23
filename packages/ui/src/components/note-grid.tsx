@@ -4,7 +4,7 @@ import { cn } from 'cn'
 import { Card } from './card'
 import { EmptyState } from './empty-state'
 import { NOTE_COLORS } from '../lib/note-colors'
-import { layoutGrid } from '../lib/note-grid-layout'
+import { STROKE_ROOM, layoutGrid } from '../lib/note-grid-layout'
 import { useElementSize } from '../hooks/use-element-size'
 
 export { NOTE_COLORS }
@@ -30,6 +30,10 @@ type NoteGridProps = {
   align?: 'center' | 'start'
   /** use only whole multiples of this cell, so grids next to each other share a lattice. */
   cellStep?: number
+  /** show the compact empty state (small muted ghost, no text) when there are no notes. */
+  compactEmpty?: boolean
+  /** size (px) of the empty block, e.g. to match a populated grid next to it. Omit to fill the drawing area less the stroke room. */
+  emptySize?: { width: number; height: number }
   /** called with the cell size (px) whenever the layout changes it. */
   onCellChange?: (cell: number) => void
   /** the grid block (the shadowed element holding the squares), e.g. to line the page's dots up with it. */
@@ -37,8 +41,6 @@ type NoteGridProps = {
   className?: string
 }
 
-/** the grid's own stroke room: squares sit 1.5px in from the svg edge on each side. */
-const STROKE_ROOM = 3
 /** px reserved above the drawing area for the label card: one text line, its padding and border, and a gap. */
 const LABEL_ROOM = 42
 
@@ -83,6 +85,8 @@ function NoteGrid({
   label,
   align = 'center',
   cellStep,
+  compactEmpty = false,
+  emptySize,
   onCellChange,
   ref,
   className,
@@ -120,8 +124,8 @@ function NoteGrid({
   }
 
   // the grid is always a shadowed block floating on the page, never inside a card; the label card hangs above it.
-  const block = (content: React.ReactNode, extra?: string) => (
-    <div ref={ref} className={cn('relative shrink-0 bg-card shadow-hard', extra)}>
+  const block = (content: React.ReactNode, extra?: string, style?: React.CSSProperties) => (
+    <div ref={ref} className={cn('relative shrink-0 bg-card shadow-hard', extra)} style={style}>
       {label && (
         <Card className="absolute inset-x-0 bottom-full mb-3 flex-row items-baseline gap-2 whitespace-nowrap px-3 py-1 text-sm font-bold">
           {label} <span className="font-normal text-muted-foreground">{notes.length}</span>
@@ -166,7 +170,12 @@ function NoteGrid({
     </>,
   )
 
-  const empty = block(<EmptyState />)
+  // an empty block is `emptySize`, else it fills the drawing area (less the stroke room), so it is never bigger than its container.
+  const empty = block(
+    <EmptyState compact={compactEmpty} />,
+    'flex items-center justify-center',
+    emptySize ?? (width > 0 && height > 0 ? { width, height } : undefined),
+  )
 
   return (
     <div

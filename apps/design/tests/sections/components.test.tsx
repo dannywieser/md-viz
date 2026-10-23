@@ -13,6 +13,8 @@ describe('Components', () => {
     expect(screen.getByText('card title')).toBeInTheDocument()
     expect(screen.getByRole('status', { name: 'loading notes' })).toBeInTheDocument()
     expect(screen.getByText('the notes went out for coffee')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-slot="empty-state"]')).toHaveLength(2)
+    expect(container.querySelector('[data-compact]')).toBeInTheDocument()
     expect(screen.getAllByRole('alert')).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'try again' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'back to the board' })).toBeInTheDocument()

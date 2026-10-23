@@ -56,7 +56,7 @@ export function Components() {
           <Button size="sm">action</Button>
         </CardFooter>
       </Card>
-      <h3 className="text-sm font-bold">loader, empty state and error state</h3>
+      <h3 className="text-sm font-bold">loader, empty state (full and compact) and error state</h3>
       <div className="bg-background bg-dots flex flex-wrap items-start gap-6 p-6">
         <StateBlock>
           <div className="p-6">
@@ -65,6 +65,9 @@ export function Components() {
         </StateBlock>
         <StateBlock>
           <EmptyState />
+        </StateBlock>
+        <StateBlock>
+          <EmptyState compact />
         </StateBlock>
         <StateBlock>
           <ErrorState detail="could not load notes from the cache" onRetry={() => undefined} />

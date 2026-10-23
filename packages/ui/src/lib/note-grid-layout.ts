@@ -63,3 +63,16 @@ export function latticeSpacing(cell: number, min = 16, max = 32) {
   if (cell > max) return cell / Math.ceil(cell / max)
   return cell * Math.max(1, Math.ceil(min / cell))
 }
+
+/** the grid's own stroke room: squares sit 1.5px in from the svg edge on each side. */
+export const STROKE_ROOM = 3
+
+/** the size (px) of the block a grid of `count` notes makes in a width x height drawing area, stroke room included. */
+export function gridBlockSize({ count, width, height }: GridLayoutInput) {
+  const { columns, rows, cell } = layoutGrid({
+    count,
+    width: Math.max(0, width - STROKE_ROOM),
+    height: Math.max(0, height - STROKE_ROOM),
+  })
+  return { width: columns * cell + STROKE_ROOM, height: rows * cell + STROKE_ROOM }
+}

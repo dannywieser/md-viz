@@ -1,4 +1,4 @@
-import { latticeSpacing, layoutGrid } from '../../src/lib/note-grid-layout'
+import { gridBlockSize, latticeSpacing, layoutGrid } from '../../src/lib/note-grid-layout'
 
 const box = { width: 400, height: 300 }
 
@@ -78,5 +78,18 @@ describe('latticeSpacing', () => {
     expect(latticeSpacing(24)).toBe(24)
     expect(latticeSpacing(6)).toBe(18)
     expect(latticeSpacing(1)).toBe(16)
+  })
+})
+
+describe('gridBlockSize', () => {
+  it('is the block 18 notes make in the sync column: 6 x 3 cells of 44px plus the stroke room', () => {
+    expect(gridBlockSize({ count: 18, width: 272, height: 160 })).toEqual({
+      width: 267,
+      height: 135,
+    })
+  })
+
+  it('does not go negative in an area smaller than the stroke room', () => {
+    expect(gridBlockSize({ count: 1, width: 0, height: 0 })).toEqual({ width: 4, height: 4 })
   })
 })
