@@ -1,4 +1,4 @@
-import { Card } from '@md-viz/ui'
+import { Card, cn } from '@md-viz/ui'
 import type { LastSync, ScanProgress, SyncProgress } from '../../../shared/ipc'
 
 const formatTime = (iso: string) => new Date(iso).toLocaleString().toLowerCase()
@@ -11,6 +11,7 @@ interface FolderCardProps {
   count: number | null
   syncing: boolean
   syncProgress: SyncProgress | null
+  className?: string
 }
 
 /** the chosen folder with when it was last synced and the progress of a running scan or sync. */
@@ -22,9 +23,10 @@ export function FolderCard({
   count,
   syncing,
   syncProgress,
+  className,
 }: FolderCardProps) {
   return (
-    <Card className="max-w-full gap-2 px-4 py-3">
+    <Card className={cn('max-w-full gap-2 px-4 py-3', className)}>
       <p className="break-all text-sm" aria-label="chosen folder">
         {folder}
       </p>

@@ -21,6 +21,12 @@ describe('FolderCard', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
+  it('takes extra classes for its width', () => {
+    render(<FolderCard {...props} className="w-full" />)
+
+    expect(screen.getByLabelText('chosen folder').parentElement).toHaveClass('w-full')
+  })
+
   it('shows when it was last synced', () => {
     render(
       <FolderCard

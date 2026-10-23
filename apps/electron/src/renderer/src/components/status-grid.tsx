@@ -14,6 +14,8 @@ interface StatusGridProps {
   /** the other grids only use whole multiples of this, so their squares sit on the dots too. */
   cellStep: number | undefined
   gridRef: React.RefObject<HTMLDivElement | null>
+  /** the size of the reference grid's block, which an empty grid copies. */
+  emptySize: { width: number; height: number } | undefined
 }
 
 export function StatusGrid({
@@ -23,6 +25,7 @@ export function StatusGrid({
   onCellChange,
   cellStep,
   gridRef,
+  emptySize,
 }: StatusGridProps) {
   const cells = useMemo<Note[]>(
     () => notes.map((note) => ({ id: note.id, title: note.title, color: DEFAULT_NOTE_COLOR })),
@@ -36,6 +39,8 @@ export function StatusGrid({
         height={GRID_HEIGHT}
         // grids start at the column's top-left, so their squares line up across columns.
         align="start"
+        compactEmpty
+        emptySize={emptySize}
         {...(reference ? { ref: gridRef, onCellChange } : { cellStep })}
       />
     </section>

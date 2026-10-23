@@ -128,11 +128,34 @@ describe('App', () => {
     expect(screen.getByText('18 notes')).toBeInTheDocument()
   })
 
-  it('shows the note grids of the last sync', () => {
-    mockHooks({ syncState: { lastSync } })
+  it('shows the note grids of the last sync under the folder card, which is as wide as they are', () => {
+    mockHooks({ scanState: { folder: '/notes' }, syncState: { lastSync } })
     render(<App />)
 
+    const card = screen.getByLabelText('chosen folder').parentElement
     expect(screen.getByRole('region', { name: 'unchanged' })).toHaveTextContent('1')
+    expect(card).toHaveClass('w-full')
+    expect(card?.parentElement).toContainElement(screen.getByRole('region', { name: 'unchanged' }))
+  })
+
+  it('makes the header as wide as the status grids while they are shown', () => {
+    const { rerender } = render(<App />)
+    expect(screen.getByRole('banner').style.width).toBe('')
+
+    mockHooks({ scanState: { folder: '/notes' }, syncState: { lastSync } })
+    rerender(<App />)
+    expect(screen.getByRole('banner').style.width).toMatch(/^\d+px$/)
+
+    mockHooks({ scanState: { folder: '/notes' } })
+    rerender(<App />)
+    expect(screen.getByRole('banner').style.width).toBe('')
+  })
+
+  it('keeps the folder card at its own width until there is a sync', () => {
+    mockHooks({ scanState: { folder: '/notes' } })
+    render(<App />)
+
+    expect(screen.getByLabelText('chosen folder').parentElement).not.toHaveClass('w-full')
   })
 
   it('shows an error reported by either hook, and clears it', () => {

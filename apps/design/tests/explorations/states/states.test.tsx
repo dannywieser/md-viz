@@ -20,7 +20,9 @@ describe('States', () => {
     for (const icon of icons) {
       expect(screen.getByRole('heading', { level: 3, name: icon.name })).toBeInTheDocument()
     }
-    expect(screen.getAllByText('alone')).toHaveLength(loaderFills.length + 1 + icons.length)
+    expect(screen.getByRole('heading', { level: 3, name: 'compact' })).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-compact]')).toHaveLength(2)
+    expect(screen.getAllByText('alone')).toHaveLength(loaderFills.length + 1 + icons.length + 1)
     expectLowercase(container)
   })
 

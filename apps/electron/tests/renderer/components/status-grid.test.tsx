@@ -10,6 +10,7 @@ vi.mock('@md-viz/ui', async (importOriginal) => ({
 
 const notes = [{ id: 'a', title: 'plan' }]
 const gridRef = { current: null }
+const size = { width: 267, height: 135 }
 const lastProps = () => vi.mocked(NoteGrid).mock.lastCall![0]
 
 describe('StatusGrid', () => {
@@ -26,13 +27,20 @@ describe('StatusGrid', () => {
         onCellChange={vi.fn()}
         cellStep={undefined}
         gridRef={gridRef}
+        emptySize={size}
       />,
     )
 
     expect(screen.getByRole('region', { name: 'updated' })).toHaveStyle({
       width: `${COLUMN_WIDTH}px`,
     })
-    expect(lastProps()).toMatchObject({ label: 'updated', height: GRID_HEIGHT, align: 'start' })
+    expect(lastProps()).toMatchObject({
+      label: 'updated',
+      height: GRID_HEIGHT,
+      align: 'start',
+      compactEmpty: true,
+      emptySize: size,
+    })
     expect(lastProps().notes).toEqual([{ id: 'a', title: 'plan', color: 0 }])
   })
 
@@ -46,6 +54,7 @@ describe('StatusGrid', () => {
         onCellChange={onCellChange}
         cellStep={20}
         gridRef={gridRef}
+        emptySize={size}
       />,
     )
 
@@ -63,6 +72,7 @@ describe('StatusGrid', () => {
         onCellChange={vi.fn()}
         cellStep={20}
         gridRef={gridRef}
+        emptySize={size}
       />,
     )
 

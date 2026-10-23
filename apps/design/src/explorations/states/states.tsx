@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, Loader, loaderFills } from '@md-viz/ui'
+import { Button, Card, EmptyState, Loader, loaderFills } from '@md-viz/ui'
 import { GridSpot } from './grid-spot'
 import { icons, type IconKind } from './icon-options'
 import { StateBody } from './state-body'
@@ -137,6 +137,29 @@ export function States() {
                   </div>,
                 ]
               : [],
+          )}
+          {kind === 'empty' && (
+            <div className="space-y-2">
+              <div>
+                <h3 className="font-bold">compact</h3>
+                <p className="text-sm text-muted-foreground">
+                  a small, muted ghost with no text, for blocks that are too small for the full
+                  state, like the sync app's status grids (an option on the note grid).
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <StateFrame caption="alone">
+                  <Card>
+                    <EmptyState compact />
+                  </Card>
+                </StateFrame>
+                <StateFrame caption="in the grid block">
+                  <GridSpot>
+                    <EmptyState compact />
+                  </GridSpot>
+                </StateFrame>
+              </div>
+            </div>
           )}
         </section>
       ))}

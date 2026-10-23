@@ -71,6 +71,63 @@ describe('SyncGrids', () => {
     expect(useGridLattice).toHaveBeenLastCalledWith(false)
   })
 
+  it('has empty grids copy the block size of the reference grid', () => {
+    const many = Array.from({ length: 18 }, (_, i) => note(`n${i}`))
+    render(<SyncGrids notes={{ updated: [], deleted: [], unchanged: many }} />)
+
+    expect(grids().updated.emptySize).toEqual({ width: 267, height: 135 })
+    expect(grids().deleted.emptySize).toEqual({ width: 267, height: 135 })
+  })
+
+  it('has no size to copy when every grid is empty', () => {
+    render(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
+
+    expect(grids().updated.emptySize).toBeUndefined()
+  })
+
+  it('shows its children above the grids, as wide as the row ends at the last block', () => {
+    const many = Array.from({ length: 18 }, (_, i) => note(`n${i}`))
+    const { container } = render(
+      <SyncGrids notes={{ updated: [], deleted: [], unchanged: many }}>
+        <p>card</p>
+      </SyncGrids>,
+    )
+
+    // two column pitches (272 + 32) and the 267px block of the 18 notes in the last column.
+    expect(container.firstElementChild).toHaveStyle({ width: `${2 * 304 + 267}px` })
+    expect(container.firstElementChild?.firstElementChild).toHaveTextContent('card')
+  })
+
+  it('reports the width of its row, and null when it goes away', () => {
+    const onWidthChange = vi.fn()
+    const many = Array.from({ length: 18 }, (_, i) => note(`n${i}`))
+    const { unmount } = render(
+      <SyncGrids
+        notes={{ updated: [], deleted: [], unchanged: many }}
+        onWidthChange={onWidthChange}
+      />,
+    )
+    expect(onWidthChange).toHaveBeenLastCalledWith(2 * 304 + 267)
+
+    unmount()
+    expect(onWidthChange).toHaveBeenLastCalledWith(null)
+  })
+
+  it('ends the row at the empty block when the last grid is empty', () => {
+    const many = Array.from({ length: 18 }, (_, i) => note(`n${i}`))
+    const { container } = render(
+      <SyncGrids notes={{ updated: many, deleted: [], unchanged: [] }} />,
+    )
+
+    expect(container.firstElementChild).toHaveStyle({ width: `${2 * 304 + 267}px` })
+  })
+
+  it('ends the row at the column less the stroke room when every grid is empty', () => {
+    const { container } = render(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
+
+    expect(container.firstElementChild).toHaveStyle({ width: `${2 * 304 + 269}px` })
+  })
+
   it('gives the reference grid the lattice ref and cell callback', () => {
     render(<SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />)
 
@@ -84,7 +141,7 @@ describe('SyncGrids', () => {
     )
 
     expect(grids().deleted.cellStep).toBeUndefined()
-    expect(container.firstElementChild).toHaveStyle({ columnGap: `${MIN_GAP}px` })
+    expect(container.firstElementChild?.lastElementChild).toHaveStyle({ columnGap: `${MIN_GAP}px` })
   })
 
   it('follows the reference cell: spacing for the other grids and a gap in whole spacings', () => {
@@ -96,6 +153,8 @@ describe('SyncGrids', () => {
     expect(grids().deleted.cellStep).toBe(20)
     // the column pitch (272 + 32 = 304) rounds up to 15 spacings of 20, so the gap is 300 - 272.
     const pitch = Math.ceil((COLUMN_WIDTH + MIN_GAP) / 20) * 20
-    expect(container.firstElementChild).toHaveStyle({ columnGap: `${pitch - COLUMN_WIDTH}px` })
+    expect(container.firstElementChild?.lastElementChild).toHaveStyle({
+      columnGap: `${pitch - COLUMN_WIDTH}px`,
+    })
   })
 })

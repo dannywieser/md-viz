@@ -200,6 +200,38 @@ describe('NoteGrid', () => {
     expect(all).toBe(all.toLowerCase())
   })
 
+  it('fills the drawing area with an empty block, less the stroke room', () => {
+    const { container } = render(<NoteGrid notes={[]} height={160} />)
+    const block = container.querySelector('[data-slot="empty-state"]')?.parentElement
+
+    expect(block).toHaveStyle({ width: '397px', height: '157px' })
+  })
+
+  it('gives the empty block the size it is told to have', () => {
+    const { container } = render(
+      <NoteGrid notes={[]} height={160} emptySize={{ width: 267, height: 135 }} />,
+    )
+    const block = container.querySelector('[data-slot="empty-state"]')?.parentElement
+
+    expect(block).toHaveStyle({ width: '267px', height: '135px' })
+  })
+
+  it('has no size on the empty block until its container has one', () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(0)
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(0)
+    const { container } = render(<NoteGrid notes={[]} />)
+    const block = container.querySelector('[data-slot="empty-state"]')?.parentElement
+
+    expect(block?.style.width).toBe('')
+  })
+
+  it('shows the compact empty state when asked', () => {
+    const { container } = render(<NoteGrid notes={[]} compactEmpty />)
+
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute('data-compact')
+    expect(screen.queryByText('the notes went out for coffee')).not.toBeInTheDocument()
+  })
+
   it('draws nothing until its container has a size', () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(0)
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(0)
