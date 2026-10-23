@@ -2,6 +2,7 @@
 
 - **Slug:** 20261023-01-electron-app-ux-improvements
 - **Started:** 2026-10-23 07:15:58 MDT
+- **Completed:** 2026-10-23 07:59:48 MDT
 
 ---
 
@@ -141,3 +142,9 @@ what about the icon in the task switcher? Can that be updated in dev mode, or on
 
 ### [2026-10-23 12:40:00] Claude
 Added `apps/electron/scripts/make-icon.mjs` (draws `resources/icon.png`, 1024px, from the web favicon pixels, no dependencies), the generated `apps/electron/resources/icon.png`, and in `src/main/index.ts` `app.dock?.setIcon(ICON)` (macOS, works in dev) plus `icon: ICON` on the window (windows/linux). `CLAUDE.md` documents it. Checks and build pass; the dock icon is not seen in a running app.
+
+### [2026-10-23 07:59:48] User
+/create-complete
+
+### [2026-10-23 07:59:48] Decision
+Session complete. Wrote summary.md; harvest updated CLAUDE.md and README.md.
