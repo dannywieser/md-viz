@@ -2,6 +2,7 @@
 
 - **Slug:** 20261023-02-refactor-for-components-and-tests
 - **Started:** 2026-10-23 08:01:29 MDT
+- **Completed:** 2026-10-23 08:59:43
 
 ---
 
@@ -119,3 +120,9 @@ Wants components/ and hooks/ used consistently with tests mirroring. Answers: 1.
 
 ### [2026-10-23 08:55:17] Decision
 Moved files (git mv, imports and vi.mock paths rewritten by script): web cache-note-grid -> components/, query-client -> lib/; Electron renderer folder-card, status-grid, sync-grids -> components/, use-scan, use-sync -> hooks/, error-message, sync-layout -> lib/; ui use-dot-lattice, use-element-size, use-grid-lattice -> hooks/ (lib keeps fake-notes, note-grid-layout, pixel-glyphs, pixel-logo, utils). Tests mirror under tests/{components,hooks,lib} (Electron's under tests/renderer/). apps/design and Electron src/main untouched. CLAUDE.md records the layout; no lint rule. Format, lint, typecheck, build and coverage green.
+
+### [2026-10-23 08:59:07] User
+/create-complete
+
+### [2026-10-23 08:59:43] Decision
+Session complete. Fresh pnpm coverage passed in all six workspaces (all at or above 95%); summary.md written; README.md updated in the harvest.
