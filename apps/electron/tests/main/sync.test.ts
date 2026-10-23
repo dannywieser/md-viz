@@ -1,9 +1,15 @@
 // @vitest-environment node
-import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { noteId, noteTitle, syncFolder } from '../../src/main/sync'
 import type { SyncProgress } from '../../src/shared/ipc'
+
+// real by default; a few tests make a file vanish or fail to read mid-sync.
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>()
+  return { ...actual, stat: vi.fn(actual.stat), readFile: vi.fn(actual.readFile) }
+})
 
 /** a minimal in-memory stand-in for the cache service's notes routes. */
 function fakeCache() {
@@ -172,5 +178,53 @@ describe('syncFolder', () => {
 
     await expect(syncFolder(path.join(root, 'missing'), { fetch: cache.fetch })).rejects.toThrow()
     expect(cache.notes.size).toBe(1)
+  })
+
+  it('skips a file that vanishes before it is read', async () => {
+    await write('a.md', 'one')
+    await write('b.md', 'two')
+    const cache = fakeCache()
+    vi.mocked(stat).mockRejectedValueOnce(new Error('ENOENT'))
+
+    const result = await syncFolder(root, { fetch: cache.fetch })
+
+    expect(result.scanned).toBe(1)
+    expect(result.synced).toBe(1)
+  })
+
+  it('counts a file that cannot be read as failed and leaves it out of the updates', async () => {
+    await write('a.md', 'one')
+    await write('b.md', 'two')
+    const cache = fakeCache()
+    vi.mocked(readFile).mockRejectedValueOnce(new Error('EACCES'))
+
+    const result = await syncFolder(root, { fetch: cache.fetch })
+
+    expect(result).toMatchObject({ scanned: 2, synced: 1, failed: 1 })
+    expect(result.notes.updated).toHaveLength(1)
+    expect(cache.notes.size).toBe(1)
+  })
+
+  it('does not call the cache when no file could be read', async () => {
+    await write('a.md', 'one')
+    const cache = fakeCache()
+    vi.mocked(readFile).mockRejectedValueOnce(new Error('EACCES'))
+
+    const result = await syncFolder(root, { fetch: cache.fetch })
+
+    expect(result).toMatchObject({ synced: 0, failed: 1 })
+    expect(cache.upserts).toEqual([])
+  })
+
+  it('treats cached notes without a title or sync time as stale, titling deletions by id', async () => {
+    await write('a.md', 'one')
+    const cache = fakeCache()
+    cache.notes.set(noteId('a.md'), {})
+    cache.notes.set('orphan', {})
+
+    const result = await syncFolder(root, { fetch: cache.fetch })
+
+    expect(result.synced).toBe(1)
+    expect(result.notes.deleted).toEqual([{ id: 'orphan', title: 'orphan' }])
   })
 })

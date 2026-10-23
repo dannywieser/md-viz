@@ -19,7 +19,7 @@ Writes the plan for the active create session and decides how implementation pro
    - **Technologies** - languages, frameworks, libraries, tools, and why
    - **Repository structure** - the directory tree to be created or changed
    - **Files** - every file to create or modify, with a one-line purpose each
-   - **Steps** - an ordered, numbered implementation sequence, each small enough to review
+   - **Steps** - an ordered, numbered implementation sequence, each small enough to review. For any session that adds or changes code the plan must include: a unit test for every new or changed source file (per the testing conventions in `CLAUDE.md`), and a final step that runs `pnpm coverage` and brings every workspace to at least 95% (lines, statements, branches, functions). A plan without these steps is incomplete.
    - **Open questions / risks** - anything unresolved (ask the user before writing if it blocks the plan)
 5. Run `bash .claude/skills/create/scripts/set-status.sh <slug> planned` to mark the session in the `create/README.md` index.
 6. Summarize the plan to the user in a few lines and point at `plan.md`. Let them request changes; revise `plan.md` and log each revision.
@@ -30,4 +30,4 @@ Writes the plan for the active create session and decides how implementation pro
 
 Follow the chosen approach exactly. After each step or file, append to `log.md` what was done (files touched) and any deviations from `plan.md`. If you deviate or the user changes direction, log the decision and update `plan.md` if the change is material. Keep logging every user/Claude exchange as described in the `create` skill, including its rule to keep the numbering of questions and options so the user's answers by number stay matched to them.
 
-When the work is done, tell the user they can type `/create-complete`.
+Before declaring the work done, run `pnpm coverage` yourself and fix any workspace under 95%; `/create-complete` re-checks and reports it. When the work is done, tell the user they can type `/create-complete`.

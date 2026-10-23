@@ -38,6 +38,7 @@ Run from the repo root.
 | `pnpm build`        | Typecheck and build every workspace  |
 | `pnpm typecheck`    | Run `tsc` in every workspace         |
 | `pnpm test`         | Run Vitest in every workspace        |
+| `pnpm coverage`     | Tests with coverage, 95% minimum     |
 | `pnpm lint`         | Run ESLint (typed rules) on the repo |
 | `pnpm format`       | Format with Prettier                 |
 | `pnpm format:check` | Check formatting without writing     |
@@ -54,7 +55,7 @@ packages/api-client/  @md-viz/api-client: clients generated from the OpenAPI spe
 demo/            Small committed set of markdown notes for trying and testing
 ```
 
-Each workspace keeps its tests in a `tests/` folder beside `src/`. New apps go in `apps/*`, new shared packages in `packages/*`.
+Each workspace keeps its tests in a `tests/` folder beside `src/`, and every workspace must stay at 95% coverage (`pnpm coverage`). The web app, the Electron renderer and the UI package keep React components in `components/`, hooks in `hooks/` and other helpers in `lib/` (see `CLAUDE.md`). New apps go in `apps/*`, new shared packages in `packages/*`.
 
 ## Shared UI package
 

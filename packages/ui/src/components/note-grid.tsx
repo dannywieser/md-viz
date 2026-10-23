@@ -1,10 +1,14 @@
+/* eslint-disable react/no-multi-comp -- `Cells`, the memo'd item layer, is internal to the grid and stays beside it (agreed exception). */
 import * as React from 'react'
 import { cn } from 'cn'
 import { Card } from './card'
 import { layoutGrid } from '../lib/note-grid-layout'
-import { useElementSize } from '../lib/use-element-size'
+import { useElementSize } from '../hooks/use-element-size'
 
 export const NOTE_COLORS = 10
+
+/** the color of every note until color carries meaning. */
+export const DEFAULT_NOTE_COLOR = 0
 
 export type Note = {
   id: string

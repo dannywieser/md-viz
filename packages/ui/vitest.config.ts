@@ -6,5 +6,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [],
+      thresholds: { lines: 95, statements: 95, branches: 95, functions: 95 },
+    },
   },
 })
