@@ -1,6 +1,6 @@
 # md-viz
 
-Homelab TypeScript/Node project: loads markdown notes (a folder of `.md` files or a Bear DB) into a cache for analysis of content, relationships and structure. Currently the web app (a note grid of fake data), an Electron app (hello world: pick a folder, count its `.md` files), a design viewer, a shared UI package and a local note cache service (notes API over SQLite) and an API client package generated from the cache's OpenAPI spec exist. The web app calls the cache through the client but only logs the result; showing real notes in the grid and wiring Electron are planned.
+Homelab TypeScript/Node project: loads markdown notes (a folder of `.md` files or a Bear DB) into a cache for analysis of content, relationships and structure. Currently the web app (a note grid of fake data), an Electron app (hello world: pick a folder, count its `.md` files), a design viewer, a shared UI package and a local note cache service (notes API over SQLite) and an API client package generated from the cache's OpenAPI spec exist. The web app shows the cached notes in the grid (one cell per note, hover shows the title); wiring Electron is planned.
 
 ## Commands
 

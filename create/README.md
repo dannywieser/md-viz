@@ -46,3 +46,4 @@ New sessions are appended to the bottom of this table.
 | [20261016-02-note-cache-service](20261016-02-note-cache-service/) | note cache service | complete | 2026-10-16 |
 | [20261016-03-generated-api-client](20261016-03-generated-api-client/) | generated api client | complete | 2026-10-16 |
 | [20261016-04-rebrand-to-md-viz](20261016-04-rebrand-to-md-viz/) | rebrand to md-viz | complete | 2026-10-16 |
+| [20261022-01-web-app-displays-notes-from-cache](20261022-01-web-app-displays-notes-from-cache/) | web app displays notes from cache | complete | 2026-10-22 |

@@ -2,7 +2,7 @@
 
 A homelab project that loads markdown notes (a folder of `.md` files or a Bear database) into a cache so their content, relationships and structure can be analyzed.
 
-Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a grid of 5000 fake notes, an Electron app that counts the markdown files in a chosen folder, a note cache service (notes API over SQLite) with a generated, validated API client (the web app logs the cache's note list), a design viewer app and a shared UI package.
+Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a grid of the notes in the cache (one cell per note, hover for the title), an Electron app that counts the markdown files in a chosen folder, a note cache service (notes API over SQLite) with a generated, validated API client (the web app loads its notes through it), a design viewer app and a shared UI package.
 
 ## Prerequisites
 
