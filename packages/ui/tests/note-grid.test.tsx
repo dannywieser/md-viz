@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { createRef } from 'react'
 import { NoteGrid, type Note } from '../src'
 
 function makeNotes(count: number): Note[] {
@@ -43,22 +44,28 @@ describe('NoteGrid', () => {
     expect(area).not.toHaveClass('h-full')
   })
 
-  it('wraps the grid in the frame and keeps its inset out of the layout', () => {
-    const squareSize = (inset: number) => {
-      const { container, unmount } = render(
-        <NoteGrid
-          notes={makeNotes(2000)}
-          inset={inset}
-          frame={(grid) => <div data-testid="frame">{grid}</div>}
-        />,
-      )
-      expect(screen.getByTestId('frame').querySelector('svg')).not.toBeNull()
-      const size = Number(container.querySelector('.note-square')?.getAttribute('width'))
-      unmount()
-      return size
-    }
+  it('is a shadowed block floating on the page', () => {
+    const { container } = render(<NoteGrid notes={makeNotes(3)} />)
 
-    expect(squareSize(60)).toBeLessThan(squareSize(0))
+    expect(container.querySelector('svg')?.parentElement).toHaveClass('bg-card', 'shadow-hard')
+  })
+
+  it('hangs a label with the count above the grid and makes room for it', () => {
+    const { container } = render(<NoteGrid notes={makeNotes(3)} height={200} label="updated" />)
+    const area = container.querySelector('[data-slot="note-grid"]') as HTMLElement
+    const label = container.querySelector('[data-slot="card"]')
+
+    expect(label).toHaveTextContent('updated 3')
+    expect(label?.parentElement).toBe(container.querySelector('svg')?.parentElement)
+    expect(Number(area.style.height.replace('px', ''))).toBeGreaterThan(200)
+    expect(area.style.paddingTop).not.toBe('')
+  })
+
+  it('hands its block to the ref', () => {
+    const ref = createRef<HTMLDivElement>()
+    const { container } = render(<NoteGrid ref={ref} notes={makeNotes(3)} />)
+
+    expect(ref.current).toBe(container.querySelector('svg')?.parentElement)
   })
 
   it('has no per-note title elements', () => {
@@ -164,7 +171,7 @@ describe('NoteGrid', () => {
     expect(container.querySelector('svg')).toHaveClass('overflow-visible')
   })
 
-  it('is the bare grid, not a card', () => {
+  it('is not wrapped in a card', () => {
     const { container } = render(<NoteGrid notes={makeNotes(3)} />)
 
     expect(container.querySelector('[data-slot="card"]')).toBeNull()
@@ -183,10 +190,12 @@ describe('NoteGrid', () => {
     expect(colors).toEqual(['3', '9'])
   })
 
-  it('shows a lowercase empty state', () => {
-    const { container } = render(<NoteGrid notes={[]} />)
+  it('shows a lowercase empty state as a shadowed block, with its label', () => {
+    const { container } = render(<NoteGrid notes={[]} label="deleted" />)
 
     expect(screen.getByText('no notes')).toBeInTheDocument()
+    expect(screen.getByText('no notes').parentElement).toHaveClass('shadow-hard')
+    expect(container.querySelector('[data-slot="card"]')).toHaveTextContent('deleted 0')
     const text = container.textContent
     expect(text).toBe(text.toLowerCase())
   })

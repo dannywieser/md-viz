@@ -46,7 +46,7 @@ describe('App', () => {
     expect(screen.getByText('loading notes')).toBeInTheDocument()
   })
 
-  it('shows one cell per cached note in a card hugging the grid', async () => {
+  it('shows one cell per cached note, floating on the page', async () => {
     respondWith(
       '[{"id":"a","fields":{"title":"plan"}},{"id":"b","fields":{"title":"plants"}},{"id":"c","fields":{}}]',
     )
@@ -54,7 +54,7 @@ describe('App', () => {
 
     expect(await screen.findByRole('img', { name: '3 notes' })).toBeInTheDocument()
     expect(container.querySelectorAll('.note-square')).toHaveLength(3)
-    expect(container.querySelector('[data-slot="note-grid"] [data-slot="card"] svg')).not.toBeNull()
+    expect(container.querySelector('[data-slot="card"]')).toBeNull()
     const request = vi.mocked(fetch).mock.calls[0][0] as Request
     expect(request.url).toContain('/notes?fields=title')
   })
@@ -77,7 +77,7 @@ describe('App', () => {
     respondWith('[]')
     render(<App />)
 
-    expect(await screen.findByText('no notes in the cache')).toBeInTheDocument()
+    expect(await screen.findByText('no notes')).toBeInTheDocument()
   })
 
   it('says so when the cache cannot be read', async () => {

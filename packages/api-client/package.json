@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./cache": "./src/cache/index.ts"
+    "./cache": "./src/cache/index.ts",
+    "./cache/react-query": "./src/cache/react-query.ts"
   },
   "scripts": {
     "generate": "openapi-ts",

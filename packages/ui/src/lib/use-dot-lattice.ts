@@ -1,5 +1,5 @@
 import { useLayoutEffect, type RefObject } from 'react'
-import { latticeSpacing } from '@md-viz/ui'
+import { latticeSpacing } from './note-grid-layout'
 
 /**
  * Lines the page's dots up with the first note square of the grid inside `ref`: the dot spacing

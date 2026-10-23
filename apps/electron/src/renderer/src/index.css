@@ -2,3 +2,11 @@
 
 /* Tailwind must scan the shared UI package for class names. */
 @source '../../../../../packages/ui/src';
+
+/* the app header is the window's title bar: drag it to move the window, but keep its controls clickable. */
+[data-slot='app-header'] {
+  -webkit-app-region: drag;
+}
+[data-slot='app-header'] :is(button, a, input) {
+  -webkit-app-region: no-drag;
+}

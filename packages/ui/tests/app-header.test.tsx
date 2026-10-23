@@ -25,4 +25,17 @@ describe('AppHeader', () => {
 
     expect(screen.getByRole('button', { name: 'sync' })).toBeInTheDocument()
   })
+
+  it('floats centered with a border and shadow instead of spanning the full width', () => {
+    render(<AppHeader title="notes" />)
+
+    expect(screen.getByRole('banner')).toHaveClass(
+      'mx-4',
+      'mt-4',
+      'border',
+      'shadow-hard',
+      'bg-card',
+    )
+    expect(screen.getByRole('banner')).not.toHaveClass('border-b')
+  })
 })
