@@ -23,6 +23,8 @@ A create session has three phases, each driven by the user typing a command:
 4. Facilitate a back-and-forth conversation about the specifics. Ask focused questions (a few at a time, not a wall), reflect back what you understand, surface trade-offs and open questions, and keep the discussion at the level of intent: what, why, scope, constraints, preferred technologies. Do not write implementation code or plan files in this phase. Reading the repo for context is fine.
 5. When the intent seems clear, say so briefly and tell the user they can type `/create-plan`.
 
+`/fix <title>` starts the same session with `--kind fix` (slug `YYYYMMDD-xx-fix-<title>`, a `- **Kind:** fix` line in the log header) and has its own discussion prompts; `/create-plan` and `/create-complete` switch to fix templates when they see that line.
+
 `create/README.md` explains the workflow and indexes all sessions. Statuses are `review` (set here), `planned` (set by `/create-plan`) and `complete` (set by `/create-complete`); change one with `bash .claude/skills/create/scripts/set-status.sh <slug> <status>`.
 
 ## Logging (applies to the whole session, all three phases)
