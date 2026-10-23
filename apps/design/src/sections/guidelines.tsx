@@ -28,8 +28,14 @@ const guidelines = [
   },
   {
     name: 'floating note grid',
-    rule: 'the note grid always floats on the page background with its own hard shadow, never on or inside a card. a label card may hang above it, exactly as wide as the grid, and an empty set shows the same block with an empty message.',
-    example: 'grid block · 4px black shadow · label above · no notes',
+    rule: 'the note grid always floats on the page background with its own hard shadow, never on or inside a card. a label card may hang above it, exactly as wide as the grid, and an empty set shows the same block with the empty state.',
+    example: 'grid block · 4px black shadow · label above · ghost when empty',
+  },
+  {
+    name: 'loading, empty and error states',
+    rule: 'a state floats on the page in its own block with the hard shadow, like the note grid. loading is a well filling with squares in the note palette, one fill picked at random per load and repeated; it has an aria label and no visible text. empty is a ghost filled with the note palette and error is a broken tile with a note-palette crack, each with a whimsical lowercase line. an error offers a retry button only when something can be retried.',
+    example:
+      'loader · ghost + the notes went out for coffee · broken tile + oops, we dropped a square',
   },
   {
     name: 'pixel logo',

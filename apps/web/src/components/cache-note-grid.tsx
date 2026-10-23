@@ -1,12 +1,21 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listNotesOptions } from '@md-viz/api-client/cache/react-query'
-import { DEFAULT_NOTE_COLOR, Message, NoteGrid, useGridLattice } from '@md-viz/ui'
+import {
+  DEFAULT_NOTE_COLOR,
+  ErrorState,
+  Loader,
+  NoteGrid,
+  StateBlock,
+  useGridLattice,
+} from '@md-viz/ui'
 import type { Note } from '@md-viz/ui'
 
 /** the cached notes as a grid, one cell per note, in the cache's order. */
 export function CacheNoteGrid() {
-  const { data, error, isPending } = useQuery(listNotesOptions({ query: { fields: 'title' } }))
+  const { data, error, isPending, refetch } = useQuery(
+    listNotesOptions({ query: { fields: 'title' } }),
+  )
   const { ref, onCellChange } = useGridLattice()
 
   const notes = useMemo<Note[]>(
@@ -19,8 +28,20 @@ export function CacheNoteGrid() {
     [data],
   )
 
-  if (isPending) return <Message fill>loading notes</Message>
-  if (error) return <Message fill>could not load notes from the cache</Message>
+  if (isPending) {
+    return (
+      <StateBlock fill>
+        <Loader label="loading notes" />
+      </StateBlock>
+    )
+  }
+  if (error) {
+    return (
+      <StateBlock fill>
+        <ErrorState detail="could not load notes from the cache" onRetry={() => void refetch()} />
+      </StateBlock>
+    )
+  }
 
   return <NoteGrid ref={ref} notes={notes} onCellChange={onCellChange} />
 }

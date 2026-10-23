@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { App } from '../src/app'
@@ -20,6 +20,8 @@ describe('App', () => {
   it('renders the cached notes under the header', () => {
     render(<App />)
 
-    expect(screen.getByRole('main')).toHaveTextContent('loading notes')
+    expect(within(screen.getByRole('main')).getByRole('status')).toHaveAccessibleName(
+      'loading notes',
+    )
   })
 })

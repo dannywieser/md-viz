@@ -59,7 +59,7 @@ Each workspace keeps its tests in a `tests/` folder beside `src/`, and every wor
 
 ## Shared UI package
 
-`@md-viz/ui` ships TypeScript source with no build step; each consuming Vite app compiles it. The theme (Solarized light and dark CSS variables, Space Mono, square edges, dot grid background) lives in `packages/ui/src/styles/globals.css`. `apps/design` is a design board that displays the theme tokens, shared components and the design guidelines (`/background` holds the background exploration); it holds no tokens of its own.
+`@md-viz/ui` ships TypeScript source with no build step; each consuming Vite app compiles it. The theme (Solarized light and dark CSS variables, Space Mono, square edges, dot grid background) lives in `packages/ui/src/styles/globals.css`. `apps/design` is a design board that displays the theme tokens, shared components and the design guidelines (`/explorations` lists design explorations such as the page background and the loading, empty and error states); it holds no tokens of its own.
 
 An app consumes it by:
 
