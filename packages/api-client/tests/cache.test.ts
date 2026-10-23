@@ -4,11 +4,11 @@ import {
   configureCacheClient,
   getNote,
   listNotes,
-  listNotesOptions,
   upsertNotes,
   zNoteRow,
   zUpsertBody,
 } from '../src/cache'
+import { listNotesOptions } from '../src/cache/react-query'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })

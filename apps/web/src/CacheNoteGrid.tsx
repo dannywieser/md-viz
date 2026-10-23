@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { listNotesOptions } from '@md-viz/api-client/cache'
+import { listNotesOptions } from '@md-viz/api-client/cache/react-query'
 import { Card, NoteGrid } from '@md-viz/ui'
 import type { Note } from '@md-viz/ui'
 import { useDotLattice } from './use-dot-lattice'

@@ -16,7 +16,8 @@ apps/cache/src (zod routes)  --pnpm openapi-->  apps/cache/openapi.json (committ
 ## Using the cache client
 
 ```ts
-import { configureCacheClient, listNotes, listNotesOptions } from '@md-viz/api-client/cache'
+import { configureCacheClient, listNotes } from '@md-viz/api-client/cache'
+import { listNotesOptions } from '@md-viz/api-client/cache/react-query'
 
 configureCacheClient({ baseUrl: 'http://localhost:8787' })
 
