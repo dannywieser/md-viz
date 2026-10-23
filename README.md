@@ -2,7 +2,7 @@
 
 A homelab project that loads markdown notes (a folder of `.md` files or a Bear database) into a cache so their content, relationships and structure can be analyzed.
 
-Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a grid of the notes in the cache (one cell per note, hover for the title), an Electron app that counts the markdown files in a chosen folder, a note cache service (notes API over SQLite) with a generated, validated API client (the web app loads its notes through it), a design viewer app and a shared UI package.
+Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a grid of the notes in the cache (one cell per note, hover for the title), an Electron app that counts the markdown files in a chosen folder and syncs them to the cache, a note cache service (notes API over SQLite) with a generated, validated API client (the web app loads its notes through it), a design viewer app and a shared UI package.
 
 ## Prerequisites
 
@@ -13,14 +13,14 @@ Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a
 
 ```bash
 pnpm install
-pnpm dev          # web app on http://localhost:5173
+pnpm dev          # web app on http://localhost:5175
 pnpm dev:design   # design viewer on http://localhost:5174
 pnpm dev:electron # Electron app (downloads the Electron binary on first run)
 pnpm dev:cache    # note cache service on http://localhost:8787 (see apps/cache/README.md)
-pnpm dev:all      # web app and cache service together
+pnpm dev:all      # cache service, web app and Electron app together
 ```
 
-The web app and the Electron app both use port 5173, so run one at a time. In the Electron app, choose the `demo/` folder to see the count of 18.
+The Electron renderer uses port 5173 and the web app 5175, so they can run together. In the Electron app, choose the `demo/` folder to see the count of 18, then click sync to push the notes to the cache (`CACHE_URL`, default `http://localhost:8787`); they show up in the web app's grid. Sync only pushes new or changed files and deletes cached notes whose file is gone.
 
 ## Commands
 

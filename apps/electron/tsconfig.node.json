@@ -6,7 +6,7 @@
     "noEmit": false,
     "outDir": "./node_modules/.tmp/node",
     "tsBuildInfoFile": "./node_modules/.tmp/node.tsbuildinfo",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
     "types": ["node", "vitest/globals"]
   },
   "include": ["src/main", "src/preload", "src/shared", "tests/main", "electron.vite.config.ts"]

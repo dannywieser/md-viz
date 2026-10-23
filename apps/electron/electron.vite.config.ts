@@ -4,7 +4,12 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'electron-vite'
 
 export default defineConfig({
-  main: {},
+  main: {
+    build: {
+      // the api client is typescript source, so main bundles it instead of requiring it.
+      externalizeDeps: { exclude: ['@md-viz/api-client'] },
+    },
+  },
   preload: {
     build: {
       // sandboxed preload scripts must be commonjs.

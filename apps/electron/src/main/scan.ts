@@ -1,16 +1,9 @@
-import { readdir } from 'node:fs/promises'
-import path from 'node:path'
 import type { ScanProgress, ScanResult } from '../shared/ipc'
+import { walkMarkdown } from './walk'
 
 export interface ScanOptions {
   /** minimum time between progress callbacks; the final state is always reported. */
   progressIntervalMs?: number
-}
-
-const SKIPPED_DIRS = new Set(['node_modules'])
-
-function isSkippedDir(name: string): boolean {
-  return name.startsWith('.') || SKIPPED_DIRS.has(name)
 }
 
 /**
@@ -34,25 +27,15 @@ export async function scanMarkdown(
     onProgress({ ...progress })
   }
 
-  const walk = async (dir: string): Promise<void> => {
-    let entries
-    try {
-      entries = await readdir(dir, { withFileTypes: true })
-    } catch {
-      return
-    }
+  const onDir = () => {
     progress.dirs += 1
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        if (!isSkippedDir(entry.name)) await walk(path.join(dir, entry.name))
-      } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
-        progress.mdFiles += 1
-      }
-    }
     report()
   }
 
-  await walk(root)
+  for await (const file of walkMarkdown(root, onDir)) {
+    void file
+    progress.mdFiles += 1
+  }
   report(true)
   return { mdCount: progress.mdFiles }
 }

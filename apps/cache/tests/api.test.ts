@@ -120,7 +120,7 @@ describe('api', () => {
   })
 
   it('allows cross-origin requests', async () => {
-    const res = await app.request('/health', { headers: { origin: 'http://localhost:5173' } })
+    const res = await app.request('/health', { headers: { origin: 'http://localhost:5175' } })
     expect(res.headers.get('access-control-allow-origin')).toBe('*')
   })
 })

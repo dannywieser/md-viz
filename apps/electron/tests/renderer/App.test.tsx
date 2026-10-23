@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { Api, ScanProgress, ScanResult } from '../../src/shared/ipc'
+import type { Api, ScanProgress, ScanResult, SyncProgress, SyncResult } from '../../src/shared/ipc'
 import { App } from '../../src/renderer/src/App'
 
 function stubApi(overrides: Partial<Api> = {}) {
   const unsubscribe = vi.fn()
   let pushProgress: (progress: ScanProgress) => void = () => {}
+  let pushSync: (progress: SyncProgress) => void = () => {}
   const api: Api = {
     pickFolder: vi.fn().mockResolvedValue('/notes'),
     scanFolder: vi.fn().mockResolvedValue({ mdCount: 18 }),
@@ -13,10 +14,26 @@ function stubApi(overrides: Partial<Api> = {}) {
       pushProgress = callback
       return unsubscribe
     }),
+    syncFolder: vi.fn().mockResolvedValue({
+      scanned: 18,
+      synced: 5,
+      unchanged: 13,
+      deleted: 2,
+      failed: 0,
+    } satisfies SyncResult),
+    onSyncProgress: vi.fn((callback: (progress: SyncProgress) => void) => {
+      pushSync = callback
+      return unsubscribe
+    }),
     ...overrides,
   }
   window.api = api
-  return { api, unsubscribe, push: (p: ScanProgress) => pushProgress(p) }
+  return {
+    api,
+    unsubscribe,
+    push: (p: ScanProgress) => pushProgress(p),
+    pushSync: (p: SyncProgress) => pushSync(p),
+  }
 }
 
 describe('App', () => {
@@ -76,5 +93,57 @@ describe('App', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('not a directory')
     expect(screen.getByRole('button', { name: 'choose folder' })).toBeEnabled()
+  })
+
+  it('keeps sync disabled until a folder is chosen', () => {
+    stubApi()
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: 'sync' })).toBeDisabled()
+  })
+
+  it('syncs the chosen folder and shows the result', async () => {
+    const { api } = stubApi()
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'choose folder' }))
+    await screen.findByText('18 notes')
+    await userEvent.click(screen.getByRole('button', { name: 'sync' }))
+
+    expect(await screen.findByText('synced 5, deleted 2, unchanged 13')).toBeInTheDocument()
+    expect(api.syncFolder).toHaveBeenCalledWith('/notes')
+  })
+
+  it('shows progress while syncing', async () => {
+    let finish: (value: SyncResult) => void = () => {}
+    const { pushSync } = stubApi({
+      syncFolder: vi.fn(() => new Promise<SyncResult>((resolve) => (finish = resolve))),
+    })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'choose folder' }))
+    await screen.findByText('18 notes')
+    await userEvent.click(screen.getByRole('button', { name: 'sync' }))
+    pushSync({ synced: 3, deleted: 1, total: 8 })
+
+    expect(await screen.findByText(/3 pushed, 1 deleted of 8/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'sync' })).toBeDisabled()
+
+    finish({ scanned: 8, synced: 8, unchanged: 0, deleted: 0, failed: 1 })
+    expect(
+      await screen.findByText(/synced 8, deleted 0, unchanged 0, 1 unreadable/),
+    ).toBeInTheDocument()
+  })
+
+  it('shows an error when the sync fails', async () => {
+    stubApi({ syncFolder: vi.fn().mockRejectedValue(new Error('connect ECONNREFUSED')) })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'choose folder' }))
+    await screen.findByText('18 notes')
+    await userEvent.click(screen.getByRole('button', { name: 'sync' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('connect econnrefused')
+    expect(screen.getByRole('button', { name: 'sync' })).toBeEnabled()
   })
 })

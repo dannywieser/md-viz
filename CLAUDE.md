@@ -1,18 +1,18 @@
 # md-viz
 
-Homelab TypeScript/Node project: loads markdown notes (a folder of `.md` files or a Bear DB) into a cache for analysis of content, relationships and structure. Currently the web app (a note grid of fake data), an Electron app (hello world: pick a folder, count its `.md` files), a design viewer, a shared UI package and a local note cache service (notes API over SQLite) and an API client package generated from the cache's OpenAPI spec exist. The web app shows the cached notes in the grid (one cell per note, hover shows the title); wiring Electron is planned.
+Homelab TypeScript/Node project: loads markdown notes (a folder of `.md` files or a Bear DB) into a cache for analysis of content, relationships and structure. Currently the web app (a note grid of fake data), an Electron app (pick a folder, count its `.md` files, sync them to the cache), a design viewer, a shared UI package and a local note cache service (notes API over SQLite) and an API client package generated from the cache's OpenAPI spec exist. The web app shows the cached notes in the grid (one cell per note, hover shows the title); the Electron app pushes notes to the cache.
 
 ## Commands
 
 Run from the repo root with pnpm:
 
-- `pnpm dev` - web app dev server (port 5173)
+- `pnpm dev` - web app dev server (port 5175)
 - `pnpm dev:design` - design viewer dev server (port 5174)
 - `pnpm dev:cache` - note cache service (port 8787, SQLite file in `apps/cache/data/`); see `apps/cache/README.md` for the API and curl examples
-- `pnpm dev:all` - cache service and web app together
+- `pnpm dev:all` - cache service, web app and Electron app together
 - `pnpm generate` - generate the API client from the committed specs (`build`, `typecheck`, `test` and `lint` run it first)
 - `pnpm openapi` - rewrite `apps/cache/openapi.json` from the cache's routes
-- `pnpm dev:electron` - Electron app (electron-vite); its renderer also uses port 5173, so it cannot run together with `pnpm dev`
+- `pnpm dev:electron` - Electron app (electron-vite); its renderer uses port 5173 (the web app is on 5175, so both can run together)
 - `pnpm build` / `pnpm typecheck` / `pnpm test` - run across all workspaces
 - `pnpm lint` - ESLint with typed rules
 - `pnpm format` / `pnpm format:check` - Prettier
@@ -45,6 +45,7 @@ New apps go in `apps/*`, shared code in `packages/*`.
 - Any app that uses the UI package needs `@source` for `packages/ui/src` in its CSS so Tailwind sees the class names.
 - Electron IPC: every channel, payload type and the `window.api` shape live in `apps/electron/src/shared/ipc.ts`; main registers handlers, preload only forwards, the renderer sees just `window.api`. Keep `contextIsolation` and `sandbox` on, `nodeIntegration` off. Filesystem work stays in main. A sandboxed preload must be CommonJS, hence the `.cjs` output in `electron.vite.config.ts`; `Api` members are function-typed properties (not methods) to satisfy `unbound-method`.
 - `apps/electron` has two tsconfigs so each side only sees its own environment: `tsconfig.node.json` (main, preload, shared, `tests/main`) and `tsconfig.web.json` (renderer, shared, `tests/renderer`). Put new tests in the matching folder. The Electron binary is downloaded on first run, not at install.
+- Electron sync (`apps/electron/src/main/sync.ts`): the sync button runs in main and uses the generated cache SDK; the cache URL is `CACHE_URL` (default `http://localhost:8787`). A note's id is the first 16 hex chars of the SHA-256 of its relative path, `title` is the file name without `.md`, a file is pushed only when its mtime is newer than the cached `synced`, and cached notes with no file are deleted (no per-source scoping yet). `electron.vite.config.ts` bundles `@md-viz/api-client` into main (it is TypeScript source), and `tsconfig.node.json` includes the `DOM` lib because the generated client references `BodyInit`.
 - `apps/cache` runs TypeScript directly with Node's type stripping (no build step): use `.ts` import extensions and erasable syntax only (no enums or namespaces). Notes are stored as `(note_id, field, value)` rows; `synced` is the one field the service stamps itself. Keep `node:sqlite` inside `store.ts` (it is still experimental).
 - API contracts flow one way: zod routes in the server (`@hono/zod-openapi`) -> committed `openapi.json` (`pnpm openapi`; a test fails when stale) -> generated client in `packages/api-client` (`pnpm generate`; gitignored output; SDK and hooks validate requests and responses with the generated zod schemas). Never hand-write fetch calls or response types for our own APIs; change the route, regenerate. Use the TanStack Query helpers (`listNotesOptions` etc.) in React and the SDK functions elsewhere. A workspace script run directly needs `pnpm generate` done once; the root scripts do it. Keep response shapes to fixed keys (put dynamic keys in a record under a named property like `fields`): the hey-api zod plugin ignores `additionalProperties`, and zod then strips the extra keys. In tests the generated client needs a base URL (`configureCacheClient`) because node cannot build a `Request` from a relative URL; `apps/cache/openapi.json` is in `.prettierignore` because the staleness test compares exact bytes. See `packages/api-client/README.md` for adding an API.
 - Dependency versions shared by several workspaces (currently `zod`, `@tanstack/react-query`) live in the `catalog:` of `pnpm-workspace.yaml`; reference them as `"catalog:"`.

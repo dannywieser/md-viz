@@ -115,6 +115,9 @@ importers:
 
   apps/electron:
     dependencies:
+      '@md-viz/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@md-viz/ui':
         specifier: workspace:*
         version: link:../../packages/ui
