@@ -107,3 +107,9 @@ For the design board, move the background exploration into "explorations/backgro
 
 ### [2026-10-23 08:37:24] Decision
 Implemented explorations in apps/design: `src/explorations/<slug>/` folders (background moved from `routes/`, tests under `tests/explorations/<slug>/`), each exporting an `Exploration` (slug, title, description, lazy `Page`) from `index.ts`; `registry.ts` lists them; `route.ts` resolves `/` (board), `/explorations` (index), `/explorations/<slug>`, unknown slug shows not-found; new files explorations-index, exploration-page, exploration-not-found. `/background` dropped. No lint boundary rule. Deviation from the proposal: `Exploration` carries a module-level `lazy` `Page` instead of a `load` function because react-hooks lint forbids creating the lazy component during render. CLAUDE.md updated. Verified in the browser; format, lint, typecheck, coverage (design 100%) and build green.
+
+### [2026-10-23 08:44:20] User
+Shared-component question (ErrorMessage, Message duplicates; others?), then "take care of all 3".
+
+### [2026-10-23 08:44:20] Decision
+Added to packages/ui: `Message` (tone muted|error, fill, action; lowercases its text; replaces web `Message`, Electron `ErrorCard`, design not-found card and the loading fallback), `useGridLattice` (ref + cell + onCellChange, `enabled` flag; used by web cache-note-grid and electron sync-grids) and `DEFAULT_NOTE_COLOR` (replaces the NOTE_COLOR copies). Deleted web message.tsx and electron error-card.tsx with their tests; added ui tests for Message and useGridLattice; updated web/electron/design tests and CLAUDE.md. Lint rule `react-hooks/refs` needed the hook result destructured before passing ref. Format, lint, typecheck, build and coverage green.

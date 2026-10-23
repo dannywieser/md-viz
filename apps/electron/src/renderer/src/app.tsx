@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { AppHeader, Button } from '@md-viz/ui'
+import { AppHeader, Button, Message } from '@md-viz/ui'
 import type { LastSync } from '../../shared/ipc'
-import { ErrorCard } from './error-card'
 import { FolderCard } from './folder-card'
 import { SyncGrids } from './sync-grids'
 import { useScan } from './use-scan'
@@ -60,7 +59,7 @@ export function App() {
           />
         )}
         {sync.lastSync && <SyncGrids notes={sync.lastSync.notes} />}
-        {error && <ErrorCard message={error} />}
+        {error && <Message tone="error">{error}</Message>}
       </main>
     </div>
   )

@@ -1,8 +1,8 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { listNotesOptions } from '@md-viz/api-client/cache/react-query'
-import { NoteGrid, useDotLattice } from '@md-viz/ui'
+import { NoteGrid, useGridLattice } from '@md-viz/ui'
 import { CacheNoteGrid } from '../src/cache-note-grid'
 
 vi.mock('@tanstack/react-query', () => ({ useQuery: vi.fn() }))
@@ -12,13 +12,18 @@ vi.mock('@md-viz/api-client/cache/react-query', () => ({
 vi.mock('@md-viz/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@md-viz/ui')>()),
   NoteGrid: vi.fn(() => <div data-testid="note-grid" />),
-  useDotLattice: vi.fn(),
+  useGridLattice: vi.fn(),
 }))
+
+beforeEach(() => {
+  vi.mocked(useGridLattice).mockReturnValue(lattice)
+})
 
 function queryReturns(result: Partial<UseQueryResult>) {
   vi.mocked(useQuery).mockReturnValue(result as UseQueryResult)
 }
 
+const lattice = { ref: { current: null }, cell: null, onCellChange: vi.fn() }
 const gridProps = () => vi.mocked(NoteGrid).mock.lastCall![0]
 
 describe('CacheNoteGrid', () => {
@@ -73,14 +78,11 @@ describe('CacheNoteGrid', () => {
     expect(gridProps().notes).toEqual([])
   })
 
-  it('lines the page dots up with the grid once it reports its cell', () => {
+  it('gives the grid the lattice ref and cell callback, to line the page dots up with it', () => {
     queryReturns({ isPending: false, data: [] })
     render(<CacheNoteGrid />)
-    expect(vi.mocked(useDotLattice).mock.lastCall![1]).toBeNull()
 
-    act(() => gridProps().onCellChange?.(12))
-
-    expect(vi.mocked(useDotLattice).mock.lastCall![1]).toBe(12)
-    expect(vi.mocked(useDotLattice).mock.lastCall![0]).toBe(gridProps().ref)
+    expect(gridProps().ref).toBe(lattice.ref)
+    expect(gridProps().onCellChange).toBe(lattice.onCellChange)
   })
 })

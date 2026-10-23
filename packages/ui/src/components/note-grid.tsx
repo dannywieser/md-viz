@@ -7,6 +7,9 @@ import { useElementSize } from '../lib/use-element-size'
 
 export const NOTE_COLORS = 10
 
+/** the color of every note until color carries meaning. */
+export const DEFAULT_NOTE_COLOR = 0
+
 export type Note = {
   id: string
   title: string

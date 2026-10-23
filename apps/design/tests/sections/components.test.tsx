@@ -11,6 +11,11 @@ describe('Components', () => {
       expect(screen.getByRole('button', { name })).toBeInTheDocument()
     }
     expect(screen.getByText('card title')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: 'message' })).toBeInTheDocument()
+    expect(screen.getByText('loading notes')).toBeInTheDocument()
+    expect(screen.getAllByRole('alert')).toHaveLength(2)
+    expect(screen.getByRole('link', { name: 'back to the board' })).toBeInTheDocument()
+    expect(screen.getByText('fill centres it in its container')).toBeInTheDocument()
     expectLowercase(container)
   })
 })

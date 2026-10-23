@@ -1,17 +1,22 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
-import { useDotLattice } from '@md-viz/ui'
+import { useGridLattice } from '@md-viz/ui'
 import { StatusGrid } from '../../src/renderer/src/status-grid'
 import { SyncGrids } from '../../src/renderer/src/sync-grids'
 import { COLUMN_WIDTH, MIN_GAP } from '../../src/renderer/src/sync-layout'
 
 vi.mock('@md-viz/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@md-viz/ui')>()),
-  useDotLattice: vi.fn(),
+  useGridLattice: vi.fn(),
 }))
 vi.mock('../../src/renderer/src/status-grid', () => ({
   StatusGrid: vi.fn(({ label }: { label: string }) => <section aria-label={label} />),
 }))
+
+const onCellChange = vi.fn()
+const ref = { current: null }
+const latticeCell = (cell: number | null) =>
+  vi.mocked(useGridLattice).mockReturnValue({ ref, cell, onCellChange })
 
 const note = (id: string) => ({ id, title: id })
 const grids = () =>
@@ -23,6 +28,10 @@ const grids = () =>
   ) as Record<string, ComponentProps<typeof StatusGrid>>
 
 describe('SyncGrids', () => {
+  beforeEach(() => {
+    latticeCell(null)
+  })
+
   afterEach(() => {
     vi.clearAllMocks()
   })
@@ -52,36 +61,41 @@ describe('SyncGrids', () => {
     expect(grids().deleted.reference).toBe(false)
   })
 
-  it('has no lattice and the minimum gap until the reference reports its cell', () => {
+  it('only lines the page up while the reference grid has notes', () => {
+    const { rerender } = render(
+      <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
+    )
+    expect(useGridLattice).toHaveBeenLastCalledWith(true)
+
+    rerender(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
+    expect(useGridLattice).toHaveBeenLastCalledWith(false)
+  })
+
+  it('gives the reference grid the lattice ref and cell callback', () => {
+    render(<SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />)
+
+    expect(grids().updated.gridRef).toBe(ref)
+    expect(grids().updated.onCellChange).toBe(onCellChange)
+  })
+
+  it('has the minimum gap and no cell step until the reference reports its cell', () => {
     const { container } = render(
       <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
 
-    expect(vi.mocked(useDotLattice).mock.lastCall![1]).toBeNull()
     expect(grids().deleted.cellStep).toBeUndefined()
     expect(container.firstElementChild).toHaveStyle({ columnGap: `${MIN_GAP}px` })
   })
 
   it('follows the reference cell: spacing for the other grids and a gap in whole spacings', () => {
+    latticeCell(20)
     const { container } = render(
       <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
 
-    act(() => grids().updated.onCellChange(20))
-
-    expect(vi.mocked(useDotLattice).mock.lastCall![1]).toBe(20)
     expect(grids().deleted.cellStep).toBe(20)
     // the column pitch (272 + 32 = 304) rounds up to 15 spacings of 20, so the gap is 300 - 272.
     const pitch = Math.ceil((COLUMN_WIDTH + MIN_GAP) / 20) * 20
     expect(container.firstElementChild).toHaveStyle({ columnGap: `${pitch - COLUMN_WIDTH}px` })
-  })
-
-  it('ignores a reported cell while there are no notes', () => {
-    render(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
-
-    act(() => grids().updated.onCellChange(20))
-
-    expect(vi.mocked(useDotLattice).mock.lastCall![1]).toBeNull()
-    expect(grids().deleted.cellStep).toBeUndefined()
   })
 })

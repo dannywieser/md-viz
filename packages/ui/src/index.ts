@@ -10,10 +10,12 @@ export {
   CardFooter,
 } from './components/card'
 export { AppHeader } from './components/app-header'
+export { Message } from './components/message'
 export { Logo } from './components/logo'
 export { Wordmark } from './components/wordmark'
-export { NoteGrid, NOTE_COLORS } from './components/note-grid'
+export { NoteGrid, NOTE_COLORS, DEFAULT_NOTE_COLOR } from './components/note-grid'
 export type { Note } from './components/note-grid'
 export { makeFakeNotes } from './lib/fake-notes'
 export { latticeSpacing } from './lib/note-grid-layout'
 export { useDotLattice } from './lib/use-dot-lattice'
+export { useGridLattice } from './lib/use-grid-lattice'
