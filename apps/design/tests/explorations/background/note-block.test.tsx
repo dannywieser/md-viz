@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import { NoteBlock } from '../../src/routes/note-block'
+import { NoteBlock } from '../../../src/explorations/background/note-block'
 
 describe('NoteBlock', () => {
   it('draws columns x rows squares of the cell size, hidden from assistive tech', () => {

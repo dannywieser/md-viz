@@ -1,4 +1,4 @@
-import { modes, variants } from '../../src/routes/background-variants'
+import { modes, variants } from '../../../src/explorations/background/background-variants'
 
 const input = { mode: 'light', cell: 6, strength: 1 } as const
 

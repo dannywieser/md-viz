@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { BackgroundSwatch } from '../../src/routes/background-swatch'
-import { variants } from '../../src/routes/background-variants'
+import { BackgroundSwatch } from '../../../src/explorations/background/background-swatch'
+import { variants } from '../../../src/explorations/background/background-variants'
 
 const variant = (id: string) => variants.find((candidate) => candidate.id === id)!
 const cards = (container: HTMLElement) => container.querySelectorAll('.shadow-hard')

@@ -95,3 +95,15 @@ Renamed every PascalCase source and test file in apps/* to kebab-case (app.tsx, 
 
 ### [2026-10-23 08:30:21] Decision
 Added `eslint-plugin-unicorn` 78.0.0 (root devDependency) with `unicorn/filename-case` set to kebab-case for ts/tsx files; verified it flags a `BadName.ts`; lint is clean on the repo. CLAUDE.md notes the rule.
+
+### [2026-10-23 08:31:56] User
+yes, that makes sense
+
+### [2026-10-23 08:31:56] Decision
+Keep the `**/tests/**` override for `react/no-multi-comp`: stub components in `vi.mock` factories are not component definitions. Branch refactor-components-and-tests committed and PR dannywieser/md-viz#2 opened; log update not yet committed.
+
+### [2026-10-23 08:37:24] User
+For the design board, move the background exploration into "explorations/background"; suggest how to make explorations self-contained, including routing. Then: 1. drop the old /background URL, 2. build the index page, 3. leave the lint boundary rule out.
+
+### [2026-10-23 08:37:24] Decision
+Implemented explorations in apps/design: `src/explorations/<slug>/` folders (background moved from `routes/`, tests under `tests/explorations/<slug>/`), each exporting an `Exploration` (slug, title, description, lazy `Page`) from `index.ts`; `registry.ts` lists them; `route.ts` resolves `/` (board), `/explorations` (index), `/explorations/<slug>`, unknown slug shows not-found; new files explorations-index, exploration-page, exploration-not-found. `/background` dropped. No lint boundary rule. Deviation from the proposal: `Exploration` carries a module-level `lazy` `Page` instead of a `load` function because react-hooks lint forbids creating the lazy component during render. CLAUDE.md updated. Verified in the browser; format, lint, typecheck, coverage (design 100%) and build green.

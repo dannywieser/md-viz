@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import { MockCard } from '../../src/routes/mock-card'
+import { MockCard } from '../../../src/explorations/background/mock-card'
 
 describe('MockCard', () => {
   it('pads the card when it is not aligned to the lattice', () => {

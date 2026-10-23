@@ -1,11 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Background } from '../../src/routes/background'
-import { BackgroundSwatch } from '../../src/routes/background-swatch'
-import { variants } from '../../src/routes/background-variants'
-import { expectLowercase } from '../lowercase'
+import { Background } from '../../../src/explorations/background/background'
+import { BackgroundSwatch } from '../../../src/explorations/background/background-swatch'
+import { variants } from '../../../src/explorations/background/background-variants'
+import { expectLowercase } from '../../lowercase'
 
-vi.mock('../../src/routes/background-swatch', () => ({
+vi.mock('../../../src/explorations/background/background-swatch', () => ({
   BackgroundSwatch: vi.fn(() => <div />),
 }))
 
