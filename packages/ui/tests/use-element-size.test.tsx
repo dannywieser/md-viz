@@ -53,4 +53,19 @@ describe('useElementSize', () => {
 
     expect(screen.getByTestId('size')).toHaveTextContent('350x420')
   })
+
+  it('keeps the same state when a resize leaves the size unchanged', () => {
+    render(<Probe />)
+
+    act(() => notify())
+
+    expect(screen.getByTestId('size')).toHaveTextContent('200x100')
+  })
+
+  it('measures once when the browser has no ResizeObserver', () => {
+    vi.unstubAllGlobals()
+    render(<Probe />)
+
+    expect(screen.getByTestId('size')).toHaveTextContent('200x100')
+  })
 })

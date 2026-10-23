@@ -10,7 +10,8 @@
   "scripts": {
     "generate": "openapi-ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "coverage": "vitest run --coverage"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",

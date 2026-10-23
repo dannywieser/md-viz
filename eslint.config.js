@@ -1,8 +1,10 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import unicorn from 'eslint-plugin-unicorn'
 
 export default tseslint.config(
   {
@@ -24,12 +26,19 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    settings: { react: { version: '19' } },
     plugins: {
+      react,
+      unicorn,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // file names are kebab-case.
+      'unicorn/filename-case': ['error', { case: 'kebabCase' }],
+      // one component definition per file.
+      'react/no-multi-comp': 'error',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
@@ -37,6 +46,16 @@ export default tseslint.config(
     // shadcn-generated components export variants alongside components.
     files: ['packages/ui/src/components/**'],
     rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
+    // test doubles for components (inside vi.mock factories) are not component definitions.
+    files: ['**/tests/**'],
+    rules: { 'react/no-multi-comp': 'off' },
+  },
+  {
+    // shadcn's card is one file of related components.
+    files: ['packages/ui/src/components/card.tsx'],
+    rules: { 'react/no-multi-comp': 'off' },
   },
   {
     files: ['**/*.config.{js,ts}'],

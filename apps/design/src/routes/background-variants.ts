@@ -3,6 +3,8 @@ import type { CSSProperties } from 'react'
 
 export type Mode = 'light' | 'dark'
 
+export type Layout = 'single' | 'several'
+
 /** solarized values for a preview, so light and dark can sit side by side whatever the page theme is. */
 export const modes: Record<Mode, { background: string; card: string; text: string; dot: string }> =
   {

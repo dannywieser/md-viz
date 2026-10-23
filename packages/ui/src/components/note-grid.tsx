@@ -1,3 +1,4 @@
+/* eslint-disable react/no-multi-comp -- `Cells`, the memo'd item layer, is internal to the grid and stays beside it (agreed exception). */
 import * as React from 'react'
 import { cn } from 'cn'
 import { Card } from './card'

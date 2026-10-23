@@ -1,5 +1,5 @@
 import type { OpenAPIHono } from '@hono/zod-openapi'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../src/app.ts'
 import { createStore, type Store } from '../src/store.ts'
 
@@ -64,6 +64,7 @@ describe('api', () => {
   it('requires fields on the list endpoint', async () => {
     expect((await app.request('/notes')).status).toBe(400)
     expect((await app.request('/notes?fields=')).status).toBe(400)
+    expect((await app.request('/notes?fields=,')).status).toBe(400)
   })
 
   it('returns all fields of one note', async () => {
@@ -109,6 +110,13 @@ describe('api', () => {
     expect(await res.json()).toHaveProperty('error')
   })
 
+  it('names the input when the whole body is invalid', async () => {
+    const res = await put('null')
+
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { error: string }).error).toMatch(/^input: /)
+  })
+
   it('stores nothing from a rejected batch', async () => {
     await put({
       notes: [
@@ -122,5 +130,19 @@ describe('api', () => {
   it('allows cross-origin requests', async () => {
     const res = await app.request('/health', { headers: { origin: 'http://localhost:5175' } })
     expect(res.headers.get('access-control-allow-origin')).toBe('*')
+  })
+
+  it('answers 500 without leaking details when the store fails', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(store, 'listNotes').mockImplementation(() => {
+      throw new Error('disk on fire')
+    })
+
+    const res = await app.request('/notes?fields=title')
+
+    expect(res.status).toBe(500)
+    expect(await res.json()).toEqual({ error: 'internal error' })
+    expect(log).toHaveBeenCalled()
+    vi.restoreAllMocks()
   })
 })

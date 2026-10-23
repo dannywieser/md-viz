@@ -199,4 +199,12 @@ describe('NoteGrid', () => {
     const text = container.textContent
     expect(text).toBe(text.toLowerCase())
   })
+
+  it('draws nothing until its container has a size', () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(0)
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(0)
+    const { container } = render(<NoteGrid notes={makeNotes(12)} />)
+
+    expect(container.querySelectorAll('.note-square')).toHaveLength(0)
+  })
 })

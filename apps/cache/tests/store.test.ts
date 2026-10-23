@@ -97,4 +97,14 @@ describe('store', () => {
       store.deleteNote('nope')
     }).not.toThrow()
   })
+
+  it('rolls back the whole batch when a note cannot be stored', () => {
+    const batch = [
+      { id: 'good', fields: { title: 'x' } },
+      { id: 'bad', fields: { title: undefined as unknown as string } },
+    ]
+
+    expect(() => store.upsertNotes(batch)).toThrow()
+    expect(store.getNote('good')).toBeNull()
+  })
 })

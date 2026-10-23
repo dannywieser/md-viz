@@ -1,18 +1,39 @@
 import { render, screen } from '@testing-library/react'
-import { Card, CardContent, CardHeader, CardTitle } from '../src'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../src'
 
 describe('Card', () => {
-  it('renders its title and content', () => {
+  it('renders every part with its slot', () => {
     render(
-      <Card>
+      <Card className="extra">
         <CardHeader>
           <CardTitle>Title</CardTitle>
+          <CardDescription>Description</CardDescription>
+          <CardAction>Action</CardAction>
         </CardHeader>
         <CardContent>Body</CardContent>
+        <CardFooter>Footer</CardFooter>
       </Card>,
     )
 
-    expect(screen.getByText('Title')).toBeInTheDocument()
-    expect(screen.getByText('Body')).toBeInTheDocument()
+    const slots = {
+      Title: 'card-title',
+      Description: 'card-description',
+      Action: 'card-action',
+      Body: 'card-content',
+      Footer: 'card-footer',
+    }
+    for (const [text, slot] of Object.entries(slots)) {
+      expect(screen.getByText(text)).toHaveAttribute('data-slot', slot)
+    }
+    expect(screen.getByText('Title').closest('[data-slot="card-header"]')).toBeInTheDocument()
+    expect(screen.getByText('Title').closest('[data-slot="card"]')).toHaveClass('extra')
   })
 })

@@ -27,6 +27,16 @@ describe('state file', () => {
     expect(await readState(file)).toEqual({ lastFolder: null, syncs: {} })
   })
 
+  it.each([
+    ['null', 'null'],
+    ['an unexpected shape', '{"lastFolder":5,"syncs":"nope"}'],
+  ])('reads an empty state when the file holds %s', async (_, content) => {
+    await updateState(file, () => {})
+    await writeFile(file, content)
+
+    expect(await readState(file)).toEqual({ lastFolder: null, syncs: {} })
+  })
+
   it('round-trips changes, creating the directory', async () => {
     const lastSync = {
       syncedAt: '2026-10-20T09:30:00.000Z',

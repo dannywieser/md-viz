@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { configureCacheClient } from '@md-viz/api-client/cache'
-import { App } from './App'
+import { App } from './app'
 import { createQueryClient } from './query-client'
 import './index.css'
 

@@ -15,6 +15,17 @@ describe('scanMarkdown', () => {
     expect(mdCount).toBe(18)
   })
 
+  it('throttles progress reports to the interval, still reporting the final totals', async () => {
+    const updates: ScanProgress[] = []
+
+    const { mdCount } = await scanMarkdown(DEMO, (p) => updates.push(p), {
+      progressIntervalMs: 60_000,
+    })
+
+    expect(updates).toHaveLength(2)
+    expect(updates.at(-1)).toMatchObject({ mdFiles: mdCount })
+  })
+
   it('reports progress, ending with the final totals', async () => {
     const updates: ScanProgress[] = []
 
