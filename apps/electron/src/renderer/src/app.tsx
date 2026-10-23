@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { AppHeader, Button, Message } from '@md-viz/ui'
 import type { LastSync } from '../../shared/ipc'
-import { FolderCard } from './folder-card'
-import { SyncGrids } from './sync-grids'
-import { useScan } from './use-scan'
-import { useSync } from './use-sync'
+import { FolderCard } from './components/folder-card'
+import { SyncGrids } from './components/sync-grids'
+import { useScan } from './hooks/use-scan'
+import { useSync } from './hooks/use-sync'
 
 // room in the header for the window controls drawn over it: the macOS traffic lights on the left,
 // the windows and linux buttons on the right.

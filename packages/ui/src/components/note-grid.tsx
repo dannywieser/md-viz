@@ -3,7 +3,7 @@ import * as React from 'react'
 import { cn } from 'cn'
 import { Card } from './card'
 import { layoutGrid } from '../lib/note-grid-layout'
-import { useElementSize } from '../lib/use-element-size'
+import { useElementSize } from '../hooks/use-element-size'
 
 export const NOTE_COLORS = 10
 

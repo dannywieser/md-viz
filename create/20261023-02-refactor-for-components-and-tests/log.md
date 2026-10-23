@@ -113,3 +113,9 @@ Shared-component question (ErrorMessage, Message duplicates; others?), then "tak
 
 ### [2026-10-23 08:44:20] Decision
 Added to packages/ui: `Message` (tone muted|error, fill, action; lowercases its text; replaces web `Message`, Electron `ErrorCard`, design not-found card and the loading fallback), `useGridLattice` (ref + cell + onCellChange, `enabled` flag; used by web cache-note-grid and electron sync-grids) and `DEFAULT_NOTE_COLOR` (replaces the NOTE_COLOR copies). Deleted web message.tsx and electron error-card.tsx with their tests; added ui tests for Message and useGridLattice; updated web/electron/design tests and CLAUDE.md. Lint rule `react-hooks/refs` needed the hook result destructured before passing ref. Format, lint, typecheck, build and coverage green.
+
+### [2026-10-23 08:55:17] User
+Wants components/ and hooks/ used consistently with tests mirroring. Answers: 1. yes, lib for the rest; 2. exclude design entirely; 3. just record the layout in CLAUDE.md.
+
+### [2026-10-23 08:55:17] Decision
+Moved files (git mv, imports and vi.mock paths rewritten by script): web cache-note-grid -> components/, query-client -> lib/; Electron renderer folder-card, status-grid, sync-grids -> components/, use-scan, use-sync -> hooks/, error-message, sync-layout -> lib/; ui use-dot-lattice, use-element-size, use-grid-lattice -> hooks/ (lib keeps fake-notes, note-grid-layout, pixel-glyphs, pixel-logo, utils). Tests mirror under tests/{components,hooks,lib} (Electron's under tests/renderer/). apps/design and Electron src/main untouched. CLAUDE.md records the layout; no lint rule. Format, lint, typecheck, build and coverage green.

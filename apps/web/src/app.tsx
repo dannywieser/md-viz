@@ -1,5 +1,5 @@
 import { AppHeader } from '@md-viz/ui'
-import { CacheNoteGrid } from './cache-note-grid'
+import { CacheNoteGrid } from './components/cache-note-grid'
 
 export function App() {
   return (

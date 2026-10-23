@@ -17,5 +17,5 @@ export { NoteGrid, NOTE_COLORS, DEFAULT_NOTE_COLOR } from './components/note-gri
 export type { Note } from './components/note-grid'
 export { makeFakeNotes } from './lib/fake-notes'
 export { latticeSpacing } from './lib/note-grid-layout'
-export { useDotLattice } from './lib/use-dot-lattice'
-export { useGridLattice } from './lib/use-grid-lattice'
+export { useDotLattice } from './hooks/use-dot-lattice'
+export { useGridLattice } from './hooks/use-grid-lattice'

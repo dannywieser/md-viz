@@ -2,11 +2,11 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Api, LastFolder, LastSync } from '../../src/shared/ipc'
 import { App } from '../../src/renderer/src/app'
-import { useScan } from '../../src/renderer/src/use-scan'
-import { useSync } from '../../src/renderer/src/use-sync'
+import { useScan } from '../../src/renderer/src/hooks/use-scan'
+import { useSync } from '../../src/renderer/src/hooks/use-sync'
 
-vi.mock('../../src/renderer/src/use-scan', () => ({ useScan: vi.fn() }))
-vi.mock('../../src/renderer/src/use-sync', () => ({ useSync: vi.fn() }))
+vi.mock('../../src/renderer/src/hooks/use-scan', () => ({ useScan: vi.fn() }))
+vi.mock('../../src/renderer/src/hooks/use-sync', () => ({ useSync: vi.fn() }))
 
 const scan = vi.fn()
 const reset = vi.fn()
@@ -155,8 +155,8 @@ describe('App', () => {
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh)')
     vi.resetModules()
     const { App: MacApp } = await import('../../src/renderer/src/app')
-    const { useScan: freshScan } = await import('../../src/renderer/src/use-scan')
-    const { useSync: freshSync } = await import('../../src/renderer/src/use-sync')
+    const { useScan: freshScan } = await import('../../src/renderer/src/hooks/use-scan')
+    const { useSync: freshSync } = await import('../../src/renderer/src/hooks/use-sync')
     vi.mocked(freshScan).mockReturnValue(idleScan)
     vi.mocked(freshSync).mockReturnValue(idleSync)
     document.body.innerHTML = ''
