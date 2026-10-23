@@ -12,8 +12,9 @@ Writes the plan for the active create session and decides how implementation pro
 
 1. Read `create/.current` to get the slug. If it is missing or the folder doesn't exist, tell the user to run `/create <title>` first and stop.
 2. Read `create/<slug>/log.md` (the full conversation so far) and any other documents in the session folder. Append this `/create-plan` invocation to the log (format in the `create` skill, including keeping the numbering of any questions or options).
+   Check the log header for `- **Kind:** fix`; no Kind line means a create session. A fix session (started by `/fix`) uses the fix template in step 4.
 3. Look at the current repo structure so the plan fits what exists.
-4. Write `create/<slug>/plan.md` containing:
+4. Write `create/<slug>/plan.md`. For a **fix** session use the fix template below instead of this list; otherwise it contains:
    - **Goal** - one short paragraph of the intent
    - **Scope** - what is in and explicitly out
    - **Technologies** - languages, frameworks, libraries, tools, and why
@@ -21,6 +22,15 @@ Writes the plan for the active create session and decides how implementation pro
    - **Files** - every file to create or modify, with a one-line purpose each
    - **Steps** - an ordered, numbered implementation sequence, each small enough to review. For any session that adds or changes code the plan must include: a unit test for every new or changed source file (per the testing conventions in `CLAUDE.md`), and a final step that runs `pnpm coverage` and brings every workspace to at least 95% (lines, statements, branches, functions). A plan without these steps is incomplete.
    - **Open questions / risks** - anything unresolved (ask the user before writing if it blocks the plan)
+     **Fix template** (a fix session):
+   - **Symptom and repro** - what goes wrong, expected vs actual, exact steps to reproduce
+   - **Root cause** - confirmed, or the hypothesis and how step 1 of the plan confirms it
+   - **Fix approach** - the chosen change and why; alternatives considered, briefly
+   - **Scope** - what is in and explicitly out (no drive-by refactors)
+   - **Files** - the files to modify (new files only if unavoidable), a one-line purpose each
+   - **Steps** - ordered and numbered: (1) a regression test that fails for the right reason, or, when the bug cannot be unit tested, a documented manual repro; (2) the fix; (3) the test passing; (4) unit tests for any other changed source file per `CLAUDE.md`; (5) a final step that runs `pnpm coverage` and brings every workspace to at least 95%. A fix plan without the regression test and the coverage step is incomplete.
+   - **Regression risk** - other code or behavior touching the same area, and how it is checked
+   - **Open questions / risks** - anything unresolved
 5. Run `bash .claude/skills/create/scripts/set-status.sh <slug> planned` to mark the session in the `create/README.md` index.
 6. Summarize the plan to the user in a few lines and point at `plan.md`. Let them request changes; revise `plan.md` and log each revision.
 7. Then ask how to proceed. Offer options such as: implement everything; step by step (pause after each numbered step); file by file; or a custom approach.

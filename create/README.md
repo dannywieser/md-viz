@@ -2,15 +2,18 @@
 
 A lightweight, tracked way to design and build something in this repo by talking it through with Claude first. Each piece of work is a **session**: a folder in `create/` holding the conversation, the plan and a summary, so the reasoning behind the code is never lost.
 
-Sessions are driven by three slash commands, defined in `.claude/skills/`:
+Sessions are driven by these slash commands, defined in `.claude/skills/`:
 
 | Command | Phase | Produces |
 | --- | --- | --- |
 | `/create <title>` | Discuss and clarify the intent: what, why, scope, constraints. No code yet. | `log.md`, index entry (`review`) |
+| `/fix <title>` | Same as `/create`, for a bug in existing functionality: reproduce it and find the root cause. Slug gets a `fix-` prefix, index title `fix: <title>`. | `log.md` (`Kind: fix`), index entry (`review`) |
 | `/create-plan` | Write the plan (with unit tests and a 95% coverage step), then choose how to implement it (everything, step by step, file by file). Implementation follows. | `plan.md`, status `planned` |
 | `/create-complete` | Re-run and report coverage (95% per workspace), write the summary, fold lessons back into `CLAUDE.md` / `README.md`, close the session. | `summary.md`, status `complete` |
 
 ## Session folder
+
+`/create-plan` and `/create-complete` serve both kinds: for a fix they write a plan with symptom, root cause, a regression-test-first sequence and regression risk, and a summary with symptom, root cause, fix and how verified.
 
 Each session lives in `create/YYYYMMDD-xx-<title>/` (`xx` is the day's sequence number):
 
@@ -25,7 +28,8 @@ Each session lives in `create/YYYYMMDD-xx-<title>/` (`xx` is the day's sequence 
 | Status | Meaning | Set by |
 | --- | --- | --- |
 | `review` | Intent is being discussed and clarified | `/create` |
-| `planned` | `plan.md` written; implementation under way or ready | `/create-plan` |
+| `planned` | `plan.md` written; implementation under way or ready | `/fix <title>` | Same as `/create`, for a bug in existing functionality: reproduce it and find the root cause. Slug gets a `fix-` prefix, index title `fix: <title>`. | `log.md` (`Kind: fix`), index entry (`review`) |
+| `/create-plan` |
 | `complete` | Work done and `summary.md` written | `/create-complete` |
 
 Status changes are made with `bash .claude/skills/create/scripts/set-status.sh <slug> <status>`; the index row is added by `new-session.sh`.
