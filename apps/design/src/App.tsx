@@ -1,34 +1,26 @@
-import { AppHeader, Button } from '@md-viz/ui'
-import { Components } from './sections/Components'
-import { Grid } from './sections/Grid'
-import { Guidelines } from './sections/Guidelines'
-import { LogoSection } from './sections/Logo'
-import { NoteGridDemo } from './sections/NoteGridDemo'
-import { Palette } from './sections/Palette'
-import { Spacing } from './sections/Spacing'
-import { Typography } from './sections/Typography'
+import { AppHeader, Button, buttonVariants } from '@md-viz/ui'
+import { Board } from './Board'
+import { Background } from './routes/Background'
 import { useTheme } from './theme'
 
 export function App() {
   const { theme, toggle } = useTheme()
+  const onBackground = window.location.pathname === '/background'
 
   return (
     <div className="min-h-screen">
-      <AppHeader title="md-viz design" subtitle="design">
+      <AppHeader title="md-viz design" subtitle={onBackground ? 'background' : 'design'}>
+        <a
+          href={onBackground ? '/' : '/background'}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          {onBackground ? 'board' : 'background'}
+        </a>
         <Button variant="outline" size="sm" onClick={toggle}>
           {theme === 'dark' ? 'switch to light' : 'switch to dark'}
         </Button>
       </AppHeader>
-      <main className="mx-auto max-w-5xl space-y-16 p-8">
-        <Guidelines />
-        <LogoSection />
-        <Palette />
-        <Typography />
-        <Spacing />
-        <Grid />
-        <Components />
-        <NoteGridDemo />
-      </main>
+      {onBackground ? <Background /> : <Board />}
     </div>
   )
 }

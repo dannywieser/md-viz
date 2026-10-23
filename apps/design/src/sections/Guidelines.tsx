@@ -13,13 +13,13 @@ const guidelines = [
   },
   {
     name: 'cards',
-    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px black shadow in both and right angle crop marks at the corners.',
-    example: 'white card · 4px black shadow · crop marks',
+    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px black shadow in both and no other decoration.',
+    example: 'white card · 4px black shadow',
   },
   {
-    name: 'grid paper',
-    rule: 'the page background is grid paper: a 16px cell with a stronger line every 5th cell. layouts and spacing snap to the grid where they can.',
-    example: '16px cell · major every 5th · set by --grid-size',
+    name: 'dot grid',
+    rule: 'the page background is a subdued dot grid, a dot at every cell corner, so the note grid stays the focus. with several cards the one with the most notes sets the cell and the others use whole multiples of it, so cards and spacing sit on the dots. cells over 32px are divided evenly so the dots stay close.',
+    example: '16px dot spacing · densest card sets the cell · set by --grid-size',
   },
   {
     name: 'pixel logo',

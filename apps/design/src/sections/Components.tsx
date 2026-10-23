@@ -38,7 +38,7 @@ export function Components() {
         <AppHeader title="md-viz" className="static">
           <Button size="sm">action</Button>
         </AppHeader>
-        <div className="bg-background bg-grid h-24" />
+        <div className="bg-background bg-dots h-24" />
       </div>
       <h3 className="text-sm font-bold">card</h3>
       <Card className="max-w-sm">

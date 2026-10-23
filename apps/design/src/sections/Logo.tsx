@@ -43,7 +43,7 @@ export function LogoSection() {
           <div className="bg-card p-4">
             <Wordmark cell={6} />
           </div>
-          <div className="bg-grid bg-background p-4">
+          <div className="bg-dots bg-background p-4">
             <Wordmark cell={3} />
           </div>
           <div className="dark bg-card p-4">

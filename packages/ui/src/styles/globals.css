@@ -62,8 +62,7 @@
   --note-8: color-mix(in srgb, var(--sol-magenta) 55%, var(--note-mute));
   --note-9: var(--sol-base00);
 
-  --grid-line: color-mix(in srgb, var(--sol-base1) 25%, transparent);
-  --grid-line-major: color-mix(in srgb, var(--sol-base1) 45%, transparent);
+  --grid-dot: color-mix(in srgb, var(--sol-base1) 55%, transparent);
 }
 
 .dark {
@@ -87,8 +86,7 @@
   --input: color-mix(in srgb, var(--sol-base01) 60%, transparent);
   --ring: var(--sol-blue);
 
-  --grid-line: var(--sol-base02);
-  --grid-line-major: color-mix(in srgb, var(--sol-base01) 35%, transparent);
+  --grid-dot: color-mix(in srgb, var(--sol-base01) 55%, transparent);
 }
 
 @theme inline {
@@ -138,37 +136,12 @@
   --radius-xl: var(--radius);
 }
 
-/* crop marks: a right angle bracket 12px outside each corner, its legs running 12px along the edges. */
-@utility crop-marks {
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -12px;
-    pointer-events: none;
-    background:
-      linear-gradient(var(--foreground), var(--foreground)) left 0 top 0 / 12px 1px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) left 0 top 0 / 1px 12px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) right 0 top 0 / 12px 1px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) right 0 top 0 / 1px 12px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) left 0 bottom 0 / 12px 1px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) left 0 bottom 0 / 1px 12px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) right 0 bottom 0 / 12px 1px no-repeat,
-      linear-gradient(var(--foreground), var(--foreground)) right 0 bottom 0 / 1px 12px no-repeat;
-  }
-}
-
-/* grid paper: 1px minor lines every --grid-size, stronger major lines every 5th. */
-@utility bg-grid {
-  background-image:
-    linear-gradient(var(--grid-line-major) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line-major) 1px, transparent 1px),
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size:
-    calc(var(--grid-size) * 5) calc(var(--grid-size) * 5),
-    calc(var(--grid-size) * 5) calc(var(--grid-size) * 5),
-    var(--grid-size) var(--grid-size),
-    var(--grid-size) var(--grid-size);
+/* dot grid: a 2px dot every --grid-size, from the origin --grid-origin-x/y (a lattice corner, default the page corner); cards on the lattice line up with the dots. */
+@utility bg-dots {
+  background-image: radial-gradient(circle at center, var(--grid-dot) 1px, transparent 1.5px);
+  background-size: var(--grid-size) var(--grid-size);
+  background-position: calc(var(--grid-origin-x, 0px) + var(--grid-size) / 2)
+    calc(var(--grid-origin-y, 0px) + var(--grid-size) / 2);
 }
 
 @layer base {
@@ -176,7 +149,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background bg-grid text-foreground;
+    @apply bg-background bg-dots text-foreground;
   }
 }
 

@@ -20,6 +20,10 @@ type NoteGridProps = {
   frame?: (grid: React.ReactNode) => React.ReactNode
   /** px the frame adds on each side of the grid; kept out of the space the grid is laid out in. */
   inset?: number
+  /** use only whole multiples of this cell, so grids next to each other share a lattice. */
+  cellStep?: number
+  /** called with the cell size (px) whenever the layout changes it. */
+  onCellChange?: (cell: number) => void
   className?: string
 }
 
@@ -58,13 +62,29 @@ const Cells = React.memo(function Cells({ notes, columns, cell }: CellsProps) {
   )
 })
 
-function NoteGrid({ notes, height: fixedHeight, frame, inset = 0, className }: NoteGridProps) {
+function NoteGrid({
+  notes,
+  height: fixedHeight,
+  frame,
+  inset = 0,
+  cellStep,
+  onCellChange,
+  className,
+}: NoteGridProps) {
   const areaRef = React.useRef<HTMLDivElement>(null)
   const size = useElementSize(areaRef)
   const width = Math.max(0, size.width - 2 * inset)
   const height = Math.max(0, (fixedHeight ?? size.height) - 2 * inset)
   const [hovered, setHovered] = React.useState<number | null>(null)
-  const { columns, rows, cell } = layoutGrid({ count: notes.length, width, height })
+  const { columns, rows, cell } = layoutGrid({
+    count: notes.length,
+    width,
+    height,
+    multipleOf: cellStep,
+  })
+  React.useEffect(() => {
+    if (notes.length > 0 && width > 0 && height > 0) onCellChange?.(cell)
+  }, [cell, notes.length, width, height, onCellChange])
   const gridWidth = columns * cell
   const gridHeight = rows * cell
   const cellX = (i: number) => (i % columns) * cell + 1.5

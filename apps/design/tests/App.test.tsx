@@ -35,6 +35,12 @@ describe('App', () => {
     }
   })
 
+  it('links to the background exploration from the board', () => {
+    render(<App />)
+
+    expect(screen.getByRole('link', { name: 'background' })).toHaveAttribute('href', '/background')
+  })
+
   it('follows the lowercase text only guideline', () => {
     render(<App />)
 

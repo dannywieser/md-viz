@@ -1,4 +1,4 @@
-import { layoutGrid } from '../src/lib/note-grid-layout'
+import { latticeSpacing, layoutGrid } from '../src/lib/note-grid-layout'
 
 const box = { width: 400, height: 300 }
 
@@ -44,5 +44,39 @@ describe('layoutGrid', () => {
 
     expect(cell).toBe(1)
     expect(columns * rows).toBeGreaterThanOrEqual(1000)
+  })
+})
+
+describe('layoutGrid with multipleOf', () => {
+  it('uses the largest whole multiple that fits', () => {
+    const { cell, columns, rows } = layoutGrid({ count: 50, ...box, multipleOf: 16 })
+
+    expect(cell % 16).toBe(0)
+    expect(columns * cell).toBeLessThanOrEqual(box.width)
+    expect(rows * cell).toBeLessThanOrEqual(box.height)
+    expect(layoutGrid({ count: 50, ...box }).cell).toBeGreaterThanOrEqual(cell)
+  })
+
+  it('falls back to any whole pixel when not even one multiple fits', () => {
+    const { cell, columns, rows } = layoutGrid({ count: 5000, ...box, multipleOf: 16 })
+
+    expect(cell).toBe(layoutGrid({ count: 5000, ...box }).cell)
+    expect(columns * rows).toBeGreaterThanOrEqual(5000)
+  })
+})
+
+describe('latticeSpacing', () => {
+  it('divides large cells evenly so the dots stay close together', () => {
+    expect(latticeSpacing(32)).toBe(32)
+    expect(latticeSpacing(64)).toBe(32)
+    expect(latticeSpacing(167)).toBeCloseTo(167 / 6)
+    expect(latticeSpacing(167)).toBeLessThanOrEqual(32)
+  })
+
+  it('is the cell itself from the base up and a whole multiple below it', () => {
+    expect(latticeSpacing(16)).toBe(16)
+    expect(latticeSpacing(24)).toBe(24)
+    expect(latticeSpacing(6)).toBe(18)
+    expect(latticeSpacing(1)).toBe(16)
   })
 })
