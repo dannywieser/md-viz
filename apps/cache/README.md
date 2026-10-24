@@ -21,6 +21,8 @@ Node prints an `ExperimentalWarning` for `node:sqlite` on start; that is expecte
 
 A note is an `id` (chosen by the client) plus string fields such as `title` and `body`. IDs and field names are non-empty and must not contain `/`.
 
+The fields are free-form; the cache does not interpret them. The Electron app writes `title`, `body`, `tags` (a JSON array string), `created` and `modified` (ISO 8601), and `source` (`file` or `bear`, which scopes what a sync may delete). Notes from Bear use Bear's note id as their id, notes from a folder a hash of their relative path.
+
 | request                       | does                                                                                                           |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `PUT /notes`                  | upsert a batch: `{ "notes": [{ "id": "...", "fields": { "title": "..." } }] }`                                 |
