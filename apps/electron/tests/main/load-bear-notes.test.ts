@@ -8,7 +8,7 @@ const row = (overrides: Partial<BearRow> = {}): BearRow => ({
   id: 'B1',
   title: 'plan',
   locked: 'no',
-  tags: ['garden', 'garden/beds'],
+  tags: ['#garden', '#garden/beds'],
   created: '2026-10-01T10:00:00Z',
   modified: '2026-10-02T11:30:00Z',
   location: 'notes',

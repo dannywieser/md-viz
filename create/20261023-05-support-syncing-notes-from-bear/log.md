@@ -116,3 +116,27 @@ commit and next
 
 ### [2026-10-23 19:48:01] Claude
 Committed step 7 (17b964a). Step 8 done (docs). CLAUDE.md: intro line, Electron renderer paragraph (SourceSelect, SyncTarget hooks, open()), Electron sync paragraph rewritten (loaders + syncNotes pipeline, Note, fields, file and Bear loaders, deletion scoping), Electron state paragraph rewritten (lastSource, syncKey, SyncTarget IPC, selectSource/loadLast), apps/cache bullet lists the fields the sync writes, shadcn bullet points at the new guideline. apps/cache/README.md: free-form field note (title, body, tags JSON, created, modified, source). Addition not in plan.md: the CLAUDE.md rule that design decisions go on the design board, so a new guideline 'inputs and focus' (heavy border, hard shadow, offset primary focus ring) was added to apps/design/src/sections/guidelines.tsx. format, lint, typecheck pass; design 82 tests pass and coverage is above thresholds. Paused for review. Not committed.
+
+### [2026-10-23 19:49:07] User
+commit and next
+
+### [2026-10-23 19:49:07] Claude
+Committed step 8 (1a0be35). Step 9 done: pnpm format:check, lint, typecheck and coverage all pass (exit 0). Test counts: cache 34, api-client 6, ui 112, design 82, electron 137, web 12; every workspace is above 95% (electron 100/98.8/100/100, ui 99.6/98.7/100/100, design 99.4/100/98.9/99.4). No code changes in this step. Paused for review; step 10 is the manual check with pnpm dev:all.
+
+### [2026-10-23 19:49:37] User
+commit and next
+
+### [2026-10-23 19:49:37] Claude
+Committed nothing new (step 9 had no code changes; log only). Step 10 done as an isolated end-to-end instead of clicking through Electron: started the real cache service on port 8799 with a throwaway DB, ran the real loaders and syncNotes from a temporary vitest file (deleted afterwards, DB removed, server stopped): Bear first sync 4845 scanned/pushed in ~2.1 s (cache: 4845 bear); demo folder 18 pushed (cache: 4845 bear + 18 file, nothing deleted); both re-syncs pushed 0, deleted 0 (4845 and 18 unchanged). Finding: Bear's tags come with the hash prefix (e.g. ["#work","#work/1password"]), stored as is. Not verified: the Electron GUI itself (select in the drag header, scan/sync progress) and dark mode of the select.
+
+### [2026-10-23 19:52:30] User
+let's take one step back to the select component. it looks quite odd next to the button so I want to try having no shadow on it but an orange border, and then move back to the thick black focus indicator
+
+### [2026-10-23 19:52:30] Claude
+Changed packages/ui/src/components/select.tsx trigger: border-2 border-primary, no shadow, bg-card; keyboard focus back to the buttons' thick ring (3px black, base3 in dark; border turns black/base3 on focus). The popup keeps its black 2px border and hard shadow. Updated the 'inputs and focus' guideline text on the design board. Checked by computed styles (border 2px rgb(203,75,22), box-shadow none) because the browser pane was hidden and screenshots came back blank; the design dev server had also stopped and was restarted. Focus ring not seen visually this time. ui and design tests pass.
+
+### [2026-10-23 19:52:53] User
+can we make it the same height as a button?
+
+### [2026-10-23 19:52:53] Claude
+The Select's default size is already 36px, same as a default Button (measured on the design board: both 36px, 14px text). The Electron SourceSelect was using size="sm" (32px) next to default-size header buttons; removed it so the app's select is 36px too. Not committed.
