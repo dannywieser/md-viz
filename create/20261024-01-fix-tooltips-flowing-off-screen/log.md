@@ -3,6 +3,7 @@
 - **Slug:** 20261024-01-fix-tooltips-flowing-off-screen
 - **Kind:** fix
 - **Started:** 2026-10-24 16:37:54 MDT
+- **Completed:** 2026-10-24 17:10:00 MDT
 
 ---
 
