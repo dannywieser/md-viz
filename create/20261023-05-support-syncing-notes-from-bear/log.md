@@ -80,3 +80,9 @@ Committed step 1 on new branch feat/bear-sync (branched from fix/sync-empty-stat
 
 ### [2026-10-23 19:22:01] Claude
 Step 2 done (Note + IPC types). New apps/electron/src/main/notes.ts (Note: id, source, title, body, tags, created, modified as ISO strings with created '' when unknown; noteToFields stores tags as a JSON array string), test tests/main/notes.test.ts. shared/ipc.ts gained additive types Source, SyncTarget (file needs folder, bear needs none) and LastSelection. Deviation from plan.md: the Api/channel changes (source-aware scan/sync/loadLast) are NOT made here, to keep typecheck green; they move to steps 6-7 where main and renderer change together. fileNoteId stays in sync.ts until step 3/5. format, lint, typecheck pass; electron coverage 100/98.3/100/100 (92 tests). Paused for review. Not committed (only the step 1 checkpoint is).
+
+### [2026-10-23 19:24:02] User
+commit and next
+
+### [2026-10-23 19:24:02] Claude
+Committed step 2 (30a963c). Step 3 done (file loader). New apps/electron/src/main/load-file-notes.ts: loadFileNotes(root) -> { notes: Note[], failed } (source 'file', modified = file mtime ISO, tags [], created ''); noteId/noteTitle moved here from sync.ts (sync.ts now imports them; sync.test.ts imports noteId from the loader, their tests moved to tests/main/load-file-notes.test.ts). Behavior change: a file that fails to stat is now counted as failed like a read failure (before, a stat failure was skipped silently); sync.ts's own file reading is untouched until step 5. format, lint, typecheck pass; electron 95 tests, coverage 100/98.3/100/100. Paused for review. Not committed.

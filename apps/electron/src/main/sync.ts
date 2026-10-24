@@ -1,8 +1,7 @@
-import { createHash } from 'node:crypto'
 import { readFile, readdir, stat } from 'node:fs/promises'
-import path from 'node:path'
 import { configureCacheClient, deleteNote, listNotes, upsertNotes } from '@md-viz/api-client/cache'
 import type { NoteRef, SyncProgress, SyncResult } from '../shared/ipc'
+import { noteId, noteTitle } from './load-file-notes'
 import { walkMarkdown } from './walk'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
@@ -15,16 +14,6 @@ export interface SyncOptions {
   /** replaces the global fetch, for tests. */
   fetch?: typeof fetch
   onProgress?: (progress: SyncProgress) => void
-}
-
-/** the cache id of a note: a short, stable, slash-free hash of its path relative to the folder. */
-export function noteId(relativePath: string): string {
-  return createHash('sha256').update(relativePath).digest('hex').slice(0, 16)
-}
-
-/** the note title: the file name without its `.md` extension. */
-export function noteTitle(relativePath: string): string {
-  return path.posix.basename(relativePath).replace(/\.md$/i, '')
 }
 
 interface LocalNote {
