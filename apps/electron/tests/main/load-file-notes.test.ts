@@ -46,7 +46,7 @@ describe('loadFileNotes', () => {
 
     const { notes, failed } = await loadFileNotes(root)
 
-    expect(failed).toBe(0)
+    expect(failed).toEqual([])
     expect(notes).toEqual([
       {
         id: noteId('sub/plan.md'),
@@ -61,10 +61,14 @@ describe('loadFileNotes', () => {
   })
 
   it('returns nothing for a folder without notes', async () => {
-    expect(await loadFileNotes(root)).toEqual({ notes: [], failed: 0 })
+    expect(await loadFileNotes(root)).toEqual({ notes: [], failed: [] })
   })
 
-  it('counts files that cannot be read and leaves them out', async () => {
+  it('fails on a folder it cannot read instead of looking empty', async () => {
+    await expect(loadFileNotes(path.join(root, 'missing'))).rejects.toThrow()
+  })
+
+  it('lists files that cannot be read as failed and leaves them out', async () => {
     await writeFile(path.join(root, 'good.md'), 'good')
     await writeFile(path.join(root, 'bad.md'), 'bad')
     const fs = await import('node:fs/promises')
@@ -77,6 +81,6 @@ describe('loadFileNotes', () => {
     const { notes, failed } = await loadFileNotes(root)
 
     expect(notes.map((note) => note.title)).toEqual(['good'])
-    expect(failed).toBe(1)
+    expect(failed).toEqual([noteId('bad.md')])
   })
 })

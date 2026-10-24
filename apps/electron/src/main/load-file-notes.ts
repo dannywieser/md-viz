@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import type { Note } from './notes'
 import { walkMarkdown } from './walk'
@@ -16,8 +16,8 @@ export function noteTitle(relativePath: string): string {
 
 export interface LoadedNotes {
   notes: Note[]
-  /** notes that exist in the source but could not be read; they are left out of `notes`. */
-  failed: number
+  /** ids of notes that exist in the source but could not be read; they are left out of `notes`. */
+  failed: string[]
 }
 
 /**
@@ -25,16 +25,19 @@ export interface LoadedNotes {
  * `modified`; tags and the creation date are not read from files yet.
  */
 export async function loadFileNotes(root: string): Promise<LoadedNotes> {
+  // an unreadable folder would look empty and wipe its notes from the cache, so fail first.
+  await readdir(root)
   const notes: Note[] = []
-  let failed = 0
+  const failed: string[] = []
   for await (const file of walkMarkdown(root)) {
+    const id = noteId(file.relativePath)
     try {
       const [{ mtimeMs }, body] = await Promise.all([
         stat(file.absolutePath),
         readFile(file.absolutePath, 'utf8'),
       ])
       notes.push({
-        id: noteId(file.relativePath),
+        id,
         source: 'file',
         title: noteTitle(file.relativePath),
         body,
@@ -43,7 +46,7 @@ export async function loadFileNotes(root: string): Promise<LoadedNotes> {
         modified: new Date(mtimeMs).toISOString(),
       })
     } catch {
-      failed += 1
+      failed.push(id)
     }
   }
   return { notes, failed }

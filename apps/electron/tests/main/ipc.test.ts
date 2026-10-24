@@ -5,9 +5,10 @@ import path from 'node:path'
 import { IPC, type SyncResult } from '../../src/shared/ipc'
 import type { AppState } from '../../src/main/state'
 import { registerIpc } from '../../src/main/ipc'
+import { loadFileNotes, type LoadedNotes } from '../../src/main/load-file-notes'
 import { scanMarkdown } from '../../src/main/scan'
 import { readState, updateState } from '../../src/main/state'
-import { DEFAULT_CACHE_URL, syncFolder } from '../../src/main/sync'
+import { DEFAULT_CACHE_URL, syncNotes } from '../../src/main/sync'
 
 const electron = vi.hoisted(() => ({
   handle: vi.fn<(channel: string, listener: unknown) => void>(),
@@ -24,8 +25,9 @@ vi.mock('../../src/main/scan', () => ({ scanMarkdown: vi.fn() }))
 vi.mock('../../src/main/state', () => ({ readState: vi.fn(), updateState: vi.fn() }))
 vi.mock('../../src/main/sync', () => ({
   DEFAULT_CACHE_URL: 'http://default.test',
-  syncFolder: vi.fn(),
+  syncNotes: vi.fn(),
 }))
+vi.mock('../../src/main/load-file-notes', () => ({ loadFileNotes: vi.fn() }))
 
 type Handler = (event: unknown, ...args: unknown[]) => Promise<unknown>
 
@@ -152,17 +154,24 @@ describe('registerIpc', () => {
       notes: { updated: [{ id: 'a', title: 'a' }], deleted: [], unchanged: [] },
     }
 
+    const loaded: LoadedNotes = { notes: [], failed: [] }
+
+    beforeEach(() => {
+      vi.mocked(loadFileNotes).mockResolvedValue(loaded)
+    })
+
     it('syncs to the default cache, forwards progress and records the sync', async () => {
       const webContents = sender()
-      vi.mocked(syncFolder).mockImplementation((_, options) => {
+      vi.mocked(syncNotes).mockImplementation((_s, _l, options) => {
         options?.onProgress?.({ synced: 1, deleted: 0, total: 1 })
         return Promise.resolve(result)
       })
 
       expect(await handler(IPC.syncFolder)({ sender: webContents }, folder)).toBe(result)
 
-      expect(syncFolder).toHaveBeenCalledWith(
-        folder,
+      expect(syncNotes).toHaveBeenCalledWith(
+        'file',
+        loaded,
         expect.objectContaining({ baseUrl: DEFAULT_CACHE_URL }),
       )
       expect(webContents.send).toHaveBeenCalledWith(IPC.syncProgress, {
@@ -181,19 +190,20 @@ describe('registerIpc', () => {
 
     it('syncs to the cache named by CACHE_URL', async () => {
       process.env['CACHE_URL'] = 'http://cache.test'
-      vi.mocked(syncFolder).mockResolvedValue(result)
+      vi.mocked(syncNotes).mockResolvedValue(result)
 
       await handler(IPC.syncFolder)({ sender: sender() }, folder)
 
-      expect(syncFolder).toHaveBeenCalledWith(
-        folder,
+      expect(syncNotes).toHaveBeenCalledWith(
+        'file',
+        loaded,
         expect.objectContaining({ baseUrl: 'http://cache.test' }),
       )
     })
 
     it('does not send progress to a destroyed sender', async () => {
       const webContents = sender(true)
-      vi.mocked(syncFolder).mockImplementation((_, options) => {
+      vi.mocked(syncNotes).mockImplementation((_s, _l, options) => {
         options?.onProgress?.({ synced: 1, deleted: 0, total: 1 })
         return Promise.resolve(result)
       })
@@ -207,7 +217,7 @@ describe('registerIpc', () => {
       await expect(handler(IPC.syncFolder)({ sender: sender() }, 'relative')).rejects.toThrow(
         'expected an absolute folder path',
       )
-      expect(syncFolder).not.toHaveBeenCalled()
+      expect(syncNotes).not.toHaveBeenCalled()
     })
   })
 

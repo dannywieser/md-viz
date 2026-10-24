@@ -18,5 +18,5 @@ export async function loadBearNotes(): Promise<LoadedNotes> {
       created: new Date(row.created).toISOString(),
       modified: new Date(row.modified).toISOString(),
     }))
-  return { notes, failed: 0 }
+  return { notes, failed: [] }
 }

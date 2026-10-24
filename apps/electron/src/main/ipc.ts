@@ -2,9 +2,10 @@ import { stat } from 'node:fs/promises'
 import path from 'node:path'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { IPC, type LastFolder, type ScanResult, type SyncResult } from '../shared/ipc'
+import { loadFileNotes } from './load-file-notes'
 import { scanMarkdown } from './scan'
 import { readState, updateState } from './state'
-import { DEFAULT_CACHE_URL, syncFolder } from './sync'
+import { DEFAULT_CACHE_URL, syncNotes } from './sync'
 
 async function assertDirectory(folder: unknown): Promise<string> {
   if (typeof folder !== 'string' || !path.isAbsolute(folder)) {
@@ -39,7 +40,7 @@ export function registerIpc(): void {
 
   ipcMain.handle(IPC.syncFolder, async (event, folder: unknown): Promise<SyncResult> => {
     const root = await assertDirectory(folder)
-    const result = await syncFolder(root, {
+    const result = await syncNotes('file', await loadFileNotes(root), {
       baseUrl: process.env['CACHE_URL'] ?? DEFAULT_CACHE_URL,
       onProgress: (progress) => {
         if (!event.sender.isDestroyed()) event.sender.send(IPC.syncProgress, progress)

@@ -24,7 +24,7 @@ describe('loadBearNotes', () => {
 
     expect(listBearRows).toHaveBeenCalledWith('all,content')
     expect(result).toEqual({
-      failed: 0,
+      failed: [],
       notes: [
         {
           id: 'B1',
