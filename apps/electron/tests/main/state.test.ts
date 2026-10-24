@@ -2,7 +2,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { readState, updateState } from '../../src/main/state'
+import { readState, syncKey, updateState } from '../../src/main/state'
 
 describe('state file', () => {
   let dir: string
@@ -18,13 +18,13 @@ describe('state file', () => {
   })
 
   it('reads an empty state when the file is missing', async () => {
-    expect(await readState(file)).toEqual({ lastFolder: null, syncs: {} })
+    expect(await readState(file)).toEqual({ lastSource: 'file', lastFolder: null, syncs: {} })
   })
 
   it('reads an empty state when the file is corrupt', async () => {
     await updateState(file, () => {})
     await writeFile(file, '{not json')
-    expect(await readState(file)).toEqual({ lastFolder: null, syncs: {} })
+    expect(await readState(file)).toEqual({ lastSource: 'file', lastFolder: null, syncs: {} })
   })
 
   it.each([
@@ -34,7 +34,7 @@ describe('state file', () => {
     await updateState(file, () => {})
     await writeFile(file, content)
 
-    expect(await readState(file)).toEqual({ lastFolder: null, syncs: {} })
+    expect(await readState(file)).toEqual({ lastSource: 'file', lastFolder: null, syncs: {} })
   })
 
   it('round-trips changes, creating the directory', async () => {
@@ -51,8 +51,25 @@ describe('state file', () => {
     })
 
     expect(await readState(file)).toEqual({
+      lastSource: 'file',
       lastFolder: '/notes',
       syncs: { '/notes': lastSync, '/other': lastSync },
     })
+  })
+
+  it('remembers Bear as the last source and falls back to files for anything else', async () => {
+    await updateState(file, (state) => void (state.lastSource = 'bear'))
+    expect((await readState(file)).lastSource).toBe('bear')
+
+    await writeFile(file, '{"lastSource":"notion","lastFolder":null,"syncs":{}}')
+    expect((await readState(file)).lastSource).toBe('file')
+  })
+})
+
+describe('syncKey', () => {
+  it('is one key per folder for files and one for Bear', () => {
+    expect(syncKey({ source: 'file', folder: '/notes' })).toBe('file:/notes')
+    expect(syncKey({ source: 'file', folder: '/other' })).not.toBe('file:/notes')
+    expect(syncKey({ source: 'bear' })).toBe('bear')
   })
 })

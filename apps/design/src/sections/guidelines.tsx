@@ -38,6 +38,11 @@ const guidelines = [
       'loader · ghost + the notes went out for coffee · broken tile + oops, we dropped a square',
   },
   {
+    name: 'inputs and focus',
+    rule: 'inputs have a 2px primary border and no shadow, so they sit flat beside the buttons. their popups float with a 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is the same thick black ring as buttons, and the border turns black with it.',
+    example: 'select · 2px orange border · thick black focus ring',
+  },
+  {
     name: 'pixel logo',
     rule: 'the logo is pixel art from 5 wide bitmap glyphs: no smoothing, no rounding. the dot of the mark and the viz of the wordmark use the primary color, the rest the text color; the wordmark draws each cell as a 2x2 block of small squares. the favicon is a static copy with fixed solarized colors, so update it by hand with the theme.',
     example: '.md · md-viz',

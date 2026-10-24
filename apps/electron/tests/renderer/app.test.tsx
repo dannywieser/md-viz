@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { Api, LastFolder, LastSync } from '../../src/shared/ipc'
+import type { Api, LastSelection, LastSync, SyncTarget } from '../../src/shared/ipc'
 import { App } from '../../src/renderer/src/app'
 import { useScan } from '../../src/renderer/src/hooks/use-scan'
 import { useSync } from '../../src/renderer/src/hooks/use-sync'
@@ -10,6 +10,7 @@ vi.mock('../../src/renderer/src/hooks/use-sync', () => ({ useSync: vi.fn() }))
 
 const scan = vi.fn()
 const reset = vi.fn()
+const file: SyncTarget = { source: 'file', folder: '/notes' }
 const sync = vi.fn()
 
 const lastSync: LastSync = {
@@ -17,7 +18,8 @@ const lastSync: LastSync = {
   notes: { updated: [], deleted: [], unchanged: [{ id: 'k1', title: 'same idea' }] },
 }
 
-const idleScan = { folder: null, progress: null, count: null, scanning: false, scan }
+const clear = vi.fn()
+const idleScan = { target: null, progress: null, count: null, scanning: false, scan, clear }
 const idleSync = { syncing: false, progress: null, lastSync: null, reset, sync }
 
 function mockHooks({
@@ -31,7 +33,8 @@ function mockHooks({
 function stubApi(overrides: Partial<Api> = {}) {
   const api = {
     pickFolder: vi.fn().mockResolvedValue('/notes'),
-    loadLast: vi.fn().mockResolvedValue(null),
+    loadLast: vi.fn().mockResolvedValue({ source: 'file', folder: null, lastSync: null }),
+    selectSource: vi.fn(),
     ...overrides,
   } as unknown as Api
   window.api = api
@@ -65,12 +68,15 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: 'choose folder' }))
 
     expect(reset).toHaveBeenCalledWith(null)
-    expect(scan).toHaveBeenCalledWith('/notes')
+    expect(scan).toHaveBeenCalledWith(file)
   })
 
   it('does nothing when the dialog is cancelled', async () => {
-    stubApi({ pickFolder: vi.fn().mockResolvedValue(null) })
+    const api = stubApi({ pickFolder: vi.fn().mockResolvedValue(null) })
     render(<App />)
+    // launching with nothing saved resets the sync; only what the dialog does is checked.
+    await vi.waitFor(() => expect(api.loadLast).toHaveBeenCalled())
+    reset.mockClear()
 
     await userEvent.click(screen.getByRole('button', { name: 'choose folder' }))
 
@@ -79,11 +85,11 @@ describe('App', () => {
   })
 
   it('reopens the saved folder with its last sync', async () => {
-    const last: LastFolder = { folder: '/saved', lastSync }
+    const last: LastSelection = { source: 'file', folder: '/saved', lastSync }
     stubApi({ loadLast: vi.fn().mockResolvedValue(last) })
     render(<App />)
 
-    await vi.waitFor(() => expect(scan).toHaveBeenCalledWith('/saved'))
+    await vi.waitFor(() => expect(scan).toHaveBeenCalledWith({ source: 'file', folder: '/saved' }))
     expect(reset).toHaveBeenCalledWith(lastSync)
   })
 
@@ -99,7 +105,7 @@ describe('App', () => {
     const { rerender } = render(<App />)
     expect(screen.getByRole('button', { name: 'sync' })).toBeDisabled()
 
-    mockHooks({ scanState: { folder: '/notes' } })
+    mockHooks({ scanState: { target: file } })
     rerender(<App />)
     await userEvent.click(screen.getByRole('button', { name: 'sync' }))
 
@@ -107,8 +113,8 @@ describe('App', () => {
   })
 
   it.each([
-    ['scanning', { scanState: { folder: '/notes', scanning: true } }],
-    ['syncing', { scanState: { folder: '/notes' }, syncState: { syncing: true } }],
+    ['scanning', { scanState: { target: file, scanning: true } }],
+    ['syncing', { scanState: { target: file }, syncState: { syncing: true } }],
   ])('disables both buttons while %s', (_, state) => {
     mockHooks(state)
     render(<App />)
@@ -119,20 +125,20 @@ describe('App', () => {
 
   it('shows the chosen folder only once there is one', () => {
     const { rerender } = render(<App />)
-    expect(screen.queryByLabelText('chosen folder')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('chosen source')).not.toBeInTheDocument()
 
-    mockHooks({ scanState: { folder: '/notes', count: 18 } })
+    mockHooks({ scanState: { target: file, count: 18 } })
     rerender(<App />)
 
-    expect(screen.getByLabelText('chosen folder')).toHaveTextContent('/notes')
+    expect(screen.getByLabelText('chosen source')).toHaveTextContent('/notes')
     expect(screen.getByText('18 notes')).toBeInTheDocument()
   })
 
   it('shows the note grids of the last sync under the folder card, which is as wide as they are', () => {
-    mockHooks({ scanState: { folder: '/notes' }, syncState: { lastSync } })
+    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
     render(<App />)
 
-    const card = screen.getByLabelText('chosen folder').parentElement
+    const card = screen.getByLabelText('chosen source').parentElement
     expect(screen.getByRole('region', { name: 'unchanged' })).toHaveTextContent('1')
     expect(card).toHaveClass('w-full')
     expect(card?.parentElement).toContainElement(screen.getByRole('region', { name: 'unchanged' }))
@@ -142,20 +148,20 @@ describe('App', () => {
     const { rerender } = render(<App />)
     expect(screen.getByRole('banner').style.width).toBe('')
 
-    mockHooks({ scanState: { folder: '/notes' }, syncState: { lastSync } })
+    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
     rerender(<App />)
     expect(screen.getByRole('banner').style.width).toMatch(/^\d+px$/)
 
-    mockHooks({ scanState: { folder: '/notes' } })
+    mockHooks({ scanState: { target: file } })
     rerender(<App />)
     expect(screen.getByRole('banner').style.width).toBe('')
   })
 
   it('keeps the folder card at its own width until there is a sync', () => {
-    mockHooks({ scanState: { folder: '/notes' } })
+    mockHooks({ scanState: { target: file } })
     render(<App />)
 
-    expect(screen.getByLabelText('chosen folder').parentElement).not.toHaveClass('w-full')
+    expect(screen.getByLabelText('chosen source').parentElement).not.toHaveClass('w-full')
   })
 
   it('shows an error reported by either hook, and clears it', () => {
@@ -186,5 +192,102 @@ describe('App', () => {
     render(<MacApp />)
 
     expect(header()).toHaveClass('pl-24')
+  })
+
+  describe('source', () => {
+    const pick = async (source: string) => {
+      await userEvent.click(screen.getByRole('combobox', { name: 'source' }))
+      await userEvent.click(screen.getByRole('option', { name: source }))
+    }
+
+    it('starts on files, with the folder button', () => {
+      render(<App />)
+
+      expect(screen.getByRole('combobox', { name: 'source' })).toHaveTextContent('file')
+      expect(screen.getByRole('button', { name: 'choose folder' })).toBeInTheDocument()
+    })
+
+    it('opens Bear with its last sync and hides the folder button', async () => {
+      const api = stubApi({
+        selectSource: vi.fn().mockResolvedValue({ source: 'bear', folder: null, lastSync }),
+      })
+      render(<App />)
+
+      await pick('bear')
+
+      expect(api.selectSource).toHaveBeenCalledWith('bear')
+      expect(reset).toHaveBeenCalledWith(lastSync)
+      expect(scan).toHaveBeenCalledWith({ source: 'bear' })
+      expect(screen.queryByRole('button', { name: 'choose folder' })).not.toBeInTheDocument()
+      expect(screen.getByRole('combobox', { name: 'source' })).toHaveTextContent('bear')
+    })
+
+    it('goes back to the folder remembered for files, with its sync', async () => {
+      stubApi({
+        loadLast: vi.fn().mockResolvedValue({ source: 'bear', folder: null, lastSync: null }),
+        selectSource: vi.fn().mockResolvedValue({ source: 'file', folder: '/saved', lastSync }),
+      })
+      render(<App />)
+      await vi.waitFor(() => expect(scan).toHaveBeenCalledWith({ source: 'bear' }))
+
+      await pick('file')
+
+      expect(scan).toHaveBeenLastCalledWith({ source: 'file', folder: '/saved' })
+      expect(reset).toHaveBeenLastCalledWith(lastSync)
+      expect(screen.getByRole('button', { name: 'choose folder' })).toBeInTheDocument()
+    })
+
+    it('shows nothing for files until a folder is chosen', async () => {
+      stubApi({
+        loadLast: vi.fn().mockResolvedValue({ source: 'bear', folder: null, lastSync: null }),
+        selectSource: vi.fn().mockResolvedValue({ source: 'file', folder: null, lastSync: null }),
+      })
+      render(<App />)
+      await vi.waitFor(() => expect(scan).toHaveBeenCalledWith({ source: 'bear' }))
+      scan.mockClear()
+      clear.mockClear()
+
+      await pick('file')
+
+      expect(clear).toHaveBeenCalledOnce()
+      expect(reset).toHaveBeenLastCalledWith(null)
+      expect(scan).not.toHaveBeenCalled()
+    })
+
+    it('reopens Bear on launch when it was the last source', async () => {
+      stubApi({
+        loadLast: vi.fn().mockResolvedValue({ source: 'bear', folder: null, lastSync }),
+      })
+      render(<App />)
+
+      await vi.waitFor(() => expect(scan).toHaveBeenCalledWith({ source: 'bear' }))
+      expect(reset).toHaveBeenCalledWith(lastSync)
+      expect(screen.getByRole('combobox', { name: 'source' })).toHaveTextContent('bear')
+    })
+
+    it('does nothing when the source picked is already selected', async () => {
+      const api = stubApi()
+      render(<App />)
+
+      await pick('file')
+
+      expect(api.selectSource).not.toHaveBeenCalled()
+    })
+
+    it('shows the error when the source cannot be selected', async () => {
+      stubApi({ selectSource: vi.fn().mockRejectedValue(new Error('state is unreadable')) })
+      render(<App />)
+
+      await pick('bear')
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('state is unreadable')
+    })
+
+    it('disables the source select while scanning or syncing', () => {
+      mockHooks({ scanState: { target: file, scanning: true } })
+      render(<App />)
+
+      expect(screen.getByRole('combobox', { name: 'source' })).toBeDisabled()
+    })
   })
 })

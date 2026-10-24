@@ -1,12 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
-import type { Api, ScanProgress, ScanResult } from '../../../src/shared/ipc'
+import type { Api, ScanProgress, ScanResult, SyncTarget } from '../../../src/shared/ipc'
 import { useScan } from '../../../src/renderer/src/hooks/use-scan'
 
-function stubApi(scanFolder: Api['scanFolder']) {
+const notes: SyncTarget = { source: 'file', folder: '/notes' }
+const other: SyncTarget = { source: 'file', folder: '/other' }
+
+function stubApi(scanFolder: Api['scan']) {
   const unsubscribe = vi.fn()
   let push: (progress: ScanProgress) => void = () => {}
   window.api = {
-    scanFolder,
+    scan: scanFolder,
     onScanProgress: vi.fn((callback: (progress: ScanProgress) => void) => {
       push = callback
       return unsubscribe
@@ -20,7 +23,7 @@ describe('useScan', () => {
     const { result } = renderHook(() => useScan(vi.fn()))
 
     expect(result.current).toMatchObject({
-      folder: null,
+      target: null,
       progress: null,
       count: null,
       scanning: false,
@@ -28,14 +31,14 @@ describe('useScan', () => {
   })
 
   it('scans the folder and keeps its note count', async () => {
-    const { unsubscribe } = stubApi(vi.fn().mockResolvedValue({ mdCount: 18 }))
+    const { unsubscribe } = stubApi(vi.fn().mockResolvedValue({ count: 18 }))
     const onError = vi.fn()
     const { result } = renderHook(() => useScan(onError))
 
-    await act(() => result.current.scan('/notes'))
+    await act(() => result.current.scan(notes))
 
-    expect(window.api.scanFolder).toHaveBeenCalledWith('/notes')
-    expect(result.current).toMatchObject({ folder: '/notes', count: 18, scanning: false })
+    expect(window.api.scan).toHaveBeenCalledWith(notes)
+    expect(result.current).toMatchObject({ target: notes, count: 18, scanning: false })
     expect(onError).toHaveBeenCalledExactlyOnceWith(null)
     expect(unsubscribe).toHaveBeenCalledOnce()
   })
@@ -49,13 +52,13 @@ describe('useScan', () => {
 
     let scanning: Promise<void> = Promise.resolve()
     act(() => {
-      scanning = result.current.scan('/notes')
+      scanning = result.current.scan(notes)
     })
     act(() => push({ dirs: 3, mdFiles: 7 }))
     expect(result.current).toMatchObject({ scanning: true, progress: { dirs: 3, mdFiles: 7 } })
 
     await act(async () => {
-      finish({ mdCount: 7 })
+      finish({ count: 7 })
       await scanning
     })
     expect(result.current.scanning).toBe(false)
@@ -66,15 +69,15 @@ describe('useScan', () => {
     stubApi(
       vi
         .fn()
-        .mockResolvedValueOnce({ mdCount: 18 })
+        .mockResolvedValueOnce({ count: 18 })
         .mockReturnValueOnce(new Promise(() => {})),
     )
     const { result } = renderHook(() => useScan(vi.fn()))
-    await act(() => result.current.scan('/a'))
+    await act(() => result.current.scan(notes))
 
-    act(() => void result.current.scan('/b'))
+    act(() => void result.current.scan(other))
 
-    expect(result.current).toMatchObject({ folder: '/b', count: null, progress: null })
+    expect(result.current).toMatchObject({ target: other, count: null, progress: null })
   })
 
   it('reports the message of a failed scan', async () => {
@@ -82,10 +85,30 @@ describe('useScan', () => {
     const onError = vi.fn()
     const { result } = renderHook(() => useScan(onError))
 
-    await act(() => result.current.scan('/file'))
+    await act(() => result.current.scan(notes))
 
     expect(onError).toHaveBeenLastCalledWith('Not a directory')
     expect(result.current).toMatchObject({ count: null, scanning: false })
     expect(unsubscribe).toHaveBeenCalledOnce()
+  })
+
+  it('scans Bear, which has no folder', async () => {
+    stubApi(vi.fn().mockResolvedValue({ count: 4845 }))
+    const { result } = renderHook(() => useScan(vi.fn()))
+
+    await act(() => result.current.scan({ source: 'bear' }))
+
+    expect(window.api.scan).toHaveBeenCalledWith({ source: 'bear' })
+    expect(result.current).toMatchObject({ target: { source: 'bear' }, count: 4845 })
+  })
+
+  it('clears the chosen source, its count and its progress', async () => {
+    stubApi(vi.fn().mockResolvedValue({ count: 18 }))
+    const { result } = renderHook(() => useScan(vi.fn()))
+    await act(() => result.current.scan(notes))
+
+    act(() => result.current.clear())
+
+    expect(result.current).toMatchObject({ target: null, count: null, progress: null })
   })
 })

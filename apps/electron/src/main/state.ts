@@ -1,21 +1,29 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { LastSync } from '../shared/ipc'
+import type { LastSync, Source, SyncTarget } from '../shared/ipc'
 
 export interface AppState {
-  /** the folder selected when the app last ran. */
+  /** the source selected when the app last ran. */
+  lastSource: Source
+  /** the folder last chosen for the file source. */
   lastFolder: string | null
-  /** the last completed sync, by folder path. */
+  /** the last completed sync, by `syncKey`. */
   syncs: Record<string, LastSync>
 }
 
-const emptyState = (): AppState => ({ lastFolder: null, syncs: {} })
+const emptyState = (): AppState => ({ lastSource: 'file', lastFolder: null, syncs: {} })
+
+/** the key of a target's last sync: one per folder for files, one for Bear. */
+export function syncKey(target: SyncTarget): string {
+  return target.source === 'bear' ? 'bear' : `file:${target.folder}`
+}
 
 /** reads the state file; a missing or unreadable file gives an empty state. */
 export async function readState(file: string): Promise<AppState> {
   try {
     const parsed = JSON.parse(await readFile(file, 'utf8')) as Partial<AppState> | null
     return {
+      lastSource: parsed?.lastSource === 'bear' ? 'bear' : 'file',
       lastFolder: typeof parsed?.lastFolder === 'string' ? parsed.lastFolder : null,
       syncs: parsed?.syncs && typeof parsed.syncs === 'object' ? parsed.syncs : {},
     }
