@@ -17,7 +17,7 @@ export function SourceSelect({ value, onChange, disabled }: SourceSelectProps) {
       onValueChange={(next) => onChange(next as Source)}
       {...(disabled === undefined ? {} : { disabled })}
     >
-      <SelectTrigger aria-label="source" size="sm">
+      <SelectTrigger aria-label="source">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

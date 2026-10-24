@@ -39,8 +39,8 @@ const guidelines = [
   },
   {
     name: 'inputs and focus',
-    rule: 'inputs and their popups have a heavy 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is a 2px primary ring set off from the border by a 2px gap of page colour, so it stays distinct from the black border and shadow.',
-    example: 'select · 2px border · 4px black shadow · orange focus ring with a gap',
+    rule: 'inputs have a 2px primary border and no shadow, so they sit flat beside the buttons. their popups float with a 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is the same thick black ring as buttons, and the border turns black with it.',
+    example: 'select · 2px orange border · thick black focus ring',
   },
   {
     name: 'pixel logo',
