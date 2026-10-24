@@ -71,3 +71,12 @@ let's update those to match the theme, with a heavier shadow and border. remembe
 
 ### [2026-10-23 19:18:38] Claude
 Restyled packages/ui/src/components/select.tsx: trigger and popup get border-2 black (sol-base3 in dark) and shadow-hard; trigger bg-card; keyboard focus uses the button's 3px black ring (sol-base3 dark); item focus is bg-primary/text-primary-foreground; separator is 2px. Checked on the design board (focus ring and open popup render). Format, lint, ui tests pass. Still paused after step 1.
+
+### [2026-10-23 19:21:25] User
+commit as a checkpoint, then next
+
+### [2026-10-23 19:21:25] Claude
+Committed step 1 on new branch feat/bear-sync (branched from fix/sync-empty-state-sizing, whose commit f3b2a10 is not on main, so it is carried along). Also changed the select focus to an offset primary ring (earlier turn) and checked contrast: ring passes 3:1 in both themes; highlighted-item text 4.27 and dark option text 4.11 are slightly under 4.5 (theme-level, left as is). Starting step 2.
+
+### [2026-10-23 19:22:01] Claude
+Step 2 done (Note + IPC types). New apps/electron/src/main/notes.ts (Note: id, source, title, body, tags, created, modified as ISO strings with created '' when unknown; noteToFields stores tags as a JSON array string), test tests/main/notes.test.ts. shared/ipc.ts gained additive types Source, SyncTarget (file needs folder, bear needs none) and LastSelection. Deviation from plan.md: the Api/channel changes (source-aware scan/sync/loadLast) are NOT made here, to keep typecheck green; they move to steps 6-7 where main and renderer change together. fileNoteId stays in sync.ts until step 3/5. format, lint, typecheck pass; electron coverage 100/98.3/100/100 (92 tests). Paused for review. Not committed (only the step 1 checkpoint is).

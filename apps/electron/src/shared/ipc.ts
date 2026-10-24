@@ -10,6 +10,12 @@ export const IPC = {
   loadLast: 'folder:load-last',
 } as const
 
+/** where notes come from: a folder of markdown files or the Bear app. */
+export type Source = 'file' | 'bear'
+
+/** what a scan or sync runs on: a file source needs its folder, Bear needs nothing. */
+export type SyncTarget = { source: 'file'; folder: string } | { source: 'bear' }
+
 export interface ScanProgress {
   /** directories visited so far. */
   dirs: number
@@ -67,6 +73,14 @@ export interface LastSync {
 /** the folder selected when the app last ran, if it still exists. */
 export interface LastFolder {
   folder: string
+  lastSync: LastSync | null
+}
+
+/** the source and folder selected when the app last ran, with that selection's last sync. */
+export interface LastSelection {
+  source: Source
+  /** the last folder chosen for the file source, if it still exists; null for Bear. */
+  folder: string | null
   lastSync: LastSync | null
 }
 
