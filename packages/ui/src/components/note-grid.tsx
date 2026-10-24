@@ -5,6 +5,7 @@ import { Card } from './card'
 import { EmptyState } from './empty-state'
 import { NOTE_COLORS } from '../lib/note-colors'
 import { STROKE_ROOM, layoutGrid } from '../lib/note-grid-layout'
+import { tooltipShift } from '../lib/tooltip-shift'
 import { useElementSize } from '../hooks/use-element-size'
 
 export { NOTE_COLORS }
@@ -40,6 +41,9 @@ type NoteGridProps = {
   ref?: React.Ref<HTMLDivElement>
   className?: string
 }
+
+/** px kept between the tooltip and the window edge. */
+const TOOLTIP_MARGIN = 8
 
 /** px reserved above the drawing area for the label card: one text line, its padding and border, and a gap. */
 const LABEL_ROOM = 42
@@ -96,6 +100,7 @@ function NoteGrid({
   const width = Math.max(0, size.width - STROKE_ROOM)
   const height = Math.max(0, (fixedHeight ?? size.height) - STROKE_ROOM)
   const [hovered, setHovered] = React.useState<number | null>(null)
+  const tooltipRef = React.useRef<HTMLDivElement>(null)
   const { columns, rows, cell } = layoutGrid({
     count: notes.length,
     width,
@@ -110,6 +115,15 @@ function NoteGrid({
   const cellX = (i: number) => (i % columns) * cell + 1.5
   const cellY = (i: number) => Math.floor(i / columns) * cell + 1.5
   const active = hovered !== null && hovered < notes.length ? hovered : null
+
+  // the one shared tooltip is centred on its cell; near a window edge it is moved sideways just enough to stay on screen.
+  React.useLayoutEffect(() => {
+    const tooltip = tooltipRef.current
+    if (!tooltip) return
+    tooltip.style.marginLeft = '0px'
+    const { left, width } = tooltip.getBoundingClientRect()
+    tooltip.style.marginLeft = `${tooltipShift(left, width, window.innerWidth, TOOLTIP_MARGIN)}px`
+  }, [active, notes])
 
   // one handler for the whole grid: the cell under the pointer follows from the uniform layout.
   function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
@@ -160,6 +174,7 @@ function NoteGrid({
       </svg>
       {active !== null && (
         <div
+          ref={tooltipRef}
           role="tooltip"
           className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap border bg-card px-2 py-1 text-xs text-card-foreground shadow-hard"
           style={{ left: cellX(active) + cell / 2, top: cellY(active) - 8 }}

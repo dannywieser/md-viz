@@ -101,6 +101,44 @@ describe('NoteGrid', () => {
       expect(screen.getByRole('tooltip')).toHaveTextContent('note 5')
     })
 
+    describe('tooltip placement', () => {
+      function stubTooltipRect(left: number, width: number) {
+        vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+          this: Element,
+        ) {
+          const isTooltip = this.getAttribute('role') === 'tooltip'
+          return { left: isTooltip ? left : 0, width: isTooltip ? width : 0, top: 0 } as DOMRect
+        })
+      }
+
+      it('moves a tooltip that overflows the left edge to the right', () => {
+        stubTooltipRect(-20, 80)
+        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
+
+        hover(container, 0)
+
+        expect(screen.getByRole('tooltip').style.marginLeft).toBe('28px')
+      })
+
+      it('moves a tooltip that overflows the right edge to the left', () => {
+        stubTooltipRect(window.innerWidth - 60, 80)
+        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
+
+        hover(container, 5)
+
+        expect(screen.getByRole('tooltip').style.marginLeft).toBe('-28px')
+      })
+
+      it('leaves a tooltip that fits centred', () => {
+        stubTooltipRect(100, 80)
+        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
+
+        hover(container, 2)
+
+        expect(screen.getByRole('tooltip').style.marginLeft).toBe('0px')
+      })
+    })
+
     it('shows nothing over a placeholder, outside the grid, or after leaving', () => {
       const { container } = render(<NoteGrid notes={makeNotes(5)} />)
       const svg = container.querySelector('svg')!

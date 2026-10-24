@@ -58,3 +58,4 @@ New sessions are appended to the bottom of this table.
 | [20261023-03-brand-aligned-loader-and-error-states](20261023-03-brand-aligned-loader-and-error-states/) | brand-aligned loader and error states | complete | 2026-10-23 |
 | [20261023-04-fix-sync-app-empty-state-sizing](20261023-04-fix-sync-app-empty-state-sizing/) | fix: sync app empty state sizing | complete | 2026-10-23 |
 | [20261023-05-support-syncing-notes-from-bear](20261023-05-support-syncing-notes-from-bear/) | support syncing notes from Bear | complete | 2026-10-23 |
+| [20261024-01-fix-tooltips-flowing-off-screen](20261024-01-fix-tooltips-flowing-off-screen/) | fix: tooltips flowing off screen | complete | 2026-10-24 |
