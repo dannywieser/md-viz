@@ -140,3 +140,9 @@ can we make it the same height as a button?
 
 ### [2026-10-23 19:52:53] Claude
 The Select's default size is already 36px, same as a default Button (measured on the design board: both 36px, 14px text). The Electron SourceSelect was using size="sm" (32px) next to default-size header buttons; removed it so the app's select is 36px too. Not committed.
+
+### [2026-10-23 19:55:30] User
+looks good / yes, strip the # prefix from the tags for storage
+
+### [2026-10-23 19:55:30] Claude
+loadBearNotes now strips the leading # from each Bear tag (test and CLAUDE.md updated). Committed the select restyle and, separately, the tag change with the session log. format, lint, typecheck pass; electron coverage re-run.
