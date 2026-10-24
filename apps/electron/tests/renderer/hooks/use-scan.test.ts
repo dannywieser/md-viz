@@ -1,6 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
-import type { Api, ScanProgress, ScanResult } from '../../../src/shared/ipc'
+import type { Api, ScanProgress, ScanResult, SyncTarget } from '../../../src/shared/ipc'
 import { useScan } from '../../../src/renderer/src/hooks/use-scan'
+
+const notes: SyncTarget = { source: 'file', folder: '/notes' }
+const other: SyncTarget = { source: 'file', folder: '/other' }
 
 function stubApi(scanFolder: Api['scan']) {
   const unsubscribe = vi.fn()
@@ -20,7 +23,7 @@ describe('useScan', () => {
     const { result } = renderHook(() => useScan(vi.fn()))
 
     expect(result.current).toMatchObject({
-      folder: null,
+      target: null,
       progress: null,
       count: null,
       scanning: false,
@@ -32,13 +35,10 @@ describe('useScan', () => {
     const onError = vi.fn()
     const { result } = renderHook(() => useScan(onError))
 
-    await act(() => result.current.scan('/notes'))
+    await act(() => result.current.scan(notes))
 
-    expect(window.api.scan).toHaveBeenCalledWith({
-      source: 'file',
-      folder: '/notes',
-    })
-    expect(result.current).toMatchObject({ folder: '/notes', count: 18, scanning: false })
+    expect(window.api.scan).toHaveBeenCalledWith(notes)
+    expect(result.current).toMatchObject({ target: notes, count: 18, scanning: false })
     expect(onError).toHaveBeenCalledExactlyOnceWith(null)
     expect(unsubscribe).toHaveBeenCalledOnce()
   })
@@ -52,7 +52,7 @@ describe('useScan', () => {
 
     let scanning: Promise<void> = Promise.resolve()
     act(() => {
-      scanning = result.current.scan('/notes')
+      scanning = result.current.scan(notes)
     })
     act(() => push({ dirs: 3, mdFiles: 7 }))
     expect(result.current).toMatchObject({ scanning: true, progress: { dirs: 3, mdFiles: 7 } })
@@ -73,11 +73,11 @@ describe('useScan', () => {
         .mockReturnValueOnce(new Promise(() => {})),
     )
     const { result } = renderHook(() => useScan(vi.fn()))
-    await act(() => result.current.scan('/a'))
+    await act(() => result.current.scan(notes))
 
-    act(() => void result.current.scan('/b'))
+    act(() => void result.current.scan(other))
 
-    expect(result.current).toMatchObject({ folder: '/b', count: null, progress: null })
+    expect(result.current).toMatchObject({ target: other, count: null, progress: null })
   })
 
   it('reports the message of a failed scan', async () => {
@@ -85,10 +85,30 @@ describe('useScan', () => {
     const onError = vi.fn()
     const { result } = renderHook(() => useScan(onError))
 
-    await act(() => result.current.scan('/file'))
+    await act(() => result.current.scan(notes))
 
     expect(onError).toHaveBeenLastCalledWith('Not a directory')
     expect(result.current).toMatchObject({ count: null, scanning: false })
     expect(unsubscribe).toHaveBeenCalledOnce()
+  })
+
+  it('scans Bear, which has no folder', async () => {
+    stubApi(vi.fn().mockResolvedValue({ count: 4845 }))
+    const { result } = renderHook(() => useScan(vi.fn()))
+
+    await act(() => result.current.scan({ source: 'bear' }))
+
+    expect(window.api.scan).toHaveBeenCalledWith({ source: 'bear' })
+    expect(result.current).toMatchObject({ target: { source: 'bear' }, count: 4845 })
+  })
+
+  it('clears the chosen source, its count and its progress', async () => {
+    stubApi(vi.fn().mockResolvedValue({ count: 18 }))
+    const { result } = renderHook(() => useScan(vi.fn()))
+    await act(() => result.current.scan(notes))
+
+    act(() => result.current.clear())
+
+    expect(result.current).toMatchObject({ target: null, count: null, progress: null })
   })
 })

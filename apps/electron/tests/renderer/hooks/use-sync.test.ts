@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import type { Api, LastSync, SyncProgress, SyncResult } from '../../../src/shared/ipc'
+import type { Api, LastSync, SyncProgress, SyncResult, SyncTarget } from '../../../src/shared/ipc'
 import { useSync } from '../../../src/renderer/src/hooks/use-sync'
 
 const notes = {
@@ -8,6 +8,8 @@ const notes = {
   unchanged: [],
 }
 const result: SyncResult = { scanned: 1, synced: 1, unchanged: 0, deleted: 0, failed: 0, notes }
+
+const target: SyncTarget = { source: 'file', folder: '/notes' }
 
 function stubApi(syncFolder: Api['sync']) {
   const unsubscribe = vi.fn()
@@ -24,12 +26,12 @@ function stubApi(syncFolder: Api['sync']) {
 
 describe('useSync', () => {
   it('starts with no sync', () => {
-    const { result } = renderHook(() => useSync('/notes', vi.fn()))
+    const { result } = renderHook(() => useSync(target, vi.fn()))
 
     expect(result.current).toMatchObject({ syncing: false, progress: null, lastSync: null })
   })
 
-  it('does nothing without a folder', async () => {
+  it('does nothing without a chosen source', async () => {
     stubApi(vi.fn())
     const { result } = renderHook(() => useSync(null, vi.fn()))
 
@@ -38,17 +40,14 @@ describe('useSync', () => {
     expect(window.api.sync).not.toHaveBeenCalled()
   })
 
-  it('syncs the folder and keeps the notes with the time', async () => {
+  it('syncs the chosen source and keeps the notes with the time', async () => {
     const { unsubscribe } = stubApi(vi.fn().mockResolvedValue(result))
     const onError = vi.fn()
-    const { result: hook } = renderHook(() => useSync('/notes', onError))
+    const { result: hook } = renderHook(() => useSync(target, onError))
 
     await act(() => hook.current.sync())
 
-    expect(window.api.sync).toHaveBeenCalledWith({
-      source: 'file',
-      folder: '/notes',
-    })
+    expect(window.api.sync).toHaveBeenCalledWith(target)
     expect(hook.current.lastSync?.notes).toEqual(notes)
     expect(Date.parse(hook.current.lastSync!.syncedAt)).not.toBeNaN()
     expect(hook.current.syncing).toBe(false)
@@ -59,7 +58,7 @@ describe('useSync', () => {
   it('reports progress while syncing, then drops it', async () => {
     let finish: (value: SyncResult) => void = () => {}
     const { push } = stubApi(vi.fn(() => new Promise<SyncResult>((resolve) => (finish = resolve))))
-    const { result: hook } = renderHook(() => useSync('/notes', vi.fn()))
+    const { result: hook } = renderHook(() => useSync(target, vi.fn()))
 
     let syncing: Promise<void> = Promise.resolve()
     act(() => {
@@ -78,7 +77,7 @@ describe('useSync', () => {
   it('reports the message of a failed sync and keeps the previous sync', async () => {
     stubApi(vi.fn().mockRejectedValue(new Error('connect ECONNREFUSED')))
     const onError = vi.fn()
-    const { result: hook } = renderHook(() => useSync('/notes', onError))
+    const { result: hook } = renderHook(() => useSync(target, onError))
     const saved: LastSync = { syncedAt: '2026-10-20T09:30:00.000Z', notes }
     act(() => hook.current.reset(saved))
 
@@ -89,7 +88,7 @@ describe('useSync', () => {
   })
 
   it('resets to a saved sync and forgets the progress', () => {
-    const { result: hook } = renderHook(() => useSync('/notes', vi.fn()))
+    const { result: hook } = renderHook(() => useSync(target, vi.fn()))
     const saved: LastSync = { syncedAt: '2026-10-20T09:30:00.000Z', notes }
 
     act(() => hook.current.reset(saved))
@@ -97,5 +96,14 @@ describe('useSync', () => {
 
     act(() => hook.current.reset(null))
     expect(hook.current).toMatchObject({ lastSync: null, progress: null })
+  })
+
+  it('syncs Bear', async () => {
+    stubApi(vi.fn().mockResolvedValue(result))
+    const { result: hook } = renderHook(() => useSync({ source: 'bear' }, vi.fn()))
+
+    await act(() => hook.current.sync())
+
+    expect(window.api.sync).toHaveBeenCalledWith({ source: 'bear' })
   })
 })
