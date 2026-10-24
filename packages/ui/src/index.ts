@@ -9,6 +9,18 @@ export {
   CardContent,
   CardFooter,
 } from './components/card'
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './components/select'
 export { AppHeader } from './components/app-header'
 export { Loader } from './components/loader'
 export { EmptyState } from './components/empty-state'
