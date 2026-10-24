@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { Api, LastFolder, LastSync } from '../../src/shared/ipc'
+import type { Api, LastSelection, LastSync } from '../../src/shared/ipc'
 import { App } from '../../src/renderer/src/app'
 import { useScan } from '../../src/renderer/src/hooks/use-scan'
 import { useSync } from '../../src/renderer/src/hooks/use-sync'
@@ -31,7 +31,7 @@ function mockHooks({
 function stubApi(overrides: Partial<Api> = {}) {
   const api = {
     pickFolder: vi.fn().mockResolvedValue('/notes'),
-    loadLast: vi.fn().mockResolvedValue(null),
+    loadLast: vi.fn().mockResolvedValue({ source: 'file', folder: null, lastSync: null }),
     ...overrides,
   } as unknown as Api
   window.api = api
@@ -79,7 +79,7 @@ describe('App', () => {
   })
 
   it('reopens the saved folder with its last sync', async () => {
-    const last: LastFolder = { folder: '/saved', lastSync }
+    const last: LastSelection = { source: 'file', folder: '/saved', lastSync }
     stubApi({ loadLast: vi.fn().mockResolvedValue(last) })
     render(<App />)
 

@@ -30,7 +30,7 @@ export function App() {
   // reopen the folder from the previous run, with its last sync.
   useEffect(() => {
     void window.api.loadLast().then((last) => {
-      if (last) void selectFolder(last.folder, last.lastSync)
+      if (last.folder) void selectFolder(last.folder, last.lastSync)
     })
     // runs once, on launch.
     // eslint-disable-next-line react-hooks/exhaustive-deps

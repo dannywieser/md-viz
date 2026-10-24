@@ -2,11 +2,11 @@ import { act, renderHook } from '@testing-library/react'
 import type { Api, ScanProgress, ScanResult } from '../../../src/shared/ipc'
 import { useScan } from '../../../src/renderer/src/hooks/use-scan'
 
-function stubApi(scanFolder: Api['scanFolder']) {
+function stubApi(scanFolder: Api['scan']) {
   const unsubscribe = vi.fn()
   let push: (progress: ScanProgress) => void = () => {}
   window.api = {
-    scanFolder,
+    scan: scanFolder,
     onScanProgress: vi.fn((callback: (progress: ScanProgress) => void) => {
       push = callback
       return unsubscribe
@@ -28,13 +28,16 @@ describe('useScan', () => {
   })
 
   it('scans the folder and keeps its note count', async () => {
-    const { unsubscribe } = stubApi(vi.fn().mockResolvedValue({ mdCount: 18 }))
+    const { unsubscribe } = stubApi(vi.fn().mockResolvedValue({ count: 18 }))
     const onError = vi.fn()
     const { result } = renderHook(() => useScan(onError))
 
     await act(() => result.current.scan('/notes'))
 
-    expect(window.api.scanFolder).toHaveBeenCalledWith('/notes')
+    expect(window.api.scan).toHaveBeenCalledWith({
+      source: 'file',
+      folder: '/notes',
+    })
     expect(result.current).toMatchObject({ folder: '/notes', count: 18, scanning: false })
     expect(onError).toHaveBeenCalledExactlyOnceWith(null)
     expect(unsubscribe).toHaveBeenCalledOnce()
@@ -55,7 +58,7 @@ describe('useScan', () => {
     expect(result.current).toMatchObject({ scanning: true, progress: { dirs: 3, mdFiles: 7 } })
 
     await act(async () => {
-      finish({ mdCount: 7 })
+      finish({ count: 7 })
       await scanning
     })
     expect(result.current.scanning).toBe(false)
@@ -66,7 +69,7 @@ describe('useScan', () => {
     stubApi(
       vi
         .fn()
-        .mockResolvedValueOnce({ mdCount: 18 })
+        .mockResolvedValueOnce({ count: 18 })
         .mockReturnValueOnce(new Promise(() => {})),
     )
     const { result } = renderHook(() => useScan(vi.fn()))

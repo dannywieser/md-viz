@@ -18,13 +18,13 @@ describe('scanBear', () => {
   it('counts the notes a sync would push: not trashed, not locked', async () => {
     vi.mocked(listBearRows).mockResolvedValue([row('no'), row('yes'), row('no')])
 
-    expect(await scanBear()).toEqual({ mdCount: 2 })
+    expect(await scanBear()).toEqual({ count: 2 })
     expect(listBearRows).toHaveBeenCalledWith('id,locked,location')
   })
 
   it('counts none for an empty library', async () => {
     vi.mocked(listBearRows).mockResolvedValue([])
 
-    expect(await scanBear()).toEqual({ mdCount: 0 })
+    expect(await scanBear()).toEqual({ count: 0 })
   })
 })

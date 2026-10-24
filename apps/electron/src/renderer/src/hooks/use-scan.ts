@@ -17,8 +17,8 @@ export function useScan(onError: (message: string | null) => void) {
     setScanning(true)
     const unsubscribe = window.api.onScanProgress(setProgress)
     try {
-      const result = await window.api.scanFolder(picked)
-      setCount(result.mdCount)
+      const result = await window.api.scan({ source: 'file', folder: picked })
+      setCount(result.count)
     } catch (err) {
       onError(errorMessage(err))
     } finally {

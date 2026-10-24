@@ -21,7 +21,7 @@ export function useSync(folder: string | null, onError: (message: string | null)
     setSyncing(true)
     const unsubscribe = window.api.onSyncProgress(setProgress)
     try {
-      const result = await window.api.syncFolder(folder)
+      const result = await window.api.sync({ source: 'file', folder })
       setLastSync({ syncedAt: new Date().toISOString(), notes: result.notes })
     } catch (err) {
       onError(errorMessage(err))

@@ -9,11 +9,11 @@ const notes = {
 }
 const result: SyncResult = { scanned: 1, synced: 1, unchanged: 0, deleted: 0, failed: 0, notes }
 
-function stubApi(syncFolder: Api['syncFolder']) {
+function stubApi(syncFolder: Api['sync']) {
   const unsubscribe = vi.fn()
   let push: (progress: SyncProgress) => void = () => {}
   window.api = {
-    syncFolder,
+    sync: syncFolder,
     onSyncProgress: vi.fn((callback: (progress: SyncProgress) => void) => {
       push = callback
       return unsubscribe
@@ -35,7 +35,7 @@ describe('useSync', () => {
 
     await act(() => result.current.sync())
 
-    expect(window.api.syncFolder).not.toHaveBeenCalled()
+    expect(window.api.sync).not.toHaveBeenCalled()
   })
 
   it('syncs the folder and keeps the notes with the time', async () => {
@@ -45,7 +45,10 @@ describe('useSync', () => {
 
     await act(() => hook.current.sync())
 
-    expect(window.api.syncFolder).toHaveBeenCalledWith('/notes')
+    expect(window.api.sync).toHaveBeenCalledWith({
+      source: 'file',
+      folder: '/notes',
+    })
     expect(hook.current.lastSync?.notes).toEqual(notes)
     expect(Date.parse(hook.current.lastSync!.syncedAt)).not.toBeNaN()
     expect(hook.current.syncing).toBe(false)
