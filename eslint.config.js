@@ -53,8 +53,8 @@ export default tseslint.config(
     rules: { 'react/no-multi-comp': 'off' },
   },
   {
-    // shadcn's card is one file of related components.
-    files: ['packages/ui/src/components/card.tsx'],
+    // shadcn's card and select are one file of related components each.
+    files: ['packages/ui/src/components/card.tsx', 'packages/ui/src/components/select.tsx'],
     rules: { 'react/no-multi-comp': 'off' },
   },
   {

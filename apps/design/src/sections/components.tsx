@@ -10,6 +10,13 @@ import {
   EmptyState,
   ErrorState,
   Loader,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
   StateBlock,
 } from '@md-viz/ui'
 import { Section } from './section'
@@ -37,6 +44,19 @@ export function Components() {
         ))}
         <Button disabled>disabled</Button>
       </div>
+      <h3 className="text-sm font-bold">select</h3>
+      <Select defaultValue="file">
+        <SelectTrigger aria-label="source">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>source</SelectLabel>
+            <SelectItem value="file">file</SelectItem>
+            <SelectItem value="bear">bear</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <h3 className="text-sm font-bold">app header</h3>
       <div className="bg-background bg-dots h-40">
         <AppHeader title="md-viz" className="static">

@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import { FolderCard } from '../../../src/renderer/src/components/folder-card'
 
 const props: ComponentProps<typeof FolderCard> = {
-  folder: '/notes',
+  target: { source: 'file', folder: '/notes' },
   lastSync: null,
   scanning: false,
   scanProgress: null,
@@ -16,15 +16,21 @@ describe('FolderCard', () => {
   it('shows the folder and that it was never synced', () => {
     render(<FolderCard {...props} />)
 
-    expect(screen.getByLabelText('chosen folder')).toHaveTextContent('/notes')
+    expect(screen.getByLabelText('chosen source')).toHaveTextContent('/notes')
     expect(screen.getByText('never synced')).toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('shows bear instead of a folder for the Bear source', () => {
+    render(<FolderCard {...props} target={{ source: 'bear' }} />)
+
+    expect(screen.getByLabelText('chosen source')).toHaveTextContent('bear')
   })
 
   it('takes extra classes for its width', () => {
     render(<FolderCard {...props} className="w-full" />)
 
-    expect(screen.getByLabelText('chosen folder').parentElement).toHaveClass('w-full')
+    expect(screen.getByLabelText('chosen source').parentElement).toHaveClass('w-full')
   })
 
   it('shows when it was last synced', () => {

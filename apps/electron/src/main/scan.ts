@@ -37,5 +37,5 @@ export async function scanMarkdown(
     progress.mdFiles += 1
   }
   report(true)
-  return { mdCount: progress.mdFiles }
+  return { count: progress.mdFiles }
 }

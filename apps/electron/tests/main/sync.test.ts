@@ -1,15 +1,7 @@
 // @vitest-environment node
-import { mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import path from 'node:path'
-import { noteId, noteTitle, syncFolder } from '../../src/main/sync'
+import type { Note } from '../../src/main/notes'
+import { syncNotes } from '../../src/main/sync'
 import type { SyncProgress } from '../../src/shared/ipc'
-
-// real by default; a few tests make a file vanish or fail to read mid-sync.
-vi.mock('node:fs/promises', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs/promises')>()
-  return { ...actual, stat: vi.fn(actual.stat), readFile: vi.fn(actual.readFile) }
-})
 
 /** a minimal in-memory stand-in for the cache service's notes routes. */
 function fakeCache() {
@@ -55,41 +47,34 @@ function fakeCache() {
   return { notes, upserts, fetch: handler }
 }
 
-describe('noteId and noteTitle', () => {
-  it('derives a stable 16-char slash-free id from the relative path', () => {
-    expect(noteId('a/b.md')).toMatch(/^[0-9a-f]{16}$/)
-    expect(noteId('a/b.md')).toBe(noteId('a/b.md'))
-    expect(noteId('a/b.md')).not.toBe(noteId('b.md'))
-  })
+const PAST = '2020-01-01T00:00:00.000Z'
+const FUTURE = new Date(Date.now() + 60_000).toISOString()
 
-  it('strips the md extension from the file name only', () => {
-    expect(noteTitle('sub/plan.md')).toBe('plan')
-    expect(noteTitle('Plan.MD')).toBe('Plan')
-    expect(noteTitle('a.md.md')).toBe('a.md')
-  })
+const note = (id: string, overrides: Partial<Note> = {}): Note => ({
+  id,
+  source: 'file',
+  title: id,
+  body: `body of ${id}`,
+  tags: [],
+  created: '',
+  modified: PAST,
+  ...overrides,
 })
 
-describe('syncFolder', () => {
-  let root: string
+const loaded = (...notes: Note[]) => ({ notes, failed: [] })
 
-  beforeEach(async () => {
-    root = await mkdtemp(path.join(tmpdir(), 'md-viz-sync-'))
-  })
-
-  afterEach(async () => {
-    await rm(root, { recursive: true, force: true })
-  })
-
-  const write = (name: string, content: string) => writeFile(path.join(root, name), content)
-
-  it('pushes every note on the first sync with title and body', async () => {
-    await mkdir(path.join(root, 'sub'))
-    await write('plan.md', '# plan')
-    await write('sub/plants.md', 'tomatoes')
-    await write('skip.txt', 'no')
+describe('syncNotes', () => {
+  it('pushes every note on the first sync with all its fields', async () => {
     const cache = fakeCache()
 
-    const result = await syncFolder(root, { fetch: cache.fetch })
+    const result = await syncNotes(
+      'bear',
+      loaded(
+        note('a', { source: 'bear', tags: ['x', 'x/y'], created: PAST }),
+        note('b', { source: 'bear' }),
+      ),
+      { fetch: cache.fetch },
+    )
 
     expect(result).toEqual({
       scanned: 2,
@@ -98,61 +83,85 @@ describe('syncFolder', () => {
       deleted: 0,
       failed: 0,
       notes: {
-        updated: expect.arrayContaining([
-          { id: noteId('plan.md'), title: 'plan' },
-          { id: noteId('sub/plants.md'), title: 'plants' },
-        ]) as unknown,
+        updated: [
+          { id: 'a', title: 'a' },
+          { id: 'b', title: 'b' },
+        ],
         deleted: [],
         unchanged: [],
       },
     })
-    expect(cache.notes.get(noteId('plan.md'))).toMatchObject({ title: 'plan', body: '# plan' })
-    expect(cache.notes.get(noteId('sub/plants.md'))).toMatchObject({
-      title: 'plants',
-      body: 'tomatoes',
+    expect(cache.notes.get('a')).toMatchObject({
+      title: 'a',
+      body: 'body of a',
+      tags: '["x","x/y"]',
+      created: PAST,
+      modified: PAST,
+      source: 'bear',
     })
   })
 
-  it('skips unchanged notes and pushes only edited ones', async () => {
-    await write('a.md', 'one')
-    await write('b.md', 'two')
+  it('skips unchanged notes and pushes only the ones modified after the last sync', async () => {
     const cache = fakeCache()
-    await syncFolder(root, { fetch: cache.fetch })
+    await syncNotes('file', loaded(note('a'), note('b')), { fetch: cache.fetch })
 
-    const future = new Date(Date.now() + 60_000)
-    await write('b.md', 'two edited')
-    await utimes(path.join(root, 'b.md'), future, future)
-    const result = await syncFolder(root, { fetch: cache.fetch })
+    const result = await syncNotes(
+      'file',
+      loaded(note('a'), note('b', { body: 'edited', modified: FUTURE })),
+      { fetch: cache.fetch },
+    )
 
     expect(result).toMatchObject({ synced: 1, unchanged: 1, deleted: 0 })
-    expect(result.notes.updated).toEqual([{ id: noteId('b.md'), title: 'b' }])
-    expect(result.notes.unchanged).toEqual([{ id: noteId('a.md'), title: 'a' }])
-    expect(cache.notes.get(noteId('b.md'))?.['body']).toBe('two edited')
+    expect(result.notes.updated).toEqual([{ id: 'b', title: 'b' }])
+    expect(result.notes.unchanged).toEqual([{ id: 'a', title: 'a' }])
+    expect(cache.notes.get('b')?.['body']).toBe('edited')
   })
 
-  it('deletes cached notes whose file is gone', async () => {
-    await write('a.md', 'one')
-    await write('b.md', 'two')
+  it('deletes cached notes of the source that are gone from it', async () => {
     const cache = fakeCache()
-    await syncFolder(root, { fetch: cache.fetch })
+    await syncNotes('file', loaded(note('a'), note('b')), { fetch: cache.fetch })
 
-    await rm(path.join(root, 'b.md'))
-    const result = await syncFolder(root, { fetch: cache.fetch })
+    const result = await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
 
     expect(result).toMatchObject({ synced: 0, unchanged: 1, deleted: 1 })
-    expect(result.notes.deleted).toEqual([{ id: noteId('b.md'), title: 'b' }])
-    expect([...cache.notes.keys()]).toEqual([noteId('a.md')])
+    expect(result.notes.deleted).toEqual([{ id: 'b', title: 'b' }])
+    expect([...cache.notes.keys()]).toEqual(['a'])
+  })
+
+  it('never deletes the notes of another source, in either direction', async () => {
+    const cache = fakeCache()
+    await syncNotes('file', loaded(note('f')), { fetch: cache.fetch })
+    await syncNotes('bear', loaded(note('b', { source: 'bear' })), { fetch: cache.fetch })
+
+    const bearEmpty = await syncNotes('bear', loaded(), { fetch: cache.fetch })
+    expect(bearEmpty.notes.deleted).toEqual([{ id: 'b', title: 'b' }])
+    expect([...cache.notes.keys()]).toEqual(['f'])
+
+    await syncNotes('bear', loaded(note('b', { source: 'bear' })), { fetch: cache.fetch })
+    const fileEmpty = await syncNotes('file', loaded(), { fetch: cache.fetch })
+    expect(fileEmpty.notes.deleted).toEqual([{ id: 'f', title: 'f' }])
+    expect([...cache.notes.keys()]).toEqual(['b'])
+  })
+
+  it('leaves cached notes with no source alone', async () => {
+    const cache = fakeCache()
+    cache.notes.set('legacy', { title: 'legacy' })
+
+    const result = await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
+
+    expect(result.deleted).toBe(0)
+    expect(cache.notes.has('legacy')).toBe(true)
   })
 
   it('upserts in batches of 200 and reports progress', async () => {
-    await Promise.all(Array.from({ length: 450 }, (_, i) => write(`n${i}.md`, `note ${i}`)))
     const cache = fakeCache()
     const updates: SyncProgress[] = []
 
-    const result = await syncFolder(root, {
-      fetch: cache.fetch,
-      onProgress: (p) => updates.push(p),
-    })
+    const result = await syncNotes(
+      'file',
+      loaded(...Array.from({ length: 450 }, (_, i) => note(`n${i}`))),
+      { fetch: cache.fetch, onProgress: (p) => updates.push(p) },
+    )
 
     expect(result.synced).toBe(450)
     expect(cache.upserts).toEqual([200, 200, 50])
@@ -160,71 +169,77 @@ describe('syncFolder', () => {
     expect(updates.at(-1)).toEqual({ synced: 450, deleted: 0, total: 450 })
   })
 
-  it('deletes nothing when the cache cannot be listed', async () => {
-    await write('a.md', 'one')
+  it('deletes in groups and counts them in the progress', async () => {
     const cache = fakeCache()
-    await syncFolder(root, { fetch: cache.fetch })
-    await rm(path.join(root, 'a.md'))
+    const many = Array.from({ length: 45 }, (_, i) => note(`n${i}`))
+    await syncNotes('file', loaded(...many), { fetch: cache.fetch })
+    const updates: SyncProgress[] = []
 
+    const result = await syncNotes('file', loaded(), {
+      fetch: cache.fetch,
+      onProgress: (p) => updates.push(p),
+    })
+
+    expect(result.deleted).toBe(45)
+    expect(cache.notes.size).toBe(0)
+    expect(updates.at(-1)).toEqual({ synced: 0, deleted: 45, total: 45 })
+  })
+
+  it('deletes nothing when the cache cannot be listed', async () => {
+    const cache = fakeCache()
+    await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
     const failing = (() => Promise.resolve(new Response('boom', { status: 500 }))) as typeof fetch
 
-    await expect(syncFolder(root, { fetch: failing })).rejects.toBeDefined()
+    await expect(syncNotes('file', loaded(), { fetch: failing })).rejects.toBeDefined()
     expect(cache.notes.size).toBe(1)
   })
 
-  it('fails on a missing folder instead of wiping the cache', async () => {
+  it('counts notes that could not be read as failed and keeps them in the cache', async () => {
     const cache = fakeCache()
-    cache.notes.set('abc', { title: 'x' })
+    await syncNotes('file', loaded(note('a'), note('b')), { fetch: cache.fetch })
 
-    await expect(syncFolder(path.join(root, 'missing'), { fetch: cache.fetch })).rejects.toThrow()
-    expect(cache.notes.size).toBe(1)
+    const result = await syncNotes(
+      'file',
+      { notes: [note('a')], failed: ['b'] },
+      { fetch: cache.fetch },
+    )
+
+    expect(result).toMatchObject({ scanned: 2, synced: 0, unchanged: 1, deleted: 0, failed: 1 })
+    expect(cache.notes.has('b')).toBe(true)
   })
 
-  it('skips a file that vanishes before it is read', async () => {
-    await write('a.md', 'one')
-    await write('b.md', 'two')
+  it('does not call the cache for upserts when nothing changed', async () => {
     const cache = fakeCache()
-    vi.mocked(stat).mockRejectedValueOnce(new Error('ENOENT'))
 
-    const result = await syncFolder(root, { fetch: cache.fetch })
+    const result = await syncNotes('file', loaded(), { fetch: cache.fetch })
 
-    expect(result.scanned).toBe(1)
-    expect(result.synced).toBe(1)
-  })
-
-  it('counts a file that cannot be read as failed and leaves it out of the updates', async () => {
-    await write('a.md', 'one')
-    await write('b.md', 'two')
-    const cache = fakeCache()
-    vi.mocked(readFile).mockRejectedValueOnce(new Error('EACCES'))
-
-    const result = await syncFolder(root, { fetch: cache.fetch })
-
-    expect(result).toMatchObject({ scanned: 2, synced: 1, failed: 1 })
-    expect(result.notes.updated).toHaveLength(1)
-    expect(cache.notes.size).toBe(1)
-  })
-
-  it('does not call the cache when no file could be read', async () => {
-    await write('a.md', 'one')
-    const cache = fakeCache()
-    vi.mocked(readFile).mockRejectedValueOnce(new Error('EACCES'))
-
-    const result = await syncFolder(root, { fetch: cache.fetch })
-
-    expect(result).toMatchObject({ synced: 0, failed: 1 })
+    expect(result).toMatchObject({ scanned: 0, synced: 0 })
     expect(cache.upserts).toEqual([])
   })
 
   it('treats cached notes without a title or sync time as stale, titling deletions by id', async () => {
-    await write('a.md', 'one')
     const cache = fakeCache()
-    cache.notes.set(noteId('a.md'), {})
-    cache.notes.set('orphan', {})
+    cache.notes.set('a', { source: 'file' })
+    cache.notes.set('orphan', { source: 'file' })
 
-    const result = await syncFolder(root, { fetch: cache.fetch })
+    const result = await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
 
     expect(result.synced).toBe(1)
     expect(result.notes.deleted).toEqual([{ id: 'orphan', title: 'orphan' }])
+  })
+
+  it('syncs to the cache named by baseUrl', async () => {
+    const urls: string[] = []
+    const spy = ((input: Request | URL | string, init?: RequestInit) => {
+      const request = input instanceof Request ? input : new Request(input, init)
+      urls.push(request.url)
+      return Promise.resolve(
+        new Response('[]', { status: 200, headers: { 'content-type': 'application/json' } }),
+      )
+    }) as typeof fetch
+
+    await syncNotes('file', loaded(), { baseUrl: 'http://cache.test', fetch: spy })
+
+    expect(urls[0]).toMatch(/^http:\/\/cache\.test\/notes/)
   })
 })

@@ -2,7 +2,7 @@
 
 A homelab project that loads markdown notes (a folder of `.md` files or a Bear database) into a cache so their content, relationships and structure can be analyzed.
 
-Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a grid of the notes in the cache (one cell per note, hover for the title), an Electron app that counts the markdown files in a chosen folder, syncs them to the cache and shows the last sync as updated, deleted and unchanged note grids, a note cache service (notes API over SQLite) with a generated, validated API client (the web app loads its notes through it), a design viewer app and a shared UI package.
+Currently a bootstrap: a pnpm monorepo with a web app whose landing page shows a grid of the notes in the cache (one cell per note, hover for the title), an Electron app that syncs notes to the cache from a folder of markdown files or from Bear and shows the last sync as updated, deleted and unchanged note grids, a note cache service (notes API over SQLite) with a generated, validated API client (the web app loads its notes through it), a design viewer app and a shared UI package.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ pnpm dev:cache    # note cache service on http://localhost:8787 (see apps/cache/
 pnpm dev:all      # cache service, web app and Electron app together
 ```
 
-The Electron renderer uses port 5173 and the web app 5175, so they can run together. In the Electron app, choose the `demo/` folder to see the count of 18 (the app reopens the last folder on the next launch), then click sync to push the notes to the cache (`CACHE_URL`, default `http://localhost:8787`); they show up in the web app's grid. Sync only pushes new or changed files and deletes cached notes whose file is gone; the last sync's result is kept in `state.json` in Electron's user data folder (on macOS `~/Library/Application Support/@md-viz/electron/`).
+The Electron renderer uses port 5173 and the web app 5175, so they can run together. In the Electron app, choose the `demo/` folder to see the count of 18 (the app reopens the last folder on the next launch), then click sync to push the notes to the cache (`CACHE_URL`, default `http://localhost:8787`); they show up in the web app's grid. Pick `bear` in the source select to sync your Bear library instead (macOS with Bear installed, read through Bear's `bearcli`; trashed and locked notes are skipped). Sync only pushes new or changed notes and deletes cached notes of the same source that are gone, so syncing one source never removes the other's notes; the last sync of each source is kept in `state.json` in Electron's user data folder (on macOS `~/Library/Application Support/@md-viz/electron/`).
 
 ## Commands
 

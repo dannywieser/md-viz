@@ -1,10 +1,10 @@
 import { Card, cn } from '@md-viz/ui'
-import type { LastSync, ScanProgress, SyncProgress } from '../../../shared/ipc'
+import type { LastSync, ScanProgress, SyncProgress, SyncTarget } from '../../../shared/ipc'
 
 const formatTime = (iso: string) => new Date(iso).toLocaleString().toLowerCase()
 
 interface FolderCardProps {
-  folder: string
+  target: SyncTarget
   lastSync: LastSync | null
   scanning: boolean
   scanProgress: ScanProgress | null
@@ -14,9 +14,9 @@ interface FolderCardProps {
   className?: string
 }
 
-/** the chosen folder with when it was last synced and the progress of a running scan or sync. */
+/** the chosen source (its folder, or bear) with when it was last synced and the progress of a running scan or sync. */
 export function FolderCard({
-  folder,
+  target,
   lastSync,
   scanning,
   scanProgress,
@@ -27,8 +27,8 @@ export function FolderCard({
 }: FolderCardProps) {
   return (
     <Card className={cn('max-w-full gap-2 px-4 py-3', className)}>
-      <p className="break-all text-sm" aria-label="chosen folder">
-        {folder}
+      <p className="break-all text-sm" aria-label="chosen source">
+        {target.source === 'bear' ? 'bear' : target.folder}
       </p>
       <p className="text-sm text-muted-foreground">
         {lastSync ? `last synced ${formatTime(lastSync.syncedAt)}` : 'never synced'}

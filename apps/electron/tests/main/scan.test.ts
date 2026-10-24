@@ -9,32 +9,32 @@ const DEMO = path.resolve(import.meta.dirname, '../../../../demo')
 
 describe('scanMarkdown', () => {
   it('counts the markdown notes in the demo folder', async () => {
-    const { mdCount } = await scanMarkdown(DEMO)
+    const { count } = await scanMarkdown(DEMO)
 
     // .hidden/, the .txt files and the .svg are excluded.
-    expect(mdCount).toBe(18)
+    expect(count).toBe(18)
   })
 
   it('throttles progress reports to the interval, still reporting the final totals', async () => {
     const updates: ScanProgress[] = []
 
-    const { mdCount } = await scanMarkdown(DEMO, (p) => updates.push(p), {
+    const { count } = await scanMarkdown(DEMO, (p) => updates.push(p), {
       progressIntervalMs: 60_000,
     })
 
     expect(updates).toHaveLength(2)
-    expect(updates.at(-1)).toMatchObject({ mdFiles: mdCount })
+    expect(updates.at(-1)).toMatchObject({ mdFiles: count })
   })
 
   it('reports progress, ending with the final totals', async () => {
     const updates: ScanProgress[] = []
 
-    const { mdCount } = await scanMarkdown(DEMO, (p) => updates.push(p), {
+    const { count } = await scanMarkdown(DEMO, (p) => updates.push(p), {
       progressIntervalMs: 0,
     })
 
     expect(updates.length).toBeGreaterThan(1)
-    expect(updates.at(-1)).toMatchObject({ mdFiles: mdCount })
+    expect(updates.at(-1)).toMatchObject({ mdFiles: count })
     const counts = updates.map((p) => p.mdFiles)
     expect(counts).toEqual([...counts].sort((a, b) => a - b))
   })
@@ -59,11 +59,11 @@ describe('scanMarkdown', () => {
       await writeFile(path.join(root, 'sub/c.markdown'), '')
       await writeFile(path.join(root, 'sub/d.txt'), '')
 
-      expect((await scanMarkdown(root)).mdCount).toBe(2)
+      expect((await scanMarkdown(root)).count).toBe(2)
     })
 
     it('returns zero for a missing folder', async () => {
-      expect((await scanMarkdown(path.join(root, 'missing'))).mdCount).toBe(0)
+      expect((await scanMarkdown(path.join(root, 'missing'))).count).toBe(0)
     })
   })
 })
