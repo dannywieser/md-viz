@@ -8,6 +8,12 @@ export default defineConfig({
   server: {
     port: 5175,
     strictPort: true,
+    proxy: {
+      '/api': {
+        target: process.env.CACHE_URL ?? 'http://localhost:8787',
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   resolve: {
     alias: {
