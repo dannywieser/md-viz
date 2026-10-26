@@ -2,6 +2,7 @@
 
 - **Slug:** 20261026-01-docker-deployment
 - **Started:** 2026-10-26 08:00:13 MDT
+- **Completed:** 2026-10-26 08:27:21
 
 ---
 
@@ -67,3 +68,9 @@ Yes, prepare the homelab md-viz folder and Caddy block, uncommitted.
 
 ### [2026-10-26 09:31:00] Claude
 In `/Users/dgw/dev/dgwlab.net` (uncommitted): added `md-viz/docker-compose.yml` (cache with `data` volume; web as `md-viz-web` on `default` + `edge`, `expose 80`, no published port), `md-viz/up.sh` (`pull` + `up -d --no-build`, like md-images), and a `md-viz.dgwlab.net` block in `caddy/site/Caddyfile` (`reverse_proxy md-viz-web:80`, same route53 TLS as the others). Compose validated with `docker compose config`.
+
+### [2026-10-26 08:26:35] User
+/create-complete
+
+### [2026-10-26 08:27:21] Decision
+Session complete. Coverage re-run fresh (exit 0, all six workspaces at or above 95%); summary.md written; harvest found docs already updated during implementation.
