@@ -6,7 +6,7 @@ import { App } from './app'
 import { createQueryClient } from './lib/query-client'
 import './index.css'
 
-configureCacheClient({ baseUrl: import.meta.env.VITE_CACHE_URL ?? 'http://localhost:8787' })
+configureCacheClient({ baseUrl: import.meta.env.VITE_CACHE_URL ?? '/api' })
 const queryClient = createQueryClient()
 
 createRoot(document.getElementById('root')!).render(

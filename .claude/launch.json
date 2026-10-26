@@ -8,6 +8,12 @@
       "port": 5175
     },
     {
+      "name": "cache",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev:cache"],
+      "port": 8787
+    },
+    {
       "name": "design",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev:design"],

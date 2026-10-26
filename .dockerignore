@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/coverage
+**/out
+.git
+.claude
+.DS_Store
+create
+demo
+apps/cache/data
+apps/electron
+apps/design
+packages/api-client/src/generated
+deploy

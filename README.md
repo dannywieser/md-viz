@@ -22,6 +22,10 @@ pnpm dev:all      # cache service, web app and Electron app together
 
 The Electron renderer uses port 5173 and the web app 5175, so they can run together. In the Electron app, choose the `demo/` folder to see the count of 18 (the app reopens the last folder on the next launch), then click sync to push the notes to the cache (`CACHE_URL`, default `http://localhost:8787`); they show up in the web app's grid. Pick `bear` in the source select to sync your Bear library instead (macOS with Bear installed, read through Bear's `bearcli`; trashed and locked notes are skipped). Sync only pushes new or changed notes and deletes cached notes of the same source that are gone, so syncing one source never removes the other's notes; the last sync of each source is kept in `state.json` in Electron's user data folder (on macOS `~/Library/Application Support/@md-viz/electron/`).
 
+## Docker
+
+The cache service and the web app are published as images (`ghcr.io/dannywieser/md-viz-cache` and `md-viz-web`, amd64). `deploy/docker-compose.yml` runs both behind one origin (the web container proxies `/api` to the cache); see [deploy/README.md](deploy/README.md) to install it with `wget` and to point the Electron app at it (`CACHE_URL=https://<host>/api`).
+
 ## Commands
 
 Run from the repo root.

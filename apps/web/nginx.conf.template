@@ -1,0 +1,28 @@
+# Rendered by the nginx image's envsubst step. CACHE_UPSTREAM is host:port of the cache service;
+# NGINX_LOCAL_RESOLVERS comes from NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 (the container's resolvers).
+server {
+  listen 80;
+  root /usr/share/nginx/html;
+
+  # a variable upstream is resolved per request (valid=10s), so a recreated cache is picked up
+  # without restarting this container
+  resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+
+  location /api/ {
+    set $cache_upstream ${CACHE_UPSTREAM};
+    rewrite ^/api/(.*)$ /$1 break;
+    proxy_pass http://$cache_upstream;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    client_max_body_size 64m;
+  }
+
+  location /assets/ {
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location / {
+    add_header Cache-Control "no-cache";
+    try_files $uri /index.html;
+  }
+}

@@ -15,6 +15,8 @@ pnpm dev:cache
 | `PORT`     | `8787`                     | listen port                                  |
 | `CACHE_DB` | `apps/cache/data/cache.db` | SQLite file (`:memory:` for a throwaway run) |
 
+In Docker the image sets `CACHE_DB=/data/cache.db` (a volume) and `PORT=8787`; see [../../deploy/README.md](../../deploy/README.md).
+
 Node prints an `ExperimentalWarning` for `node:sqlite` on start; that is expected.
 
 ## API

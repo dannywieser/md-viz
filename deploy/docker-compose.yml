@@ -1,0 +1,26 @@
+# md-viz: note cache service + web app. The web container serves the app and proxies /api to the
+# cache, so everything is one origin. Edit what you need, then: docker compose up -d
+services:
+  cache:
+    image: ghcr.io/dannywieser/md-viz-cache:latest
+    restart: unless-stopped
+    volumes:
+      # SQLite file lives at /data/cache.db. Remove this volume (and the `volumes:` block below)
+      # for a cache that is emptied whenever the container is recreated.
+      - data:/data
+
+  web:
+    image: ghcr.io/dannywieser/md-viz-web:latest
+    restart: unless-stopped
+    depends_on:
+      cache:
+        condition: service_healthy
+    environment:
+      # host:port the web container proxies /api to (the service name and port above)
+      CACHE_UPSTREAM: cache:8787
+    ports:
+      # change the host port, or remove `ports` and join a proxy's network instead
+      - '8080:80'
+
+volumes:
+  data:
