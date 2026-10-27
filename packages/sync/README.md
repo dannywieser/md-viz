@@ -116,7 +116,7 @@ A JSON file at the path the caller passes (Electron uses `state.json` in its `us
 }
 ```
 
-`loadLastSelection` and `selectSource` turn it into a `LastSelection`: a file folder is returned only if it still exists, and its `lastSync` is the one stored under that folder's key.
+`loadLastSelection` and `selectSource` turn it into a `LastSelection` through the source's `restore` and `key`: for files the folder is returned only if it still exists and the `lastSync` is the one stored under that folder's key; for Bear it is the one `bear` entry. `lastFolder` is a top-level field for compatibility with saved files; the file source owns it (`remember` writes it, `restore` reads it).
 
 ## Sources: public and private
 
@@ -126,19 +126,23 @@ Each source has its own folder under `src/sources/`. Its `index.ts` is the only 
 interface SourceAdapter<T extends SyncTarget> {
   load: (target: T) => Promise<LoadedNotes> // read the notes; fails if the source cannot be read at all
   scan: (target: T, onProgress?) => Promise<ScanResult> // count them, without reading them all
+  parse: (input: Record<string, unknown>) => Promise<T> // validate a raw target that names this source
+  key: (target: T) => string // the key of the target's last sync in the state file
+  remember: (state: AppState, target: T) => void // what the state keeps to bring the target back
+  restore: (state: AppState) => Promise<T | null> // the remembered target, if there is one and it is still valid
 }
 ```
 
-`src/sources/index.ts` is the registry: `sources` maps each `Source` to its adapter (a `Source` without an entry does not type-check) and `adapterFor(target)` picks the one for a target, so `run.ts` never branches on the source. ESLint (`no-restricted-imports`) stops code outside a source folder from importing its private files; tests may import the files of their own folder.
+`src/sources/index.ts` is the registry: `sources` maps each `Source` to its adapter (a `Source` without an entry does not type-check) and `adapterOf(source)` / `adapterFor(target)` pick the adapter and `isSource` checks a name, so `run.ts`, `state.ts` and `target.ts` never name a source (`parseTarget` asks the named source to `parse` the rest of the input; `syncTarget` and `selectSource` use `key`, `remember` and `restore`). ESLint (`no-restricted-imports`) stops code outside a source folder from importing its private files; tests may import the files of their own folder.
 
 ## Adding a source
 
 1. Add the value to `Source` in `types.ts`, and its target type (like `FileTarget`) to `SyncTarget`.
-2. Create `src/sources/<name>/` with `load.ts` (returns `LoadedNotes`, filling as many `Note` fields as the source knows), `scan.ts` (the count), any other private helpers and an `index.ts` exporting the adapter.
-3. Add the adapter to `sources` in `src/sources/index.ts`, and accept the source in `parseTarget` (`target.ts`).
+2. Create `src/sources/<name>/` with `load.ts` (returns `LoadedNotes`, filling as many `Note` fields as the source knows), `scan.ts` (the count), any other private helpers and an `index.ts` exporting the adapter (`load`, `scan`, `parse`, `key`, `remember`, `restore`).
+3. Add the adapter to `sources` in `src/sources/index.ts`.
 4. Add tests under `tests/sources/<name>/`, one file per source file.
 
-The pipeline, the sets and the state need no change. A source that learns to read more (the file source will get tags and frontmatter) only fills more `Note` fields.
+`run.ts`, `state.ts`, `target.ts` and the pipeline need no change, except one thing: the automatic sets skip `created-*` for a source that cannot tell when a note was created, and that rule is still a source check in `pipeline/note-sets.ts`. A source that learns to read more (the file source will get tags and frontmatter) only fills more `Note` fields.
 
 ## Layout
 
@@ -148,7 +152,7 @@ src/
   types.ts              all shared types (no Node imports)
   run.ts                scanTarget, syncTarget, selectSource, loadLastSelection, rememberFolder
   target.ts             validation of targets, sources and folders
-  state.ts              the state file
+  state.ts              the state file (knows no source)
   pipeline/             source-agnostic: knows only `Note`
     sync.ts             syncNotes: the cache pipeline, DEFAULT_CACHE_URL
     notes.ts            Note, noteToFields
@@ -158,6 +162,7 @@ src/
     index.ts            the registry: sources, adapterFor
     file/
       index.ts          PUBLIC: fileSource
+      folder.ts         assertDirectory
       load.ts           reads the files as notes
       scan.ts           counts the markdown files
       walk.ts           markdown file walker
