@@ -56,6 +56,7 @@ apps/cache/      Note cache service (Hono + node:sqlite): notes API, see its REA
 apps/design/     Design-board viewer for the theme and shared components
 packages/ui/     @md-viz/ui: shared shadcn components, theme and styles
 packages/api-client/  @md-viz/api-client: clients generated from the OpenAPI specs, see its README
+packages/sync/  @md-viz/sync: loads notes from a source, syncs them to the cache and keeps the sync state (Node only, used by the Electron app, meant for a CLI too), see its README
 demo/            Small committed set of markdown notes for trying and testing
 ```
 

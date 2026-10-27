@@ -2,6 +2,7 @@
 
 - **Slug:** 20261027-02-refactor-extract-syncing-logic-into-package
 - **Started:** 2026-10-27 08:04:24 MDT
+- **Completed:** 2026-10-27 08:42:53
 
 ---
 
@@ -84,3 +85,12 @@ Steps 17-19 done. 17: SourceAdapter gained parse, key, remember, restore; file (
 
 ### [2026-10-27 08:41:10] Claude
 Read the paste as a go-ahead for the proposed change. FolderCard now shows `'folder' in target ? target.folder : target.source`, so it names no source; output is identical for file and Bear, and the existing Bear test covers the folderless branch. Electron lint, typecheck and coverage pass. Committed as step 20.
+
+### [2026-10-27 08:41:53] User
+/create-complete
+
+### [2026-10-27 08:42:53] Claude
+Ran pnpm coverage fresh (exit 0, all seven workspaces, thresholds still 95), wrote summary.md, harvested README.md (packages/sync in the structure list; CLAUDE.md was already updated during the session). Marking the session complete.
+
+### [2026-10-27 08:42:53] Decision
+Session complete
