@@ -107,4 +107,66 @@ describe('store', () => {
     expect(() => store.upsertNotes(batch)).toThrow()
     expect(store.getNote('good')).toBeNull()
   })
+
+  describe('sets', () => {
+    it('stores a set with its note ids ordered and counted', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-10-27T09:00:00.000Z'))
+      store.replaceSet('bear:created-today', ['b', 'a', 'a'])
+      expect(store.getSet('bear:created-today')).toEqual({
+        id: 'bear:created-today',
+        updated: '2026-10-27T09:00:00.000Z',
+        noteIds: ['a', 'b'],
+      })
+      expect(store.listSets()).toEqual([
+        { id: 'bear:created-today', count: 2, updated: '2026-10-27T09:00:00.000Z' },
+      ])
+    })
+
+    it('replaces the members and refreshes updated', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-10-27T09:00:00.000Z'))
+      store.replaceSet('s', ['a', 'b'])
+      vi.setSystemTime(new Date('2026-10-27T10:00:00.000Z'))
+      store.replaceSet('s', ['c'])
+      expect(store.getSet('s')).toEqual({
+        id: 's',
+        updated: '2026-10-27T10:00:00.000Z',
+        noteIds: ['c'],
+      })
+    })
+
+    it('keeps an empty set', () => {
+      store.replaceSet('s', [])
+      expect(store.getSet('s')?.noteIds).toEqual([])
+      expect(store.listSets()).toMatchObject([{ id: 's', count: 0 }])
+    })
+
+    it('lists sets ordered by id', () => {
+      store.replaceSet('b', ['1'])
+      store.replaceSet('a', [])
+      expect(store.listSets().map((set) => set.id)).toEqual(['a', 'b'])
+    })
+
+    it('returns null for an unknown set', () => {
+      expect(store.getSet('nope')).toBeNull()
+    })
+
+    it('deletes a set and its members, even an unknown one', () => {
+      store.replaceSet('s', ['a'])
+      store.deleteSet('s')
+      store.deleteSet('s')
+      expect(store.getSet('s')).toBeNull()
+      expect(store.listSets()).toEqual([])
+    })
+
+    it('removes a deleted note from every set', () => {
+      store.upsertNotes([{ id: 'a', fields: { title: 'one' } }])
+      store.replaceSet('s1', ['a', 'b'])
+      store.replaceSet('s2', ['a'])
+      store.deleteNote('a')
+      expect(store.getSet('s1')?.noteIds).toEqual(['b'])
+      expect(store.getSet('s2')?.noteIds).toEqual([])
+    })
+  })
 })

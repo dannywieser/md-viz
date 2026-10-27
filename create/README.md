@@ -60,3 +60,4 @@ New sessions are appended to the bottom of this table.
 | [20261023-05-support-syncing-notes-from-bear](20261023-05-support-syncing-notes-from-bear/) | support syncing notes from Bear | complete | 2026-10-23 |
 | [20261024-01-fix-tooltips-flowing-off-screen](20261024-01-fix-tooltips-flowing-off-screen/) | fix: tooltips flowing off screen | complete | 2026-10-24 |
 | [20261026-01-docker-deployment](20261026-01-docker-deployment/) | docker deployment | complete | 2026-10-26 |
+| [20261027-01-automatic-note-cache-sets](20261027-01-automatic-note-cache-sets/) | automatic note cache sets | planned | 2026-10-27 |
