@@ -77,7 +77,7 @@ export function SyncWindow({ caption, placement, phase, percent }: SyncWindowPro
   return (
     <AppFrame caption={caption} {...WINDOW}>
       <WindowHeader busy={busy} />
-      <div className="flex min-h-0 flex-1 flex-col gap-4 pt-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
         <StatusRow source={SOURCE} lastSynced={lastSynced} count={count} />
         {body}
       </div>

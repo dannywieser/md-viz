@@ -89,3 +89,9 @@ Plan for the exploration revision: (1) C as a semi-opaque overlay over the grids
 
 ### [2026-10-27 09:14:40] Claude
 Took it as: no per-note pipeline progress; the sync logic stays as it is. Removed the per-note option, so the progress shows what the pipeline reports today (pushed and deleted of the total, scan folders and notes so far). Exploration revised: C only, as a see-through overlay over the grids (plus the solid C for comparison; A and B dropped, see ca0b8f1); columns keep today's fixed 272px width with a 32px gap, window 912x520; deleted keeps a 160px drawing height (3x2) while updated and unchanged fill the height; today's window kept for comparison. Fixed the bar width. Design lint, typecheck and coverage pass.
+
+### [2026-10-27 09:14:54] User
+(mid-turn) why is there a bit more space between the app header and the status card than there is between the status card and the grids?
+
+### [2026-10-27 09:14:54] Claude
+No reason: the mock had pt-6 (24px) above the status card and gap-4 (16px) below it, a leftover from the app's own spacing. Made both 16px (pt-4, gap-4).
