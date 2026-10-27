@@ -1,9 +1,6 @@
-import { loadBearNotes } from './sources/bear/load'
-import { loadFileNotes } from './sources/file/load'
-import { scanBear } from './sources/bear/scan'
-import { scanMarkdown } from './sources/file/scan'
 import { readState, syncKey, updateState, type AppState } from './state'
 import { syncNotes } from './pipeline/sync'
+import { adapterFor } from './sources'
 import { assertDirectory, parseSource, parseTarget } from './target'
 import type {
   LastSelection,
@@ -43,8 +40,7 @@ export async function scanTarget(
   onProgress?: (progress: ScanProgress) => void,
 ): Promise<ScanResult> {
   const checked = await parseTarget(target)
-  if (checked.source === 'bear') return scanBear()
-  return scanMarkdown(checked.folder, onProgress)
+  return adapterFor(checked).scan(checked, onProgress)
 }
 
 /**
@@ -57,8 +53,7 @@ export async function syncTarget(
   { stateFile, cacheUrl, onProgress }: SyncRunOptions,
 ): Promise<SyncResult> {
   const checked = await parseTarget(target)
-  const loaded =
-    checked.source === 'bear' ? await loadBearNotes() : await loadFileNotes(checked.folder)
+  const loaded = await adapterFor(checked).load(checked)
   const result = await syncNotes(checked.source, loaded, { baseUrl: cacheUrl, onProgress })
   const syncedAt = new Date().toISOString()
   await updateState(stateFile, (state) => {
