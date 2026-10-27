@@ -11,7 +11,14 @@ import type { SyncResult } from '../src/types'
 vi.mock('../src/sources', () => ({ adapterFor: vi.fn() }))
 vi.mock('../src/pipeline/sync', () => ({ syncNotes: vi.fn() }))
 
-const adapter = { load: vi.fn(), scan: vi.fn() }
+const adapter = {
+  load: vi.fn(),
+  scan: vi.fn(),
+  parse: vi.fn(),
+  key: vi.fn(),
+  remember: vi.fn(),
+  restore: vi.fn(),
+}
 
 const syncResult: SyncResult = {
   scanned: 1,

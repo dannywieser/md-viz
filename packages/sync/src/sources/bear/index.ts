@@ -7,4 +7,10 @@ import { scanBear } from './scan'
 export const bearSource: SourceAdapter<BearTarget> = {
   load: () => loadBearNotes(),
   scan: () => scanBear(),
+  parse: () => Promise.resolve({ source: 'bear' }),
+  // one sync for the whole library.
+  key: () => 'bear',
+  // Bear has one library: nothing to remember beyond the source itself.
+  remember: () => undefined,
+  restore: () => Promise.resolve({ source: 'bear' }),
 }
