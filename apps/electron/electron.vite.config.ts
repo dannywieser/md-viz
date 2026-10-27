@@ -6,8 +6,9 @@ import { defineConfig } from 'electron-vite'
 export default defineConfig({
   main: {
     build: {
-      // the api client is typescript source, so main bundles it instead of requiring it.
-      externalizeDeps: { exclude: ['@md-viz/api-client'] },
+      // the api client and the sync package are typescript source, so main bundles them
+      // instead of requiring them.
+      externalizeDeps: { exclude: ['@md-viz/api-client', '@md-viz/sync'] },
     },
   },
   preload: {

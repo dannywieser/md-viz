@@ -1,0 +1,22 @@
+{
+  "name": "@md-viz/sync",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@md-viz/api-client": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "vitest": "5.0.4"
+  }
+}

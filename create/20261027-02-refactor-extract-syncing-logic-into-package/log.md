@@ -37,3 +37,9 @@ Intent is clear: A orchestration moves into packages/sync; B caller passes the c
 
 ### [2026-10-27 08:11:19] Claude
 Committed the discussion and opened draft PR https://github.com/dannywieser/md-viz/pull/13. Wrote create/20261027-02-refactor-extract-syncing-logic-into-package/plan.md (10 steps): new packages/sync with exports "." and "./types" (types entry so the web tsconfig never type-checks node sources); move leaf modules, then target.ts and run.ts (orchestration), slim ipc.ts, README step (types + workflow), CLAUDE.md, review of what else could move, final format/lint/typecheck/coverage. Asked how to proceed: 1 implement everything, 2 step by step (pause after each), 3 file by file, 4 custom.
+
+### [2026-10-27 08:12:54] User
+1
+
+### [2026-10-27 08:12:54] Decision
+Implement everything (all 10 plan steps), one commit per step, no pause between steps.
