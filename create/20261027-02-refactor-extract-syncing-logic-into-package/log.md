@@ -43,3 +43,6 @@ Committed the discussion and opened draft PR https://github.com/dannywieser/md-v
 
 ### [2026-10-27 08:12:54] Decision
 Implement everything (all 10 plan steps), one commit per step, no pause between steps.
+
+### [2026-10-27 08:14:32] Claude
+Steps 1-3 done. Created packages/sync (package.json, tsconfig, vitest.config, exports "." and "./types"); types.ts holds the moved types, apps/electron/src/shared/ipc.ts re-exports them; electron depends on @md-viz/sync and electron.vite bundles it. git mv'd notes, note-sets, walk, scan, scan-bear, bearcli, load-file-notes, load-bear-notes, state, sync and their tests (walk never had its own test; it is covered via scan) into the package, imports fixed (the scan test's demo path went from four to three levels up). ipc.ts temporarily imports from @md-viz/sync; ipc.test.ts mocks the package at that boundary. Typecheck, lint and tests pass in both workspaces. Deviation: steps 1 and 2 share one commit.
