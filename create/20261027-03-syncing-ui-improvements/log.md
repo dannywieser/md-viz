@@ -54,3 +54,9 @@ Intent is clear: (A) explore, then choose a layout with the user and implement i
 
 ### [2026-10-27 09:00:10] Claude
 Committing the discussion, opening the draft PR, then writing plan.md.
+
+### [2026-10-27 09:00:39] Claude
+Draft PR opened: https://github.com/dannywieser/md-viz/pull/15. Wrote plan.md (12 steps: exploration in steps 1-5, a review checkpoint at step 6, implementation in 7-11 provisional until the checkpoint, final coverage step 12). Status set to planned. Asked how to proceed.
+
+### [2026-10-27 09:00:39] Decision
+Plan created (create/20261027-03-syncing-ui-improvements/plan.md). Waiting for the user to pick the implementation approach.

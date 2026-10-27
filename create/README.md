@@ -66,4 +66,4 @@ New sessions are appended to the bottom of this table.
 | [20261026-01-docker-deployment](20261026-01-docker-deployment/) | docker deployment | complete | 2026-10-26 |
 | [20261027-01-automatic-note-cache-sets](20261027-01-automatic-note-cache-sets/) | automatic note cache sets | complete | 2026-10-27 |
 | [20261027-02-refactor-extract-syncing-logic-into-package](20261027-02-refactor-extract-syncing-logic-into-package/) | refactor: extract syncing logic into package | complete | 2026-10-27 |
-| [20261027-03-syncing-ui-improvements](20261027-03-syncing-ui-improvements/) | syncing UI improvements | review | 2026-10-27 |
+| [20261027-03-syncing-ui-improvements](20261027-03-syncing-ui-improvements/) | syncing UI improvements | planned | 2026-10-27 |
