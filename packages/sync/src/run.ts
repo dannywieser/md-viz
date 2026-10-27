@@ -1,9 +1,9 @@
-import { loadBearNotes } from './load-bear-notes'
-import { loadFileNotes } from './load-file-notes'
-import { scanBear } from './scan-bear'
-import { scanMarkdown } from './scan'
+import { loadBearNotes } from './sources/bear/load'
+import { loadFileNotes } from './sources/file/load'
+import { scanBear } from './sources/bear/scan'
+import { scanMarkdown } from './sources/file/scan'
 import { readState, syncKey, updateState, type AppState } from './state'
-import { syncNotes } from './sync'
+import { syncNotes } from './pipeline/sync'
 import { assertDirectory, parseSource, parseTarget } from './target'
 import type {
   LastSelection,

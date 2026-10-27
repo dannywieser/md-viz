@@ -1,20 +1,21 @@
 import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { loadBearNotes } from '../src/load-bear-notes'
-import { loadFileNotes, type LoadedNotes } from '../src/load-file-notes'
+import { loadBearNotes } from '../src/sources/bear/load'
+import { loadFileNotes } from '../src/sources/file/load'
+import type { LoadedNotes } from '../src/sources/types'
 import { loadLastSelection, rememberFolder, scanTarget, selectSource, syncTarget } from '../src/run'
-import { scanBear } from '../src/scan-bear'
-import { scanMarkdown } from '../src/scan'
+import { scanBear } from '../src/sources/bear/scan'
+import { scanMarkdown } from '../src/sources/file/scan'
 import { readState } from '../src/state'
-import { syncNotes } from '../src/sync'
+import { syncNotes } from '../src/pipeline/sync'
 import type { SyncResult } from '../src/types'
 
-vi.mock('../src/scan', () => ({ scanMarkdown: vi.fn() }))
-vi.mock('../src/scan-bear', () => ({ scanBear: vi.fn() }))
-vi.mock('../src/load-bear-notes', () => ({ loadBearNotes: vi.fn() }))
-vi.mock('../src/load-file-notes', () => ({ loadFileNotes: vi.fn() }))
-vi.mock('../src/sync', () => ({ syncNotes: vi.fn() }))
+vi.mock('../src/sources/file/scan', () => ({ scanMarkdown: vi.fn() }))
+vi.mock('../src/sources/bear/scan', () => ({ scanBear: vi.fn() }))
+vi.mock('../src/sources/bear/load', () => ({ loadBearNotes: vi.fn() }))
+vi.mock('../src/sources/file/load', () => ({ loadFileNotes: vi.fn() }))
+vi.mock('../src/pipeline/sync', () => ({ syncNotes: vi.fn() }))
 
 const syncResult: SyncResult = {
   scanned: 1,

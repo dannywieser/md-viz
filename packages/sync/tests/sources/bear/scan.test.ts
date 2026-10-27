@@ -1,8 +1,8 @@
 // @vitest-environment node
-import { listBearRows, type BearRow } from '../src/bearcli'
-import { scanBear } from '../src/scan-bear'
+import { listBearRows, type BearRow } from '../../../src/sources/bear/bearcli'
+import { scanBear } from '../../../src/sources/bear/scan'
 
-vi.mock('../src/bearcli', () => ({ listBearRows: vi.fn() }))
+vi.mock('../../../src/sources/bear/bearcli', () => ({ listBearRows: vi.fn() }))
 
 const row = (locked: 'yes' | 'no'): BearRow => ({
   id: 'x',

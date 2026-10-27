@@ -1,7 +1,7 @@
 // @vitest-environment node
-import type { Note } from '../src/notes'
-import { syncNotes } from '../src/sync'
-import type { SyncProgress } from '../src/types'
+import type { Note } from '../../src/pipeline/notes'
+import { syncNotes } from '../../src/pipeline/sync'
+import type { SyncProgress } from '../../src/types'
 
 /** a minimal in-memory stand-in for the cache service's notes routes. */
 function fakeCache() {

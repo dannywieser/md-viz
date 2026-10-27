@@ -1,4 +1,4 @@
-import type { ScanResult } from './types'
+import type { ScanResult } from '../../types'
 import { listBearRows } from './bearcli'
 
 /** counts the notes a Bear sync would push: all but the trashed and the locked ones. */

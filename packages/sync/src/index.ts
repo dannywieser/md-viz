@@ -7,5 +7,5 @@ export {
   syncTarget,
   type SyncRunOptions,
 } from './run'
-export { DEFAULT_CACHE_URL } from './sync'
+export { DEFAULT_CACHE_URL } from './pipeline/sync'
 export { parseSource, parseTarget } from './target'
