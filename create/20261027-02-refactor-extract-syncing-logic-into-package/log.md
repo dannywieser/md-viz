@@ -78,3 +78,9 @@ Steps 17-19 added: the adapter also owns parsing its target (parse), its state k
 
 ### [2026-10-27 08:37:24] Claude
 Steps 17-19 done. 17: SourceAdapter gained parse, key, remember, restore; file (assertDirectory moved to private file/folder.ts, restore checks the folder still exists) and bear implementations with tests (syncKey cases moved from state.test into the adapter tests). 18: registry has isSource, adapterOf, adapterFor; target.ts (parseSource/parseTarget), state.ts (lastSource validated with isSource, syncKey removed, DEFAULT_SOURCE) and run.ts (selectionOf via restore+key, remember via the adapter) no longer name a source except rememberFolder (an explicitly file API) and state's default source and top-level lastFolder (kept for the saved-file format); run.test.ts now spies on the real adapters' load/scan instead of mocking the registry. 19: README and CLAUDE.md. format:check, lint, typecheck clean; pnpm coverage exits 0 (sync 100/97.59/100/100). Left as is, documented: pipeline/note-sets.ts still checks source !== 'file' to skip created-* sets; LastSelection.folder stays in the IPC contract (derived with 'folder' in target).
+
+### [2026-10-27 08:41:10] User
+(pasted the FolderCard line) {target.source === 'bear' ? 'bear' : target.folder}
+
+### [2026-10-27 08:41:10] Claude
+Read the paste as a go-ahead for the proposed change. FolderCard now shows `'folder' in target ? target.folder : target.source`, so it names no source; output is identical for file and Bear, and the existing Bear test covers the folderless branch. Electron lint, typecheck and coverage pass. Committed as step 20.
