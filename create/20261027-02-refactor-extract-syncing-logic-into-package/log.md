@@ -69,3 +69,9 @@ Source structure goes into this PR: plan.md gets an extension with steps 11-16 (
 
 ### [2026-10-27 08:30:06] Claude
 Steps 11-16 done (one commit each, 16 is this log entry's commit). 11: git mv into src/pipeline (sync, notes, note-sets) and src/sources/{file,bear}/ (file: load, scan, walk, note-id; bear: load, scan, bearcli), tests mirror it, LoadedNotes moved to sources/types.ts, noteId/noteTitle split into note-id.ts with its own test (the scan test's demo path is five levels up now). 12: SourceAdapter<T> in sources/types.ts, FileTarget/BearTarget in types.ts, file/index.ts (fileSource) and bear/index.ts (bearSource) with tests. 13: sources/index.ts registry (sources satisfies a per-Source mapped type, adapterFor with the one cast); run.ts no longer branches per source; run.test.ts mocks adapterFor. 14: ESLint no-restricted-imports for packages/sync/src outside sources/*/ (proved with a deliberate violation, removed). 15: README (sources public/private, adding a source, layout) and CLAUDE.md. 16: format:check, lint, typecheck clean; pnpm coverage exits 0, sync at 100/97.84/100/100. Note: walk.ts still has no test file of its own (covered through scan.ts), as before the move.
+
+### [2026-10-27 08:34:37] User
+yes, let's take this all the way
+
+### [2026-10-27 08:34:37] Decision
+Steps 17-19 added: the adapter also owns parsing its target (parse), its state key (key), and how a target is remembered in and restored from the state file (remember, restore); state.ts, target.ts and run.ts stop naming sources. State file format unchanged (lastFolder stays top-level, owned by the file adapter); LastSelection.folder stays (IPC contract). Implement now, one commit per step.

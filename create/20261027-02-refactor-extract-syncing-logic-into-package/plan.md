@@ -140,3 +140,23 @@ Public vs private: a source folder's `index.ts` exports one adapter (`load` and 
 
 - Correlating a target with its adapter in a union is not expressible in TypeScript without one cast; it is confined to `adapterFor` with a comment.
 - `no-restricted-imports` only sees import strings, so it guards `src` outside `sources/`; tests are exempt on purpose.
+
+### Extension 2: sources own their state and target parsing (steps 17-19)
+
+`run.ts`, `state.ts` and `target.ts` still named the sources (`selectionOf`, `lastFolder`, `syncKey`, `parseTarget`). The adapter takes that over:
+
+```ts
+interface SourceAdapter<T extends SyncTarget> {
+  load, scan,
+  parse:    (input: Record<string, unknown>) => Promise<T>   // validate a raw target of this source
+  key:      (target: T) => string                            // the state key of the last sync
+  remember: (state: AppState, target: T) => void             // what the state keeps of a target
+  restore:  (state: AppState) => Promise<T | null>           // the target to show again, if still valid
+}
+```
+
+Behavior and the on-disk state format stay identical (`lastFolder` stays a top-level field, now owned by the file adapter; `LastSelection.folder` stays because it is part of the IPC contract).
+
+17. Extend `SourceAdapter` with `parse`, `key`, `remember`, `restore`; implement them in `file/` (with `assertDirectory` moving to a private `file/folder.ts`) and `bear/`; tests per adapter, including the `syncKey` cases that move out of `state.test.ts`.
+18. Registry: `adapterOf(source)`, `isSource`; `parseTarget`/`parseSource` dispatch through it; `state.ts` validates `lastSource` with `isSource` and drops `syncKey`; `run.ts` (`selectionOf`, `syncTarget`, `rememberFolder`) uses `restore`/`remember`/`key` with no source names; update those tests.
+19. README ("Adding a source" lists the six members, state section) and `CLAUDE.md`; run format, lint, typecheck and `pnpm coverage`.
