@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { noteToFields, type Note } from '../../src/main/notes'
+import { noteToFields, type Note } from '../src/notes'
 
 const note: Note = {
   id: 'abc',

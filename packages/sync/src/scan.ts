@@ -1,4 +1,4 @@
-import type { ScanProgress, ScanResult } from '../shared/ipc'
+import type { ScanProgress, ScanResult } from './types'
 import { walkMarkdown } from './walk'
 
 export interface ScanOptions {

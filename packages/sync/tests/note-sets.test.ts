@@ -1,6 +1,6 @@
 // @vitest-environment node
-import { buildNoteSets } from '../../src/main/note-sets'
-import type { Note } from '../../src/main/notes'
+import { buildNoteSets } from '../src/note-sets'
+import type { Note } from '../src/notes'
 
 const now = new Date(2026, 9, 27, 12, 0, 0)
 const at = (...args: [number, number, number, number?, number?, number?]) =>

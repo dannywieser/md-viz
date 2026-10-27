@@ -2,7 +2,7 @@
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { loadFileNotes, noteId, noteTitle } from '../../src/main/load-file-notes'
+import { loadFileNotes, noteId, noteTitle } from '../src/load-file-notes'
 
 // real by default; one test makes a file fail to read.
 vi.mock('node:fs/promises', async (importOriginal) => {

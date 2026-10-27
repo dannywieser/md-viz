@@ -2,7 +2,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { readState, syncKey, updateState } from '../../src/main/state'
+import { readState, syncKey, updateState } from '../src/state'
 
 describe('state file', () => {
   let dir: string

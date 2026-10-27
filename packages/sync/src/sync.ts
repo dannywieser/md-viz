@@ -5,7 +5,7 @@ import {
   replaceSet,
   upsertNotes,
 } from '@md-viz/api-client/cache'
-import type { NoteRef, Source, SyncProgress, SyncResult } from '../shared/ipc'
+import type { NoteRef, Source, SyncProgress, SyncResult } from './types'
 import type { LoadedNotes } from './load-file-notes'
 import { buildNoteSets } from './note-sets'
 import { noteToFields, type Note } from './notes'

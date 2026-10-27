@@ -3,14 +3,19 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { IPC, type LastSync, type SyncResult } from '../../src/shared/ipc'
-import type { AppState } from '../../src/main/state'
 import { registerIpc } from '../../src/main/ipc'
-import { loadBearNotes } from '../../src/main/load-bear-notes'
-import { loadFileNotes, type LoadedNotes } from '../../src/main/load-file-notes'
-import { scanBear } from '../../src/main/scan-bear'
-import { scanMarkdown } from '../../src/main/scan'
-import { readState, updateState } from '../../src/main/state'
-import { DEFAULT_CACHE_URL, syncNotes } from '../../src/main/sync'
+import {
+  DEFAULT_CACHE_URL,
+  loadBearNotes,
+  loadFileNotes,
+  readState,
+  scanBear,
+  scanMarkdown,
+  syncNotes,
+  updateState,
+  type AppState,
+  type LoadedNotes,
+} from '@md-viz/sync'
 
 const electron = vi.hoisted(() => ({
   handle: vi.fn<(channel: string, listener: unknown) => void>(),
@@ -23,19 +28,17 @@ vi.mock('electron', () => ({
   dialog: { showOpenDialog: electron.showOpenDialog },
   ipcMain: { handle: electron.handle },
 }))
-vi.mock('../../src/main/scan', () => ({ scanMarkdown: vi.fn() }))
-vi.mock('../../src/main/scan-bear', () => ({ scanBear: vi.fn() }))
-vi.mock('../../src/main/load-bear-notes', () => ({ loadBearNotes: vi.fn() }))
-vi.mock('../../src/main/state', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../src/main/state')>()),
+vi.mock('@md-viz/sync', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@md-viz/sync')>()),
+  DEFAULT_CACHE_URL: 'http://default.test',
+  scanMarkdown: vi.fn(),
+  scanBear: vi.fn(),
+  loadBearNotes: vi.fn(),
+  loadFileNotes: vi.fn(),
   readState: vi.fn(),
   updateState: vi.fn(),
-}))
-vi.mock('../../src/main/sync', () => ({
-  DEFAULT_CACHE_URL: 'http://default.test',
   syncNotes: vi.fn(),
 }))
-vi.mock('../../src/main/load-file-notes', () => ({ loadFileNotes: vi.fn() }))
 
 type Handler = (event: unknown, ...args: unknown[]) => Promise<unknown>
 

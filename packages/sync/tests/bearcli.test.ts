@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { execFile } from 'node:child_process'
-import { listBearRows, runBearcli } from '../../src/main/bearcli'
+import { listBearRows, runBearcli } from '../src/bearcli'
 
 vi.mock('node:child_process', () => ({ execFile: vi.fn() }))
 

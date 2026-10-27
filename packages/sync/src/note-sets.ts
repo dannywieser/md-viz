@@ -1,4 +1,4 @@
-import type { Source } from '../shared/ipc'
+import type { Source } from './types'
 import type { Note } from './notes'
 
 const DAY_MS = 24 * 60 * 60 * 1000

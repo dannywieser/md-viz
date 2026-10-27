@@ -9,12 +9,18 @@ import {
   type SyncResult,
   type SyncTarget,
 } from '../shared/ipc'
-import { loadBearNotes } from './load-bear-notes'
-import { loadFileNotes } from './load-file-notes'
-import { scanBear } from './scan-bear'
-import { scanMarkdown } from './scan'
-import { readState, syncKey, updateState, type AppState } from './state'
-import { DEFAULT_CACHE_URL, syncNotes } from './sync'
+import {
+  DEFAULT_CACHE_URL,
+  loadBearNotes,
+  loadFileNotes,
+  readState,
+  scanBear,
+  scanMarkdown,
+  syncKey,
+  syncNotes,
+  updateState,
+  type AppState,
+} from '@md-viz/sync'
 
 async function assertDirectory(folder: unknown): Promise<string> {
   if (typeof folder !== 'string' || !path.isAbsolute(folder)) {

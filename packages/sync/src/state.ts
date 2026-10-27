@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { LastSync, Source, SyncTarget } from '../shared/ipc'
+import type { LastSync, Source, SyncTarget } from './types'
 
 export interface AppState {
   /** the source selected when the app last ran. */
