@@ -3,7 +3,7 @@
 # Usage: session-git.sh commit "<message>"   stage everything and commit (skips when nothing changed)
 #        session-git.sh push                 push the branch (sets upstream)
 #        session-git.sh draft-pr             push and open a draft PR against main (once)
-#        session-git.sh ready                push and mark the PR ready for review
+#        session-git.sh ready [body-file]    push, set the PR description from body-file (if given) and mark the PR ready
 # The active session is the slug in create/.current.
 set -euo pipefail
 
@@ -45,11 +45,12 @@ case "$cmd" in
     ;;
   ready)
     git push -q -u origin HEAD
+    [ -z "${2:-}" ] || gh pr edit --body-file "$2"
     gh pr ready
     gh pr view --json url --jq .url
     ;;
   *)
-    echo "usage: session-git.sh commit <message> | push | draft-pr | ready" >&2
+    echo "usage: session-git.sh commit <message> | push | draft-pr | ready [body-file]" >&2
     exit 1
     ;;
 esac

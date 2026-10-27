@@ -33,8 +33,8 @@ The session runs on its branch `<kind>/<slug>` and commits itself; the user neve
 
 1. `/create-plan` starts: commit the discussion so far, push and open a draft PR (`draft-pr`).
 2. The plan is final and the approach chosen: commit `plan.md` and the log, push.
-3. Implementation: one commit per plan step (see `/create-plan`).
-4. `/create-complete`: final commit, push and mark the PR ready (`ready`).
+3. Implementation: one commit per plan step, each pushed at once so the PR can be reviewed during this phase (see `/create-plan`).
+4. `/create-complete`: final commit, push, `summary.md` becomes the PR description and the PR is marked ready (`ready`).
 
 No commits happen during the first phase, only the log grows.
 
