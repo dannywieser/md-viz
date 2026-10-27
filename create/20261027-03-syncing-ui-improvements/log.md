@@ -1,0 +1,56 @@
+# Create session: syncing UI improvements
+
+- **Slug:** 20261027-03-syncing-ui-improvements
+- **Started:** 2026-10-27 08:49:20 MDT
+
+---
+
+### [2026-10-27 08:49:23] User
+/create syncing UI improvements
+
+### [2026-10-27 08:49:23] Claude
+Started the session `20261027-03-syncing-ui-improvements` (folder `create/20261027-03-syncing-ui-improvements/`, branch `create/20261027-03-syncing-ui-improvements`). Asked the user to explain what they want to change in the sync UI.
+
+### [2026-10-27 08:50:05] User
+just one thing first, I wasn't on main when I started this. Can you make sure this branch is based on the latest tip of main
+
+### [2026-10-27 08:50:05] Claude
+Fetched origin and checked: the branch sits exactly at origin/main (58d2525, #14), zero commits ahead, so nothing to rebase. Only the new session files are uncommitted. Repeated the questions about the sync UI changes.
+
+### [2026-10-27 08:54:21] User
+ok, 4 things:
+
+* I want a clearer visualization of progress. The loader should be visible, and if there are specifics to show like the name of the note being synced, it should be shown in the UI
+* Let's tighten up the window size so there is no extra space on the right side
+* For the extra space on the bottom of the window, make the note grid cards take up that height,
+* Iet's tighten up the "status card" a bit to reduce wasted space
+
+### [2026-10-27 08:54:21] Claude
+Read the renderer (app.tsx, folder-card.tsx, sync-grids.tsx, use-sync.ts, sync-layout.ts), the BrowserWindow setup (960x640) and the sync pipeline. Findings: progress today is text only ("syncing… N pushed, M deleted of T"); the pipeline reports counts per batch (no note names), pushes in batches and deletes concurrently; the Loader from @md-viz/ui is not used. Window is fixed 960x640 while the grid row is a computed width. GRID_HEIGHT is a fixed 160. Questions:
+1. Progress: show the Loader plus a counter/bar during scan and sync; for the note name, since upserts are batched, show the most recent/current batch's title, or change the pipeline to report per note? Should the progress live in the status card or replace the grids while syncing?
+2. Window width: size the window to the grids row (computed in the renderer, applied via IPC and re-fit when a sync changes the row width), or just pick a fixed width that matches? Fixed minimum with no resizing afterward?
+3. Grid height: the three grids should fill the remaining window height (so GRID_HEIGHT becomes dynamic). That changes the cell size and so the dot lattice; OK as long as dots still align? Should the window's height stay fixed and user-resizable?
+4. Status card: which parts feel wasteful: the full-width card above the grids, the stacked lines (path, last synced, count), or the padding? Merge into a compact header-like row?
+
+### [2026-10-27 08:58:05] User
+1. maybe we need an exploration for the general layout of this app and loading states. Can we start with that?
+2. I think fixed width and grids fit into it
+3. I'd prefer fixed height/width but keep things as tight as possible. Maybe let's decrease the height a bit, but I do want more space for the grid cards.
+4. there is just a lot of space on the right. we could the source and last synced onto a single line.
+
+### [2026-10-27 08:58:05] Claude
+Reflected back: (1) a design exploration in apps/design for the sync app layout and loading/progress states, before touching the app; (2) fixed window width, the three grids fit into it (not the reverse); (3) fixed, slightly shorter window, grids get the freed height; (4) status card: source and last synced on one line. Open questions: A. scope of this session (exploration only, or exploration then implement the chosen layout); B. what the exploration should compare (progress placement, loader, current note name, scan vs sync states, card layouts); C. per-note progress in the pipeline: decide after the exploration.
+
+### [2026-10-27 08:59:16] User
+A. explore + choose
+B. this sounds good
+C. yes, let's see what per note looks like and then decide
+
+### [2026-10-27 08:59:16] Claude
+Intent is clear: (A) explore, then choose a layout with the user and implement it; (B) the exploration compares the full app at a fixed size with a compact status row and taller grids, progress placement (in the status row, a strip under it, or replacing the grids), Loader placement, a "now syncing" line with the current note title, separate scan and sync states, and empty/error/finished states; (C) per-note pipeline progress is decided after seeing it in the exploration. Told the user to type /create-plan.
+
+### [2026-10-27 09:00:10] User
+/create-plan
+
+### [2026-10-27 09:00:10] Claude
+Committing the discussion, opening the draft PR, then writing plan.md.
