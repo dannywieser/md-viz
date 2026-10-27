@@ -60,3 +60,18 @@ Draft PR opened: https://github.com/dannywieser/md-viz/pull/15. Wrote plan.md (1
 
 ### [2026-10-27 09:00:39] Decision
 Plan created (create/20261027-03-syncing-ui-improvements/plan.md). Waiting for the user to pick the implementation approach.
+
+### [2026-10-27 09:01:05] User
+1
+
+### [2026-10-27 09:01:05] Decision
+Implement everything, pausing only at the step 6 checkpoint (exploration review). Commit and push after each numbered step.
+
+### [2026-10-27 09:05:40] Claude
+Steps 1-5 done together (the exploration is small enough to build in one pass): `apps/design/src/explorations/sync-layout/` (index, page, app-frame, window-header, status-row, status-grids, progress-bar, sync-progress, progress-lines, sync-window, today-window, window-size, fake-sync), one test per source file in `tests/explorations/sync-layout/`, one registry line. The page shows the state (never, scanning, syncing, done, empty, error), what the line says (batch vs note), a progress slider, "today" (960x640) and three placements at 880x520: a) in the status row, b) a strip under it, c) in place of the grids. Grids fill the height (NoteGrid without a height). Design format, lint, typecheck and coverage pass (design 99.6% lines).
+
+### [2026-10-27 09:05:40] User
+(mid-turn) drop the grid background on this exploration to make it easier to see the "cards" of the exploration
+
+### [2026-10-27 09:05:40] Claude
+Removed the dot grid: the page is on a plain `bg-background` wrapper and the mock windows no longer use `bg-dots`. Mock header made non-sticky. Reached the step 6 checkpoint.
