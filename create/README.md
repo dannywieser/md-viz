@@ -25,7 +25,7 @@ Each session lives in `create/YYYYMMDD-xx-<title>/` (`xx` is the day's sequence 
 
 ## Branch and PR
 
-Each session runs on its own branch `<kind>/<slug>` (`create/...` or `fix/...`), created when it starts. `/create-plan` commits the discussion and opens a draft PR, commits the plan and pushes, implementation commits once per plan step, and `/create-complete` makes the final commit, pushes and marks the PR ready. The git steps are in `.claude/skills/create/scripts/session-git.sh`.
+Each session runs on its own branch `<kind>/<slug>` (`create/...` or `fix/...`), created when it starts. `/create-plan` commits the discussion and opens a draft PR, commits the plan and pushes, implementation commits once per plan step and pushes after each commit so the PR can be reviewed meanwhile, and `/create-complete` makes the final commit, pushes, uses `summary.md` as the PR description and marks the PR ready. The git steps are in `.claude/skills/create/scripts/session-git.sh`.
 
 ## Statuses
 
