@@ -1,11 +1,11 @@
 import {
-  BATCH_SIZE,
   doneGroups,
   emptyGroups,
   makeNotes,
   scanProgress,
   syncProgress,
   titleAt,
+  TO_DELETE,
   TO_PUSH,
 } from '../../../src/explorations/sync-layout/fake-sync'
 
@@ -17,20 +17,16 @@ describe('fake sync data', () => {
 
   it('has three groups, filled or empty', () => {
     expect(doneGroups().updated).toHaveLength(TO_PUSH)
+    expect(doneGroups().deleted).toHaveLength(TO_DELETE)
     expect(emptyGroups()).toEqual({ updated: [], deleted: [], unchanged: [] })
   })
 
-  it('reports sync progress with the batch in progress', () => {
-    expect(syncProgress(0)).toMatchObject({ done: 0, batch: [1, BATCH_SIZE] })
-    expect(syncProgress(50)).toMatchObject({ done: TO_PUSH / 2, batch: [101, 150] })
-  })
+  it('pushes first, then deletes', () => {
+    const total = TO_PUSH + TO_DELETE
 
-  it('ends the last batch at the total and keeps the title inside the sync', () => {
-    const end = syncProgress(100)
-
-    expect(end.done).toBe(TO_PUSH)
-    expect(end.batch).toEqual([201, TO_PUSH])
-    expect(end.title).toBe(titleAt(1000 + TO_PUSH - 1))
+    expect(syncProgress(0)).toEqual({ synced: 0, deleted: 0, total })
+    expect(syncProgress(50)).toEqual({ synced: 123, deleted: 0, total })
+    expect(syncProgress(100)).toEqual({ synced: TO_PUSH, deleted: TO_DELETE, total })
   })
 
   it('reports scan progress', () => {

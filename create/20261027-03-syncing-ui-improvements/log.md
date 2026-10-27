@@ -75,3 +75,17 @@ Steps 1-5 done together (the exploration is small enough to build in one pass): 
 
 ### [2026-10-27 09:05:40] Claude
 Removed the dot grid: the page is on a plain `bg-background` wrapper and the mock windows no longer use `bg-dots`. Mock header made non-sticky. Reached the step 6 checkpoint.
+
+### [2026-10-27 09:12:45] User
+1. I like C for the syncing placement, but could we try it as a partially opaque modal overlay?
+2. I want to keep all the grids the same width like they are today.  Height can be variable between them.  so deleted should still be 3 wide by 2 tall but updated and unchanged can be taller
+3. show me what we could offer today without changing the syncing logic
+
+### [2026-10-27 09:12:45] Claude
+Plan for the exploration revision: (1) C as a semi-opaque overlay over the grids (solid C kept for comparison; A and B dropped, they stay in git at ca0b8f1); (2) fixed 272px columns and 32px gap as today (window 912 wide), deleted keeps the 160px drawing height (3x2), updated and unchanged fill the rest; (3) replace the "batch" detail with "counts", exactly what the pipeline reports today (pushed, deleted of total, scan folders and notes so far), next to "note" which needs a pipeline change.
+
+### [2026-10-27 09:14:40] User
+(mid-turn) Batching is fine
+
+### [2026-10-27 09:14:40] Claude
+Took it as: no per-note pipeline progress; the sync logic stays as it is. Removed the per-note option, so the progress shows what the pipeline reports today (pushed and deleted of the total, scan folders and notes so far). Exploration revised: C only, as a see-through overlay over the grids (plus the solid C for comparison; A and B dropped, see ca0b8f1); columns keep today's fixed 272px width with a 32px gap, window 912x520; deleted keeps a 160px drawing height (3x2) while updated and unchanged fill the height; today's window kept for comparison. Fixed the bar width. Design lint, typecheck and coverage pass.

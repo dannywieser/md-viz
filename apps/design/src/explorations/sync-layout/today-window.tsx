@@ -1,6 +1,6 @@
 import { Card, ErrorState, NoteGrid, StateBlock } from '@md-viz/ui'
 import { AppFrame } from './app-frame'
-import { TODAY_WINDOW } from './window-size'
+import { COLUMN_GAP, COLUMN_WIDTH, TODAY_WINDOW } from './window-size'
 import { WindowHeader } from './window-header'
 import {
   doneGroups,
@@ -11,9 +11,6 @@ import {
   syncProgress,
   type Phase,
 } from './fake-sync'
-
-const COLUMN = 272
-const GAP = 32
 
 /** the sync window as it is now, for comparison: a tall card with text progress and 160px grids. */
 export function TodayWindow({ phase, percent }: { phase: Phase; percent: number }) {
@@ -26,7 +23,7 @@ export function TodayWindow({ phase, percent }: { phase: Phase; percent: number 
       <WindowHeader busy={phase === 'scanning' || phase === 'syncing'} />
       <div
         className="flex flex-col items-start gap-8 p-4 pt-8"
-        style={{ width: COLUMN * 3 + GAP * 2 + 32 }}
+        style={{ width: COLUMN_WIDTH * 3 + COLUMN_GAP * 2 + 32 }}
       >
         <Card className="w-full max-w-full gap-2 px-4 py-3">
           <p className="break-all text-sm">{SOURCE}</p>
@@ -45,7 +42,7 @@ export function TodayWindow({ phase, percent }: { phase: Phase; percent: number 
           )}
           {phase === 'syncing' && (
             <p role="status" className="text-sm">
-              syncing… {sync.done} pushed, 0 deleted of {sync.total}
+              syncing… {sync.synced} pushed, {sync.deleted} deleted of {sync.total}
             </p>
           )}
         </Card>
@@ -54,13 +51,13 @@ export function TodayWindow({ phase, percent }: { phase: Phase; percent: number 
             <ErrorState detail="could not reach the cache at http://localhost:8787" />
           </StateBlock>
         ) : (
-          <div className="flex" style={{ columnGap: GAP }}>
+          <div className="flex" style={{ columnGap: COLUMN_GAP }}>
             {(['updated', 'deleted', 'unchanged'] as const).map((group) => (
               <section
                 key={group}
                 aria-label={group}
                 className="shrink-0"
-                style={{ width: COLUMN }}
+                style={{ width: COLUMN_WIDTH }}
               >
                 <NoteGrid
                   notes={groups[group]}

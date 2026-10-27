@@ -1,5 +1,4 @@
-import type { Detail, FakeProgress } from './fake-sync'
-import type { Phase } from './fake-sync'
+import type { FakeProgress, Phase } from './fake-sync'
 
 export interface ProgressText {
   label: string
@@ -11,7 +10,6 @@ export interface ProgressText {
 /** what the progress display says at this point of a scan or a sync; null in the other phases. */
 export function progressText(
   phase: Phase,
-  detail: Detail,
   sync: FakeProgress,
   scan: { dirs: number; mdFiles: number },
 ): ProgressText | null {
@@ -24,13 +22,11 @@ export function progressText(
     }
   }
   if (phase === 'syncing') {
-    const what =
-      detail === 'note' ? sync.title : `notes ${sync.batch[0]}–${sync.batch[1]} of ${sync.total}`
     return {
       label: 'syncing',
-      line: `syncing ${what}`,
-      count: `${sync.done} of ${sync.total} pushed`,
-      bar: { value: sync.done, max: sync.total },
+      line: 'syncing notes to the cache…',
+      count: `${sync.synced} pushed, ${sync.deleted} deleted of ${sync.total}`,
+      bar: { value: sync.synced + sync.deleted, max: sync.total },
     }
   }
   return null

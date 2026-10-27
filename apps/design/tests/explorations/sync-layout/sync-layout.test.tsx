@@ -3,15 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { SyncLayout } from '../../../src/explorations/sync-layout/sync-layout'
 
 describe('SyncLayout', () => {
-  it('shows today and the three placements while syncing', () => {
+  it('shows the overlay, the solid block and today while syncing', () => {
     render(<SyncLayout />)
 
-    for (const name of [
-      'today',
-      'a: in the status row',
-      'b: a strip under the row',
-      'c: in place of the grids',
-    ]) {
+    for (const name of ['c: overlay', 'c: solid', 'today']) {
       expect(screen.getByRole('heading', { name })).toBeInTheDocument()
     }
     expect(screen.getAllByRole('progressbar')).toHaveLength(2)
@@ -22,17 +17,7 @@ describe('SyncLayout', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'error' }))
 
-    expect(screen.getAllByRole('alert')).toHaveLength(4)
-  })
-
-  it('switches what the line says', async () => {
-    render(<SyncLayout />)
-
-    await userEvent.click(screen.getByRole('button', { name: 'batch' }))
-
-    expect(
-      screen.getAllByText(/syncing notes 1–50 of 240|syncing notes \d+–\d+ of 240/).length,
-    ).toBeGreaterThan(0)
+    expect(screen.getAllByRole('alert')).toHaveLength(3)
   })
 
   it('moves the progress', () => {
@@ -41,5 +26,6 @@ describe('SyncLayout', () => {
     fireEvent.change(screen.getByLabelText('how far along'), { target: { value: '100' } })
 
     expect(screen.getByText('100%')).toBeInTheDocument()
+    expect(screen.getAllByText('240 pushed, 6 deleted of 246')).toHaveLength(2)
   })
 })

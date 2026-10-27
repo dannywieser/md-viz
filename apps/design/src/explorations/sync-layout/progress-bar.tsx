@@ -8,7 +8,7 @@ export function ProgressBar({ value, max, label }: { value: number; max: number;
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={value}
-      className="h-3 flex-1 border bg-background"
+      className="h-3 w-full border bg-background"
     >
       <div className="h-full bg-primary" style={{ width: `${percent}%` }} />
     </div>

@@ -9,16 +9,11 @@ describe('StatusRow', () => {
     expect(screen.getByRole('status')).toHaveTextContent('3 notes')
   })
 
-  it('says never synced, counts one note and shows what it is given', () => {
-    render(
-      <StatusRow source="~/notes" lastSynced={null} count={1}>
-        <p>progress</p>
-      </StatusRow>,
-    )
+  it('says never synced and counts one note', () => {
+    render(<StatusRow source="~/notes" lastSynced={null} count={1} />)
 
     expect(screen.getByLabelText('status')).toHaveTextContent('never synced')
     expect(screen.getByRole('status')).toHaveTextContent('1 note')
-    expect(screen.getByText('progress')).toBeInTheDocument()
   })
 
   it('has no count while the notes are being counted', () => {

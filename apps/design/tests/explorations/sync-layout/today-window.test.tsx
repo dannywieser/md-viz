@@ -23,7 +23,7 @@ describe('TodayWindow', () => {
   it('shows text progress while syncing', () => {
     show('syncing')
 
-    expect(screen.getByText(/syncing… 120 pushed/)).toBeInTheDocument()
+    expect(screen.getByText(/syncing… 123 pushed, 0 deleted of 246/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'sync' })).toBeDisabled()
   })
 

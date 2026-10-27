@@ -1,49 +1,27 @@
 import { useState } from 'react'
 import { Button } from '@md-viz/ui'
-import { details, phases, type Detail, type Phase } from './fake-sync'
+import { phases, type Phase } from './fake-sync'
 import { SyncWindow, type Placement } from './sync-window'
 import { TodayWindow } from './today-window'
 
 const PLACEMENTS: { id: Placement; name: string; description: string }[] = [
   {
-    id: 'row',
-    name: 'a: in the status row',
+    id: 'overlay',
+    name: 'c: overlay',
     description:
-      'a small loader and one line sit in the status row, before the count. nothing moves, but a long note title is cut short.',
-  },
-  {
-    id: 'strip',
-    name: 'b: a strip under the row',
-    description:
-      'a card with the loader, the line, a bar and the counts appears under the row while it runs. the grids give up the height and grow back after.',
+      'the loader, a line, a bar and the counts sit in a block on a see-through veil over the grids, so the last result shows through while it runs.',
   },
   {
     id: 'takeover',
-    name: 'c: in place of the grids',
+    name: 'c: solid',
     description:
-      'the grids are replaced by a large loader, the line and a bar. the clearest while it runs, but the previous result is hidden until it ends.',
+      'the same block in place of the grids, for comparison: the previous result is hidden until it ends.',
   },
 ]
 
 export function SyncLayout() {
   const [phase, setPhase] = useState<Phase>('syncing')
-  const [detail, setDetail] = useState<Detail>('note')
   const [percent, setPercent] = useState(40)
-
-  const picker = <T extends string>(options: T[], value: T, set: (next: T) => void) => (
-    <div className="flex flex-wrap gap-2">
-      {options.map((option) => (
-        <Button
-          key={option}
-          size="sm"
-          variant={option === value ? 'default' : 'outline'}
-          onClick={() => set(option)}
-        >
-          {option}
-        </Button>
-      ))}
-    </div>
-  )
 
   return (
     // a plain page: the dots would hide where the cards of the mock windows end.
@@ -52,21 +30,29 @@ export function SyncLayout() {
         <header className="space-y-2">
           <h1 className="text-2xl font-bold">sync layout</h1>
           <p className="text-sm text-muted-foreground">
-            the sync app in a fixed window: the status card is one line, the three grids fit the
-            width and take the height that was wasted, and progress shows the loader and, where the
-            sync reports it, the note being pushed. the page has no dot grid here so the cards are
-            easy to see; the real app keeps its dots lined up with the squares.
+            the sync app in a fixed window: the status card is one line, the three grids keep
+            today's column width and the window is just wide enough for them, and the grids of many
+            notes take the height that was wasted. the progress shows what the sync reports today
+            (notes pushed and deleted of the total, and folders and notes found while scanning); the
+            pipeline does not change. the page has no dot grid here so the cards are easy to see;
+            the real app keeps its dots lined up with the squares.
           </p>
         </header>
 
         <section className="space-y-3">
           <h2 className="text-lg font-bold">state</h2>
-          {picker(phases, phase, setPhase)}
-          <p className="text-sm text-muted-foreground">
-            what the line says while syncing: the note being pushed (needs per-note progress from
-            the pipeline), or the batch of notes, which is all it reports today.
-          </p>
-          {picker(details, detail, setDetail)}
+          <div className="flex flex-wrap gap-2">
+            {phases.map((option) => (
+              <Button
+                key={option}
+                size="sm"
+                variant={option === phase ? 'default' : 'outline'}
+                onClick={() => setPhase(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
           <label className="flex items-center gap-3 text-sm">
             how far along
             <input
@@ -81,15 +67,6 @@ export function SyncLayout() {
           </label>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-bold">today</h2>
-          <p className="text-sm text-muted-foreground">
-            the current window, for comparison: empty space on the right and at the bottom, a tall
-            card, grids 160px high.
-          </p>
-          <TodayWindow phase={phase} percent={percent} />
-        </section>
-
         {PLACEMENTS.map((placement) => (
           <section key={placement.id} className="space-y-3">
             <h2 className="text-lg font-bold">{placement.name}</h2>
@@ -99,10 +76,18 @@ export function SyncLayout() {
               placement={placement.id}
               phase={phase}
               percent={percent}
-              detail={detail}
             />
           </section>
         ))}
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold">today</h2>
+          <p className="text-sm text-muted-foreground">
+            the current window, for comparison: empty space on the right and at the bottom, a tall
+            card, grids 160px high.
+          </p>
+          <TodayWindow phase={phase} percent={percent} />
+        </section>
       </main>
     </div>
   )
