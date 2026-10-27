@@ -9,6 +9,11 @@ import {
   ListQuerySchema,
   NoteRowsSchema,
   NoteSchema,
+  ReplaceSetBodySchema,
+  ReplaceSetResultSchema,
+  SetIdParamSchema,
+  SetSchema,
+  SetSummariesSchema,
   UpsertBodySchema,
   UpsertResultSchema,
 } from './schemas.ts'
@@ -16,7 +21,11 @@ import type { Store } from './store.ts'
 
 const MAX_BODY_BYTES = 64 * 1024 * 1024
 
-const jsonContent = <T extends typeof ErrorSchema | typeof NoteRowsSchema>(schema: T) => ({
+const jsonContent = <
+  T extends typeof ErrorSchema | typeof NoteRowsSchema | typeof SetSummariesSchema,
+>(
+  schema: T,
+) => ({
   'application/json': { schema },
 })
 
@@ -91,6 +100,58 @@ const deleteRoute = createRoute({
   },
 })
 
+const replaceSetRoute = createRoute({
+  method: 'put',
+  path: '/sets/{id}',
+  operationId: 'replaceSet',
+  summary: 'replace the note ids of a set, creating it if needed',
+  middleware: [bodyLimit({ maxSize: MAX_BODY_BYTES })],
+  request: {
+    params: SetIdParamSchema,
+    body: { required: true, content: { 'application/json': { schema: ReplaceSetBodySchema } } },
+  },
+  responses: {
+    200: {
+      description: 'number of notes in the set',
+      content: { 'application/json': { schema: ReplaceSetResultSchema } },
+    },
+    400: badRequest,
+  },
+})
+
+const listSetsRoute = createRoute({
+  method: 'get',
+  path: '/sets',
+  operationId: 'listSets',
+  summary: 'list sets with their note counts, ordered by id',
+  responses: {
+    200: { description: 'one row per set', content: jsonContent(SetSummariesSchema) },
+  },
+})
+
+const getSetRoute = createRoute({
+  method: 'get',
+  path: '/sets/{id}',
+  operationId: 'getSet',
+  summary: 'the note ids of one set',
+  request: { params: SetIdParamSchema },
+  responses: {
+    200: { description: 'the set', content: { 'application/json': { schema: SetSchema } } },
+    404: { description: 'unknown set', content: jsonContent(ErrorSchema) },
+  },
+})
+
+const deleteSetRoute = createRoute({
+  method: 'delete',
+  path: '/sets/{id}',
+  operationId: 'deleteSet',
+  summary: 'remove a set; succeeds even if it did not exist',
+  request: { params: SetIdParamSchema },
+  responses: {
+    204: { description: 'set removed' },
+  },
+})
+
 export function createApp(store: Store): OpenAPIHono {
   const app = new OpenAPIHono({
     defaultHook: (result, c) => {
@@ -136,6 +197,24 @@ export function createApp(store: Store): OpenAPIHono {
 
   app.openapi(deleteRoute, (c) => {
     store.deleteNote(c.req.valid('param').id)
+    return c.body(null, 204)
+  })
+
+  app.openapi(replaceSetRoute, (c) => {
+    const { noteIds } = c.req.valid('json')
+    store.replaceSet(c.req.valid('param').id, noteIds)
+    return c.json({ count: new Set(noteIds).size }, 200)
+  })
+
+  app.openapi(listSetsRoute, (c) => c.json(store.listSets(), 200))
+
+  app.openapi(getSetRoute, (c) => {
+    const set = store.getSet(c.req.valid('param').id)
+    return set ? c.json(set, 200) : c.json({ error: 'not found' }, 404)
+  })
+
+  app.openapi(deleteSetRoute, (c) => {
+    store.deleteSet(c.req.valid('param').id)
     return c.body(null, 204)
   })
 

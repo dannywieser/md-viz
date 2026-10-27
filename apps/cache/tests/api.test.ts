@@ -145,4 +145,67 @@ describe('api', () => {
     expect(log).toHaveBeenCalled()
     vi.restoreAllMocks()
   })
+
+  describe('sets', () => {
+    const putSet = (id: string, body: unknown) =>
+      app.request(`/sets/${id}`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+    it('replaces a set and reports the count', async () => {
+      const res = await putSet('bear:created-today', { noteIds: ['a', 'b', 'a'] })
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ count: 2 })
+    })
+
+    it('lists sets with counts', async () => {
+      await putSet('bear:created-today', { noteIds: ['a', 'b'] })
+      await putSet('bear:modified-today', { noteIds: [] })
+      const res = await app.request('/sets')
+      expect(res.status).toBe(200)
+      expect(await res.json()).toMatchObject([
+        { id: 'bear:created-today', count: 2 },
+        { id: 'bear:modified-today', count: 0 },
+      ])
+    })
+
+    it('returns the note ids of one set', async () => {
+      await putSet('bear:created-today', { noteIds: ['b', 'a'] })
+      const res = await app.request('/sets/bear:created-today')
+      expect(res.status).toBe(200)
+      expect(await res.json()).toMatchObject({ id: 'bear:created-today', noteIds: ['a', 'b'] })
+    })
+
+    it('returns 404 for an unknown set', async () => {
+      const res = await app.request('/sets/nope')
+      expect(res.status).toBe(404)
+      expect(await res.json()).toEqual({ error: 'not found' })
+    })
+
+    it('rejects a bad body', async () => {
+      const res = await putSet('s', { noteIds: 'a' })
+      expect(res.status).toBe(400)
+    })
+
+    it('rejects a note id with a slash', async () => {
+      const res = await putSet('s', { noteIds: ['a/b'] })
+      expect(res.status).toBe(400)
+    })
+
+    it('deletes a set, even an unknown one', async () => {
+      await putSet('s', { noteIds: ['a'] })
+      expect((await app.request('/sets/s', { method: 'DELETE' })).status).toBe(204)
+      expect((await app.request('/sets/s', { method: 'DELETE' })).status).toBe(204)
+      expect((await app.request('/sets/s')).status).toBe(404)
+    })
+
+    it('drops a deleted note from its sets', async () => {
+      await putSet('s', { noteIds: ['a', 'b'] })
+      await app.request('/notes/a', { method: 'DELETE' })
+      const res = await app.request('/sets/s')
+      expect(await res.json()).toMatchObject({ noteIds: ['b'] })
+    })
+  })
 })

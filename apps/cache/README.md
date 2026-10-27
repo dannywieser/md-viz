@@ -33,6 +33,19 @@ The fields are free-form; the cache does not interpret them. The Electron app wr
 | `DELETE /notes/:id`           | remove a note, `204` even if it did not exist                                                                  |
 | `GET /health`                 | `{ "ok": true }`                                                                                               |
 
+### Sets
+
+A set is a named group of note IDs. The Electron sync computes the automatic sets of the source it just synced and replaces them on every sync (the cache does not derive them, so they are only as fresh as the last sync). Set ids are `<source>:<name>`: `created-today`, `modified-today`, `created-last-30-days` and `modified-last-30-days` for `bear`, and the two `modified` ones for `file` (a file has no created date). Today is the PC's local calendar day, the last 30 days a rolling 30 x 24 hours.
+
+| request            | does                                                              |
+| ------------------ | ----------------------------------------------------------------- |
+| `PUT /sets/:id`    | replace a set: `{ "noteIds": ["..."] }`, answers `{ "count": n }` |
+| `GET /sets`        | an array of `{ "id", "count", "updated" }` ordered by id          |
+| `GET /sets/:id`    | `{ "id", "updated", "noteIds": [...] }`, `404` if unknown         |
+| `DELETE /sets/:id` | remove a set, `204` even if it did not exist                      |
+
+`updated` is stamped by the service. Deleting a note also removes it from every set.
+
 `PUT` only writes the fields it names; other stored fields of that note are kept. The service stamps `synced` (ISO 8601 UTC time of the upsert) on every upserted note and overwrites any `synced` the client sends. Errors are `{ "error": "..." }` with `400` for bad input.
 
 ## OpenAPI spec
@@ -78,6 +91,35 @@ curl -i $BASE/notes/def456   # 404
 
 # 6. missing fields is rejected
 curl -i "$BASE/notes"        # 400
+```
+
+### Look at the sets
+
+The Electron app fills the sets on every sync (`pnpm dev:all`, choose a source, sync). To see them:
+
+```bash
+# every set with its count and when it was last replaced
+curl $BASE/sets
+
+# the note ids of one set
+curl $BASE/sets/bear:modified-last-30-days
+
+# resolve those ids to titles
+curl "$BASE/notes?fields=title,created,modified"
+```
+
+Without the app you can fill a set by hand and watch it follow note deletes:
+
+```bash
+curl -X PUT $BASE/sets/bear:created-today -H 'content-type: application/json' \
+  -d '{ "noteIds": ["abc123", "def456"] }'
+curl $BASE/sets/bear:created-today
+
+curl -X DELETE $BASE/notes/abc123
+curl $BASE/sets/bear:created-today   # only def456 is left
+
+curl -i -X DELETE $BASE/sets/bear:created-today   # 204
+curl -i $BASE/sets/bear:created-today             # 404
 ```
 
 To start over, stop the service and delete `apps/cache/data/`.

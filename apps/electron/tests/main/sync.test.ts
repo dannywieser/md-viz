@@ -7,6 +7,7 @@ import type { SyncProgress } from '../../src/shared/ipc'
 function fakeCache() {
   const notes = new Map<string, Record<string, string>>()
   const upserts: number[] = []
+  const sets = new Map<string, string[]>()
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 
@@ -42,9 +43,14 @@ function fakeCache() {
       notes.delete(decodeURIComponent(url.pathname.slice('/notes/'.length)))
       return new Response(null, { status: 204 })
     }
+    if (request.method === 'PUT' && url.pathname.startsWith('/sets/')) {
+      const body = (await request.json()) as { noteIds: string[] }
+      sets.set(decodeURIComponent(url.pathname.slice('/sets/'.length)), body.noteIds)
+      return json({ count: body.noteIds.length })
+    }
     return json({ error: 'not found' }, 404)
   }
-  return { notes, upserts, fetch: handler }
+  return { notes, upserts, sets, fetch: handler }
 }
 
 const PAST = '2020-01-01T00:00:00.000Z'
@@ -233,13 +239,75 @@ describe('syncNotes', () => {
     const spy = ((input: Request | URL | string, init?: RequestInit) => {
       const request = input instanceof Request ? input : new Request(input, init)
       urls.push(request.url)
+      const body = new URL(request.url).pathname.startsWith('/sets/') ? '{"count":0}' : '[]'
       return Promise.resolve(
-        new Response('[]', { status: 200, headers: { 'content-type': 'application/json' } }),
+        new Response(body, { status: 200, headers: { 'content-type': 'application/json' } }),
       )
     }) as typeof fetch
 
     await syncNotes('file', loaded(), { baseUrl: 'http://cache.test', fetch: spy })
 
     expect(urls[0]).toMatch(/^http:\/\/cache\.test\/notes/)
+    expect(urls.at(-1)).toMatch(/^http:\/\/cache\.test\/sets\//)
+  })
+
+  describe('automatic sets', () => {
+    const now = new Date(2026, 9, 27, 12, 0, 0)
+    const today = new Date(2026, 9, 27, 8, 0, 0).toISOString()
+    const lastWeek = new Date(2026, 9, 20, 8, 0, 0).toISOString()
+
+    it('pushes the four sets of a bear sync', async () => {
+      const cache = fakeCache()
+      await syncNotes(
+        'bear',
+        loaded(
+          note('new', { source: 'bear', created: today, modified: today }),
+          note('old', { source: 'bear', created: PAST, modified: lastWeek }),
+        ),
+        { fetch: cache.fetch, now },
+      )
+      expect(Object.fromEntries(cache.sets)).toEqual({
+        'bear:created-today': ['new'],
+        'bear:modified-today': ['new'],
+        'bear:created-last-30-days': ['new'],
+        'bear:modified-last-30-days': ['new', 'old'],
+      })
+    })
+
+    it('pushes only the modified sets of a file sync', async () => {
+      const cache = fakeCache()
+      await syncNotes('file', loaded(note('a', { modified: today })), { fetch: cache.fetch, now })
+      expect([...cache.sets.keys()].sort()).toEqual([
+        'file:modified-last-30-days',
+        'file:modified-today',
+      ])
+    })
+
+    it('recomputes the sets when no note changed', async () => {
+      const cache = fakeCache()
+      await syncNotes('file', loaded(note('a', { modified: today })), { fetch: cache.fetch, now })
+      const later = new Date(2026, 9, 28, 12, 0, 0)
+      await syncNotes('file', loaded(note('a', { modified: today })), {
+        fetch: cache.fetch,
+        now: later,
+      })
+      expect(cache.sets.get('file:modified-today')).toEqual([])
+      expect(cache.sets.get('file:modified-last-30-days')).toEqual(['a'])
+    })
+
+    it('uses the current time by default', async () => {
+      const cache = fakeCache()
+      await syncNotes('file', loaded(note('a', { modified: new Date().toISOString() })), {
+        fetch: cache.fetch,
+      })
+      expect(cache.sets.get('file:modified-last-30-days')).toEqual(['a'])
+    })
+
+    it('leaves the other source sets alone', async () => {
+      const cache = fakeCache()
+      cache.sets.set('bear:modified-today', ['keep'])
+      await syncNotes('file', loaded(note('a')), { fetch: cache.fetch, now })
+      expect(cache.sets.get('bear:modified-today')).toEqual(['keep'])
+    })
   })
 })

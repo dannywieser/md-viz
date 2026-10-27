@@ -42,3 +42,36 @@ export const IdParamSchema = z.object({ id: IdSchema })
 export const HealthSchema = z.object({ ok: z.literal(true) }).meta({ id: 'Health' })
 
 export const ErrorSchema = z.object({ error: z.string() }).meta({ id: 'Error' })
+
+export const SetIdSchema = NameSchema.meta({
+  description: 'set id, namespaced by source',
+  example: 'bear:created-today',
+})
+
+export const SetIdParamSchema = z.object({ id: SetIdSchema })
+
+export const ReplaceSetBodySchema = z
+  .object({ noteIds: z.array(IdSchema) })
+  .meta({ id: 'ReplaceSetBody' })
+
+export const ReplaceSetResultSchema = z
+  .object({ count: z.number().int().nonnegative() })
+  .meta({ id: 'ReplaceSetResult' })
+
+export const SetSummarySchema = z
+  .object({
+    id: SetIdSchema,
+    count: z.number().int().nonnegative(),
+    updated: z.string().meta({ description: 'ISO time the set was last replaced' }),
+  })
+  .meta({ id: 'SetSummary' })
+
+export const SetSummariesSchema = z.array(SetSummarySchema)
+
+export const SetSchema = z
+  .object({
+    id: SetIdSchema,
+    updated: z.string().meta({ description: 'ISO time the set was last replaced' }),
+    noteIds: z.array(IdSchema),
+  })
+  .meta({ id: 'Set' })

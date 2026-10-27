@@ -1,6 +1,13 @@
-import { configureCacheClient, deleteNote, listNotes, upsertNotes } from '@md-viz/api-client/cache'
+import {
+  configureCacheClient,
+  deleteNote,
+  listNotes,
+  replaceSet,
+  upsertNotes,
+} from '@md-viz/api-client/cache'
 import type { NoteRef, Source, SyncProgress, SyncResult } from '../shared/ipc'
 import type { LoadedNotes } from './load-file-notes'
+import { buildNoteSets } from './note-sets'
 import { noteToFields, type Note } from './notes'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
@@ -13,6 +20,8 @@ export interface SyncOptions {
   /** replaces the global fetch, for tests. */
   fetch?: typeof fetch
   onProgress?: (progress: SyncProgress) => void
+  /** the time the automatic sets are computed at; the PC's clock unless a test sets it. */
+  now?: Date
 }
 
 interface CachedNote {
@@ -52,12 +61,13 @@ function needsPush(note: Note, cached: Map<string, CachedNote>): boolean {
  * same source that are no longer in `loaded` are deleted. notes that exist but could not be
  * read (`loaded.failed`) are neither pushed nor deleted. the notes are loaded before this
  * runs, so nothing is deleted when loading failed; nothing is deleted either when the cache
- * cannot be listed.
+ * cannot be listed. afterwards the source's automatic sets are recomputed at `now` and replaced
+ * in the cache, even when no note changed, because they move with the clock.
  */
 export async function syncNotes(
   source: Source,
   loaded: LoadedNotes,
-  { baseUrl = DEFAULT_CACHE_URL, fetch: fetchImpl, onProgress }: SyncOptions = {},
+  { baseUrl = DEFAULT_CACHE_URL, fetch: fetchImpl, onProgress, now = new Date() }: SyncOptions = {},
 ): Promise<SyncResult> {
   configureCacheClient(fetchImpl ? { baseUrl, fetch: fetchImpl } : { baseUrl })
 
@@ -104,6 +114,10 @@ export async function syncNotes(
     result.deleted += ids.length
     result.notes.deleted.push(...ids.map((id) => ({ id, title: cached.get(id)?.title ?? id })))
     report()
+  }
+
+  for (const { id, noteIds } of buildNoteSets(source, notes, now)) {
+    await replaceSet({ path: { id }, body: { noteIds }, throwOnError: true })
   }
 
   return result

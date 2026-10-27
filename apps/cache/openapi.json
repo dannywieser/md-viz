@@ -127,6 +127,88 @@
         "required": [
           "fields"
         ]
+      },
+      "ReplaceSetResult": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "ReplaceSetBody": {
+        "type": "object",
+        "properties": {
+          "noteIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[^/]+$",
+              "description": "client-chosen note id",
+              "example": "abc123"
+            }
+          }
+        },
+        "required": [
+          "noteIds"
+        ]
+      },
+      "SetSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[^/]+$",
+            "description": "set id, namespaced by source",
+            "example": "bear:created-today"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updated": {
+            "type": "string",
+            "description": "ISO time the set was last replaced"
+          }
+        },
+        "required": [
+          "id",
+          "count",
+          "updated"
+        ]
+      },
+      "Set": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[^/]+$",
+            "description": "set id, namespaced by source",
+            "example": "bear:created-today"
+          },
+          "updated": {
+            "type": "string",
+            "description": "ISO time the set was last replaced"
+          },
+          "noteIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[^/]+$",
+              "description": "client-chosen note id",
+              "example": "abc123"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "updated",
+          "noteIds"
+        ]
       }
     },
     "parameters": {}
@@ -292,6 +374,142 @@
         "responses": {
           "204": {
             "description": "note removed"
+          }
+        }
+      }
+    },
+    "/sets/{id}": {
+      "put": {
+        "operationId": "replaceSet",
+        "summary": "replace the note ids of a set, creating it if needed",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[^/]+$",
+              "description": "set id, namespaced by source",
+              "example": "bear:created-today"
+            },
+            "required": true,
+            "description": "set id, namespaced by source",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceSetBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "number of notes in the set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplaceSetResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getSet",
+        "summary": "the note ids of one set",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[^/]+$",
+              "description": "set id, namespaced by source",
+              "example": "bear:created-today"
+            },
+            "required": true,
+            "description": "set id, namespaced by source",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Set"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "unknown set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteSet",
+        "summary": "remove a set; succeeds even if it did not exist",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[^/]+$",
+              "description": "set id, namespaced by source",
+              "example": "bear:created-today"
+            },
+            "required": true,
+            "description": "set id, namespaced by source",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "set removed"
+          }
+        }
+      }
+    },
+    "/sets": {
+      "get": {
+        "operationId": "listSets",
+        "summary": "list sets with their note counts, ordered by id",
+        "responses": {
+          "200": {
+            "description": "one row per set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SetSummary"
+                  }
+                }
+              }
+            }
           }
         }
       }
