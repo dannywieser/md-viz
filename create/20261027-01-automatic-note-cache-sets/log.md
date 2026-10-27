@@ -2,6 +2,7 @@
 
 - **Slug:** 20261027-01-automatic-note-cache-sets
 - **Started:** 2026-10-27 07:33:35 MDT
+- **Completed:** 2026-10-27 07:56:20
 
 ---
 
@@ -63,3 +64,12 @@ Implement everything (all 8 steps), then run coverage and tell the user to type 
 
 ### [2026-10-27 07:51:48] Claude
 Implemented all 8 steps, nothing committed. Cache: store.ts (sets/set_notes tables, replaceSet/listSets/getSet/deleteSet, deleteNote clears membership), schemas.ts, app.ts (PUT/GET/GET/DELETE /sets), openapi.json regenerated, client regenerated; tests in store.test.ts and api.test.ts. Electron: new src/main/note-sets.ts (buildNoteSets), sync.ts pushes sets after notes via replaceSet (new now option), tests note-sets.test.ts (new) and sync.test.ts (fake cache handles /sets, baseUrl stub updated). Docs: cache README (Sets section, curl walkthrough), CLAUDE.md. Deviations from plan: none. Checked end to end with curl against a real cache on a temp DB. format, lint, typecheck pass; pnpm coverage passes in every workspace (cache 96.2/100/100/95.89 lines+stmts/branches/functions, others 98+). Not exercised: a real Electron sync from the app UI.
+
+### [2026-10-27 07:55:16] User
+commit/branch/pr and then run /create-complete
+
+### [2026-10-27 07:55:16] Claude
+Created branch automatic-note-cache-sets, committed, pushed and opened PR https://github.com/dannywieser/md-viz/pull/11. Then ran /create-complete.
+
+### [2026-10-27 07:56:13] Decision
+Session complete. Fresh pnpm coverage exits 0, all workspaces over 95%. Wrote summary.md; harvest updated README.md (CLAUDE.md was updated during implementation).
