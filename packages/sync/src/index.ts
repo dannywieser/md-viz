@@ -1,9 +1,11 @@
 export type * from './types'
-export { loadBearNotes } from './load-bear-notes'
-export { loadFileNotes, type LoadedNotes } from './load-file-notes'
-export { type Note } from './notes'
-export { scanBear } from './scan-bear'
-export { scanMarkdown } from './scan'
-export { readState, syncKey, updateState, type AppState } from './state'
-export { DEFAULT_CACHE_URL, syncNotes } from './sync'
-export { assertDirectory, parseSource, parseTarget } from './target'
+export {
+  loadLastSelection,
+  rememberFolder,
+  scanTarget,
+  selectSource,
+  syncTarget,
+  type SyncRunOptions,
+} from './run'
+export { DEFAULT_CACHE_URL } from './sync'
+export { parseSource, parseTarget } from './target'
