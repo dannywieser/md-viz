@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { ProgressBar } from '../../../src/explorations/sync-layout/progress-bar'
+import { ProgressBar } from '../../src/components/progress-bar'
 
 describe('ProgressBar', () => {
   it('shows how far along it is', () => {

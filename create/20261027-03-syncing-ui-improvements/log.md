@@ -101,3 +101,18 @@ No reason: the mock had pt-6 (24px) above the status card and gap-4 (16px) below
 
 ### [2026-10-27 09:15:09] Decision
 Checkpoint passed: overlay (C) chosen; fixed 272px columns, window 912x520; deleted keeps 160px (3x2), updated and unchanged fill the height; one-line status card; no pipeline change (batching is fine, step 10 dropped). plan.md steps 6-12 updated. Proceeding to implementation (steps 7-12).
+
+### [2026-10-27 09:19:51] User
+(mid-turn) one last thing, the grid cards aren't lined up with the status card and header - the right edge of the right card doesn't line up. is this because of grid placement? Can we fix this?
+
+### [2026-10-27 09:19:51] Claude
+Yes: a block is only as wide as its squares (whole pixels), so the last block ends short of its 272px column and so of the status card. Fixed by adding `align="end"` to `NoteGrid` and pinning the last column's block right, in the exploration and the app (that column is then off the dots by the leftover width).
+
+### [2026-10-27 09:19:51] User
+(mid-turn) seems to be fixed in the real app
+
+### [2026-10-27 09:19:51] Claude
+Read as: the running app (old layout, header and card sized to the grid row) does not show it. The new fixed window would bring it back, so the right-pin fix stays in the implementation. Not re-checked visually in the browser (navigation was denied at the end).
+
+### [2026-10-27 09:19:51] Claude
+Implementation, steps 7-12 in one pass (they are coupled: the app only compiles with all of them). Done: fixed 912x520 non-resizable window (`src/shared/window-size.ts`, main); grids in fixed 272px columns, always shown, updated/unchanged fill the height and 12 notes or fewer keep 160px (`gridHeight`), `columnPitch` keeps lattice alignment within the window; one-line `FolderCard`; `SyncOverlay` (loader, line, `ProgressBar`, counts) as a semi-opaque overlay; error replaces the grids; `ProgressBar` added to `@md-viz/ui`; `NoteGrid` `align="end"`; exploration uses the shared bar; CLAUDE.md updated. No pipeline change (step 10 dropped). Deviation: header and card no longer track the grid row width (`onWidthChange` removed), the fixed window makes them full width. Format, lint, typecheck and coverage pass in every workspace.

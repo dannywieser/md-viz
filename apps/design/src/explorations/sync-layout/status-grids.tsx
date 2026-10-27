@@ -9,7 +9,7 @@ import { COLUMN_GAP, COLUMN_WIDTH, SMALL_GRID_HEIGHT } from './window-size'
  */
 const HEIGHTS = { updated: undefined, deleted: SMALL_GRID_HEIGHT, unchanged: undefined }
 
-/** the three status grids side by side, in columns of the same width. */
+/** the three status grids side by side, in columns of the same width; the last block is pinned right, so its edge meets the status card's. */
 export function StatusGrids({ groups }: { groups: FakeGroups }) {
   return (
     <div className="flex min-h-0 flex-1 px-4 pb-4" style={{ columnGap: COLUMN_GAP }}>
@@ -24,7 +24,7 @@ export function StatusGrids({ groups }: { groups: FakeGroups }) {
             notes={groups[group]}
             label={group}
             height={HEIGHTS[group]}
-            align="start"
+            align={group === 'unchanged' ? 'end' : 'start'}
             compactEmpty
           />
         </section>

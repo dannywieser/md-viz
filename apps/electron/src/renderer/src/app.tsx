@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { AppHeader, Button, ErrorState, StateBlock } from '@md-viz/ui'
-import type { LastSelection, Source, SyncTarget } from '../../shared/ipc'
+import type { LastSelection, Source, SyncNotes, SyncTarget } from '../../shared/ipc'
 import { FolderCard } from './components/folder-card'
 import { SourceSelect } from './components/source-select'
 import { SyncGrids } from './components/sync-grids'
+import { SyncOverlay } from './components/sync-overlay'
 import { useScan } from './hooks/use-scan'
 import { useSync } from './hooks/use-sync'
 import { errorMessage } from './lib/error-message'
@@ -12,11 +13,12 @@ import { errorMessage } from './lib/error-message'
 // the windows and linux buttons on the right.
 const headerClearance = navigator.userAgent.includes('Macintosh') ? 'pl-24' : 'pr-40'
 
+/** the grids before anything has been synced. */
+const NO_NOTES: SyncNotes = { updated: [], deleted: [], unchanged: [] }
+
 export function App() {
   const [error, setError] = useState<string | null>(null)
   const [source, setSource] = useState<Source>('file')
-  // the width of the status grids, which the header matches while they are shown.
-  const [gridsWidth, setGridsWidth] = useState<number | null>(null)
   const scan = useScan(setError)
   const sync = useSync(scan.target, setError)
 
@@ -59,29 +61,11 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const folderCard = scan.target && (
-    <FolderCard
-      target={scan.target}
-      lastSync={sync.lastSync}
-      scanning={scan.scanning}
-      scanProgress={scan.progress}
-      count={scan.count}
-      syncing={sync.syncing}
-      syncProgress={sync.progress}
-      className={sync.lastSync ? 'w-full' : undefined}
-    />
-  )
-
   const busy = scan.scanning || sync.syncing
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader
-        title="md-viz sync"
-        subtitle="sync"
-        className={headerClearance}
-        style={gridsWidth === null ? undefined : { width: gridsWidth }}
-      >
+      <AppHeader title="md-viz sync" subtitle="sync" className={headerClearance}>
         <SourceSelect value={source} onChange={(next) => void changeSource(next)} disabled={busy} />
         {source === 'file' && (
           <Button onClick={() => void chooseFolder()} disabled={busy}>
@@ -92,21 +76,25 @@ export function App() {
           sync
         </Button>
       </AppHeader>
-      <main className="flex flex-1 flex-col items-start gap-8 overflow-auto p-4 pt-8">
-        {scan.target &&
-          // with a sync, the card sits above the grids and, like the header, is as wide as they are.
-          (sync.lastSync ? (
-            <SyncGrids notes={sync.lastSync.notes} onWidthChange={setGridsWidth}>
-              {folderCard}
-            </SyncGrids>
-          ) : (
-            folderCard
-          ))}
-        {error && (
-          <StateBlock>
-            <ErrorState detail={error} />
-          </StateBlock>
+      <main className="flex min-h-0 flex-1 flex-col gap-4 p-4">
+        {scan.target && (
+          <FolderCard target={scan.target} lastSync={sync.lastSync} count={scan.count} />
         )}
+        <div className="relative min-h-0 flex-1">
+          {error ? (
+            <StateBlock fill>
+              <ErrorState detail={error} />
+            </StateBlock>
+          ) : (
+            scan.target && <SyncGrids notes={sync.lastSync?.notes ?? NO_NOTES} />
+          )}
+          <SyncOverlay
+            scanning={scan.scanning}
+            scanProgress={scan.progress}
+            syncing={sync.syncing}
+            syncProgress={sync.progress}
+          />
+        </div>
       </main>
     </div>
   )

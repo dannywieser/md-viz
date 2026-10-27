@@ -1,5 +1,4 @@
-import { Loader } from '@md-viz/ui'
-import { ProgressBar } from './progress-bar'
+import { Loader, ProgressBar } from '@md-viz/ui'
 
 interface SyncProgressProps {
   /** what is going on, e.g. the note being pushed. */
