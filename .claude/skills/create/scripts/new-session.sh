@@ -2,6 +2,7 @@
 # Creates a new /create session folder: create/YYYYMMDD-xx-<title>/
 # Usage: new-session.sh [--kind create|fix] <title words...>
 # Prints the slug on stdout. Records it as the active session in create/.current
+# It also creates and switches to the branch <kind>/<slug> (cut from origin/main).
 # A fix session gets a "fix-" slug prefix and a "Kind: fix" line in its log header.
 set -euo pipefail
 
@@ -39,6 +40,12 @@ while :; do
   slug="$day-$(printf '%02d' "$n")-$title_slug"
   [ -e "$base/$slug" ] || break
 done
+
+# work happens on its own branch, cut from main so the PR holds only this session
+branch="$kind/$slug"
+git fetch -q origin main 2>/dev/null || true
+if git rev-parse -q --verify origin/main >/dev/null; then start=origin/main; else start=main; fi
+git switch -q -c "$branch" --no-track "$start"
 
 mkdir -p "$base/$slug"
 printf '%s\n' "$slug" > "$base/.current"
