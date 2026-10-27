@@ -82,13 +82,13 @@ interface Note {
 
 1. **Validate** the target (`parseTarget`).
 2. **Load** the notes with the source's loader, which returns `{ notes: Note[], failed: string[] }`. `failed` are the ids of notes that exist but could not be read.
-   - File (`load-file-notes.ts`): walks the folder for `.md` files (dot-directories and `node_modules` are skipped, symlinks are not followed). The id is the first 16 hex characters of the SHA-256 of the path relative to the folder, the title is the file name without `.md`, `modified` is the mtime, there are no tags and `created` is empty. It fails when the folder cannot be read, so an unreadable folder cannot look empty and wipe its notes from the cache.
-   - Bear (`load-bear-notes.ts`, `bearcli.ts`): runs Bear's own `bearcli list -l all --format json --fields all,content` (macOS only; `BEAR_CLI` overrides the path `/Applications/Bear.app/Contents/MacOS/bearcli`). The id is Bear's note id, tags lose the leading `#`, trashed and locked notes are skipped and archived ones are kept.
-3. **List the cache** (`syncNotes` in `sync.ts`): the cached notes whose `source` is this source, with their `synced` time and title. If this fails, nothing has been changed yet.
+   - File (`sources/file/load.ts`): walks the folder for `.md` files (dot-directories and `node_modules` are skipped, symlinks are not followed). The id is the first 16 hex characters of the SHA-256 of the path relative to the folder, the title is the file name without `.md`, `modified` is the mtime, there are no tags and `created` is empty. It fails when the folder cannot be read, so an unreadable folder cannot look empty and wipe its notes from the cache.
+   - Bear (`sources/bear/load.ts`, `sources/bear/bearcli.ts`): runs Bear's own `bearcli list -l all --format json --fields all,content` (macOS only; `BEAR_CLI` overrides the path `/Applications/Bear.app/Contents/MacOS/bearcli`). The id is Bear's note id, tags lose the leading `#`, trashed and locked notes are skipped and archived ones are kept.
+3. **List the cache** (`syncNotes` in `pipeline/sync.ts`): the cached notes whose `source` is this source, with their `synced` time and title. If this fails, nothing has been changed yet.
 4. **Diff**: a note needs pushing when the cache has never seen it or its `modified` is newer than the cached `synced` (the cache stamps `synced` itself). Cached notes of this source that are neither loaded nor in `failed` are gone.
 5. **Push** the new and changed notes with `upsertNotes`, 200 per request, reporting progress after each batch.
 6. **Delete** the gone notes, 20 requests at a time, reporting progress after each group.
-7. **Replace the automatic sets** (`note-sets.ts`) of the source, on every sync, even when no note changed, because they move with the clock: `<source>:created-today`, `<source>:modified-today`, `<source>:created-last-30-days` and `<source>:modified-last-30-days`. Today is the local calendar day and the last 30 days are a rolling 30 x 24 hours, both on the PC's clock. The file source has no `created` sets. A set with no members is still replaced.
+7. **Replace the automatic sets** (`pipeline/note-sets.ts`) of the source, on every sync, even when no note changed, because they move with the clock: `<source>:created-today`, `<source>:modified-today`, `<source>:created-last-30-days` and `<source>:modified-last-30-days`. Today is the local calendar day and the last 30 days are a rolling 30 x 24 hours, both on the PC's clock. The file source has no `created` sets. A set with no members is still replaced.
 8. **Record** the sync in the state file (`syncTarget` only, and only when stages 2-7 succeeded).
 
 Safety rules the stages keep:
@@ -118,13 +118,25 @@ A JSON file at the path the caller passes (Electron uses `state.json` in its `us
 
 `loadLastSelection` and `selectSource` turn it into a `LastSelection`: a file folder is returned only if it still exists, and its `lastSync` is the one stored under that folder's key.
 
+## Sources: public and private
+
+Each source has its own folder under `src/sources/`. Its `index.ts` is the only public file: it exports one `SourceAdapter` (`fileSource`, `bearSource`) with two functions of the same shape for every source, and everything else in the folder is private.
+
+```ts
+interface SourceAdapter<T extends SyncTarget> {
+  load: (target: T) => Promise<LoadedNotes> // read the notes; fails if the source cannot be read at all
+  scan: (target: T, onProgress?) => Promise<ScanResult> // count them, without reading them all
+}
+```
+
+`src/sources/index.ts` is the registry: `sources` maps each `Source` to its adapter (a `Source` without an entry does not type-check) and `adapterFor(target)` picks the one for a target, so `run.ts` never branches on the source. ESLint (`no-restricted-imports`) stops code outside a source folder from importing its private files; tests may import the files of their own folder.
+
 ## Adding a source
 
-A source is a loader plus a `Source` value:
-
-1. Add the value to `Source` in `types.ts`.
-2. Write `load-<source>-notes.ts` returning `LoadedNotes`, filling as many `Note` fields as the source knows.
-3. Add a `scan-<source>.ts` for the count, and the branches in `scanTarget` and `syncTarget` (`run.ts`) and in `parseTarget` (`target.ts`).
+1. Add the value to `Source` in `types.ts`, and its target type (like `FileTarget`) to `SyncTarget`.
+2. Create `src/sources/<name>/` with `load.ts` (returns `LoadedNotes`, filling as many `Note` fields as the source knows), `scan.ts` (the count), any other private helpers and an `index.ts` exporting the adapter.
+3. Add the adapter to `sources` in `src/sources/index.ts`, and accept the source in `parseTarget` (`target.ts`).
+4. Add tests under `tests/sources/<name>/`, one file per source file.
 
 The pipeline, the sets and the state need no change. A source that learns to read more (the file source will get tags and frontmatter) only fills more `Note` fields.
 
@@ -132,19 +144,28 @@ The pipeline, the sets and the state need no change. A source that learns to rea
 
 ```
 src/
-  index.ts            public API
-  types.ts            all shared types (no Node imports)
-  run.ts              scanTarget, syncTarget, selectSource, loadLastSelection, rememberFolder
-  target.ts           validation of targets, sources and folders
-  sync.ts             syncNotes: the cache pipeline, DEFAULT_CACHE_URL
-  notes.ts            Note, noteToFields
-  note-sets.ts        buildNoteSets
-  load-file-notes.ts  file loader
-  load-bear-notes.ts  Bear loader
-  bearcli.ts          runs bearcli
-  walk.ts             markdown file walker
-  scan.ts             counts markdown files
-  scan-bear.ts        counts Bear notes
-  state.ts            the state file
-tests/                one test file per source file, mirroring src/
+  index.ts              public API of the package
+  types.ts              all shared types (no Node imports)
+  run.ts                scanTarget, syncTarget, selectSource, loadLastSelection, rememberFolder
+  target.ts             validation of targets, sources and folders
+  state.ts              the state file
+  pipeline/             source-agnostic: knows only `Note`
+    sync.ts             syncNotes: the cache pipeline, DEFAULT_CACHE_URL
+    notes.ts            Note, noteToFields
+    note-sets.ts        buildNoteSets
+  sources/
+    types.ts            LoadedNotes, SourceAdapter
+    index.ts            the registry: sources, adapterFor
+    file/
+      index.ts          PUBLIC: fileSource
+      load.ts           reads the files as notes
+      scan.ts           counts the markdown files
+      walk.ts           markdown file walker
+      note-id.ts        noteId, noteTitle
+    bear/
+      index.ts          PUBLIC: bearSource
+      load.ts           reads the Bear notes
+      scan.ts           counts the Bear notes
+      bearcli.ts        runs bearcli
+tests/                  one test file per source file, mirroring src/
 ```
