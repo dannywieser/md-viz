@@ -93,3 +93,50 @@ Each step that adds or changes source has its unit tests in the same step; per t
 - `run.ts` has to stay free of `electron` and of `webContents`: progress goes through callbacks only.
 - The Docker images do not include `apps/electron`; `packages/sync` is not needed by either image. Step 10 checks that `.dockerignore` and the Dockerfiles need no change.
 - What else should move after the Electron side is thin is deliberately left for step 9.
+
+## Extension: structure inside `packages/sync/src` (steps 11-16)
+
+Added after steps 1-10 were implemented. It supersedes the flat layout in "Repository structure" above.
+
+### Goal
+
+Give each source its own folder with an obvious public/private split, group the source-agnostic pipeline, and let `run.ts` stop branching on the source.
+
+### Target layout
+
+```
+src/
+  index.ts                public API of the package
+  types.ts                shared types (+ FileTarget, BearTarget)
+  run.ts                  orchestration; no per-source branches
+  target.ts               validation (still names the sources)
+  state.ts
+  pipeline/               source-agnostic: knows only `Note`
+    sync.ts  notes.ts  note-sets.ts
+  sources/
+    types.ts              LoadedNotes, SourceAdapter<T>
+    index.ts              registry `sources` + adapterFor(target)
+    file/
+      index.ts            PUBLIC: fileSource { load, scan }
+      load.ts  scan.ts  walk.ts  note-id.ts      (private)
+    bear/
+      index.ts            PUBLIC: bearSource { load, scan }
+      load.ts  scan.ts  bearcli.ts               (private)
+tests/                    mirrors src/ (tests/pipeline, tests/sources/file, tests/sources/bear)
+```
+
+Public vs private: a source folder's `index.ts` exports one adapter (`load` and `scan` with the same shape for every source) and nothing else; every other file in the folder is private. ESLint (`no-restricted-imports`) forbids importing those private files from outside the folder. Tests may import private files of their own folder.
+
+### Steps
+
+11. Move the files with `git mv` into `pipeline/` and `sources/{file,bear}/` (renaming `load-file-notes` to `file/load`, `scan-bear` to `bear/scan`, `noteId`/`noteTitle` into `file/note-id.ts`, and so on), move the tests to mirror them, fix imports. No behavior change.
+12. Add `sources/types.ts` (`LoadedNotes`, `SourceAdapter<T>`), `FileTarget`/`BearTarget` in `types.ts`, and the `file/index.ts` and `bear/index.ts` adapters, each with a test.
+13. Add the registry `sources/index.ts` (`adapterFor`); `run.ts` uses it for `scanTarget` and `syncTarget`; update `run.test.ts`; test the registry.
+14. Add the ESLint rule against deep imports into a source folder and confirm it fails on a deliberate violation.
+15. Update the README (layout, "Adding a source": a folder with an adapter, one registry line, the `Source` value and `parseTarget`) and `CLAUDE.md`.
+16. Run `pnpm format`, `pnpm lint`, `pnpm typecheck` and `pnpm coverage`; every workspace at or above 95%.
+
+### Risks
+
+- Correlating a target with its adapter in a union is not expressible in TypeScript without one cast; it is confined to `adapterFor` with a comment.
+- `no-restricted-imports` only sees import strings, so it guards `src` outside `sources/`; tests are exempt on purpose.

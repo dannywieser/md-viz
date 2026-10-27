@@ -52,3 +52,17 @@ Steps 4-6 done. Step 4: packages/sync/src/target.ts (assertDirectory, parseTarge
 
 ### [2026-10-27 08:17:54] Claude
 Steps 7-10 done. Step 7: packages/sync/README.md (purpose, entry points, API table, every type, the 8-stage workflow with its safety rules, state file format, adding a source, layout). Step 8: CLAUDE.md (new packages/sync structure line; Electron sync and state bullets now point to the package). Step 9 review: apps/electron/src/main is now index.ts (window) and ipc.ts (48 lines: folder dialog, forwarding, progress events, CACHE_URL); nothing domain-like is left to move. The renderer hooks hold UI state and stay; pickFolder is Electron-only. Step 10: format:check, lint, typecheck clean; pnpm coverage exits 0 with every workspace at or above 95% (sync: 100/97.93/100/100). Docker: both Dockerfiles install with --filter on their own workspace and neither depends on packages/sync, the lockfile has the new importer; no change needed (docker build not run here).
+
+### [2026-10-27 08:24:42] User
+ok, seeing this in place makes me want to add a bit of structure to the src folder. I would like to have file/bear modes each have their own sub-folder with a bit more obvious of a public vs private function signature. Can you propose a change?
+
+### [2026-10-27 08:24:42] Claude
+Proposed (no code yet): src/sources/file/ and src/sources/bear/, each with an index.ts as the only public surface (load, scan) and private files beside it; src/pipeline/ for sync, notes, note-sets; a lint rule forbidding deep imports into a source folder; optional source registry so run.ts stops branching. Open questions: 1 registry or not, 2 pipeline/ folder or leave flat, 3 how to treat noteId/noteTitle (tested directly today), 4 whether this belongs in this PR.
+
+### [2026-10-27 08:26:57] User
+1. yes, this makes sense
+2. yes, add this grouping as well
+3. in scope for this PR. Update the plan and add the needed steps
+
+### [2026-10-27 08:26:57] Decision
+Source structure goes into this PR: plan.md gets an extension with steps 11-16 (move into pipeline/ and sources/{file,bear}/; adapter interface and per-source index.ts; registry with adapterFor so run.ts stops branching; lint rule against deep imports; README and CLAUDE.md layout; final verification). Implement them now, one commit per step.
