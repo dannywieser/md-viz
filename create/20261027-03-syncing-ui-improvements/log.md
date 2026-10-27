@@ -2,6 +2,7 @@
 
 - **Slug:** 20261027-03-syncing-ui-improvements
 - **Started:** 2026-10-27 08:49:20 MDT
+- **Completed:** 2026-10-27 11:24:32
 
 ---
 
@@ -116,3 +117,12 @@ Read as: the running app (old layout, header and card sized to the grid row) doe
 
 ### [2026-10-27 09:19:51] Claude
 Implementation, steps 7-12 in one pass (they are coupled: the app only compiles with all of them). Done: fixed 912x520 non-resizable window (`src/shared/window-size.ts`, main); grids in fixed 272px columns, always shown, updated/unchanged fill the height and 12 notes or fewer keep 160px (`gridHeight`), `columnPitch` keeps lattice alignment within the window; one-line `FolderCard`; `SyncOverlay` (loader, line, `ProgressBar`, counts) as a semi-opaque overlay; error replaces the grids; `ProgressBar` added to `@md-viz/ui`; `NoteGrid` `align="end"`; exploration uses the shared bar; CLAUDE.md updated. No pipeline change (step 10 dropped). Deviation: header and card no longer track the grid row width (`onWidthChange` removed), the fixed window makes them full width. Format, lint, typecheck and coverage pass in every workspace.
+
+### [2026-10-27 09:23:12] User
+/create-complete
+
+### [2026-10-27 11:24:32] Claude
+Fresh `pnpm coverage` passes in every workspace (two earlier runs hit timeouts under machine load, then passed). Wrote summary.md, harvested CLAUDE.md and README.md.
+
+### [2026-10-27 11:24:32] Decision
+Session complete.
