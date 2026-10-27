@@ -1,24 +1,21 @@
 import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { adapterFor } from '../src/sources'
+import { bearSource } from '../src/sources/bear'
+import { fileSource } from '../src/sources/file'
 import type { LoadedNotes } from '../src/sources/types'
 import { loadLastSelection, rememberFolder, scanTarget, selectSource, syncTarget } from '../src/run'
 import { readState } from '../src/state'
 import { syncNotes } from '../src/pipeline/sync'
 import type { SyncResult } from '../src/types'
 
-vi.mock('../src/sources', () => ({ adapterFor: vi.fn() }))
 vi.mock('../src/pipeline/sync', () => ({ syncNotes: vi.fn() }))
 
-const adapter = {
-  load: vi.fn(),
-  scan: vi.fn(),
-  parse: vi.fn(),
-  key: vi.fn(),
-  remember: vi.fn(),
-  restore: vi.fn(),
-}
+// the sources are real except for what touches the notes themselves: loading and counting them.
+const fileLoad = vi.spyOn(fileSource, 'load')
+const fileScan = vi.spyOn(fileSource, 'scan')
+const bearLoad = vi.spyOn(bearSource, 'load')
+const bearScan = vi.spyOn(bearSource, 'scan')
 
 const syncResult: SyncResult = {
   scanned: 1,
@@ -39,7 +36,6 @@ describe('run', () => {
     folder = path.join(dir, 'notes')
     await mkdir(folder)
     stateFile = path.join(dir, 'state.json')
-    vi.mocked(adapterFor).mockReturnValue(adapter)
   })
 
   afterEach(async () => {
@@ -50,25 +46,25 @@ describe('run', () => {
   describe('scanTarget', () => {
     it('scans a folder and forwards progress', async () => {
       const onProgress = vi.fn()
-      adapter.scan.mockResolvedValue({ count: 2 })
+      fileScan.mockResolvedValue({ count: 2 })
 
       expect(await scanTarget({ source: 'file', folder }, onProgress)).toEqual({ count: 2 })
-      expect(adapter.scan).toHaveBeenCalledWith({ source: 'file', folder }, onProgress)
+      expect(fileScan).toHaveBeenCalledWith({ source: 'file', folder }, onProgress)
     })
 
     it('counts the Bear notes without a folder', async () => {
-      adapter.scan.mockResolvedValue({ count: 7 })
+      bearScan.mockResolvedValue({ count: 7 })
 
       expect(await scanTarget({ source: 'bear' })).toEqual({ count: 7 })
-      expect(adapterFor).toHaveBeenCalledWith({ source: 'bear' })
-      expect(adapter.scan).toHaveBeenCalledWith({ source: 'bear' }, undefined)
+      expect(bearScan).toHaveBeenCalledWith({ source: 'bear' }, undefined)
+      expect(fileScan).not.toHaveBeenCalled()
     })
 
     it('rejects an invalid target before scanning', async () => {
       await expect(scanTarget({ source: 'file', folder: 'relative' })).rejects.toThrow(
         'expected an absolute folder path',
       )
-      expect(adapter.scan).not.toHaveBeenCalled()
+      expect(fileScan).not.toHaveBeenCalled()
     })
   })
 
@@ -77,7 +73,8 @@ describe('run', () => {
     const options = () => ({ stateFile, cacheUrl: 'http://cache.test' })
 
     beforeEach(() => {
-      adapter.load.mockResolvedValue(loaded)
+      fileLoad.mockResolvedValue(loaded)
+      bearLoad.mockResolvedValue(loaded)
       vi.mocked(syncNotes).mockResolvedValue(syncResult)
     })
 
@@ -91,7 +88,7 @@ describe('run', () => {
       const result = await syncTarget({ source: 'file', folder }, { ...options(), onProgress })
 
       expect(result).toBe(syncResult)
-      expect(adapter.load).toHaveBeenCalledWith({ source: 'file', folder })
+      expect(fileLoad).toHaveBeenCalledWith({ source: 'file', folder })
       expect(syncNotes).toHaveBeenCalledWith(
         'file',
         loaded,
@@ -108,7 +105,8 @@ describe('run', () => {
     it('syncs Bear without a folder and records it under its own key', async () => {
       await syncTarget({ source: 'bear' }, options())
 
-      expect(adapter.load).toHaveBeenCalledWith({ source: 'bear' })
+      expect(bearLoad).toHaveBeenCalledWith({ source: 'bear' })
+      expect(fileLoad).not.toHaveBeenCalled()
       expect(syncNotes).toHaveBeenCalledWith('bear', loaded, expect.anything())
       const state = await readState(stateFile)
       expect(state.lastSource).toBe('bear')
@@ -120,12 +118,12 @@ describe('run', () => {
       await expect(syncTarget({ source: 'file', folder: 'relative' }, options())).rejects.toThrow(
         'expected an absolute folder path',
       )
-      expect(adapter.load).not.toHaveBeenCalled()
+      expect(fileLoad).not.toHaveBeenCalled()
       expect(syncNotes).not.toHaveBeenCalled()
     })
 
     it('records nothing when loading fails', async () => {
-      adapter.load.mockRejectedValue(new Error('bear is not installed'))
+      bearLoad.mockRejectedValue(new Error('bear is not installed'))
 
       await expect(syncTarget({ source: 'bear' }, options())).rejects.toThrow(
         'bear is not installed',
@@ -155,7 +153,7 @@ describe('run', () => {
   describe('selectSource and loadLastSelection', () => {
     it('selectSource remembers Bear and returns its last sync', async () => {
       vi.mocked(syncNotes).mockResolvedValue(syncResult)
-      adapter.load.mockResolvedValue({ notes: [], failed: [] })
+      bearLoad.mockResolvedValue({ notes: [], failed: [] })
       await syncTarget({ source: 'bear' }, { stateFile, cacheUrl: 'http://cache.test' })
 
       const selection = await selectSource('bear', stateFile)
@@ -172,7 +170,7 @@ describe('run', () => {
 
     it('loadLastSelection returns the saved folder with its sync', async () => {
       vi.mocked(syncNotes).mockResolvedValue(syncResult)
-      adapter.load.mockResolvedValue({ notes: [], failed: [] })
+      fileLoad.mockResolvedValue({ notes: [], failed: [] })
       await syncTarget({ source: 'file', folder }, { stateFile, cacheUrl: 'http://cache.test' })
 
       const selection = await loadLastSelection(stateFile)

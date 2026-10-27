@@ -1,7 +1,7 @@
-import { readState, syncKey, updateState, type AppState } from './state'
+import { readState, updateState, type AppState } from './state'
 import { syncNotes } from './pipeline/sync'
-import { adapterFor } from './sources'
-import { assertDirectory, parseSource, parseTarget } from './target'
+import { adapterFor, adapterOf } from './sources'
+import { parseSource, parseTarget } from './target'
 import type {
   LastSelection,
   ScanProgress,
@@ -9,6 +9,7 @@ import type {
   Source,
   SyncProgress,
   SyncResult,
+  SyncTarget,
 } from './types'
 
 export interface SyncRunOptions {
@@ -19,19 +20,22 @@ export interface SyncRunOptions {
   onProgress?: (progress: SyncProgress) => void
 }
 
-/** the folder and last sync of `source` as the state has them. */
+/** the target `source` remembers in `state` and the last sync of it. */
 async function selectionOf(source: Source, state: AppState): Promise<LastSelection> {
-  if (source === 'bear') return { source, folder: null, lastSync: state.syncs['bear'] ?? null }
-  let folder: string | null = null
-  if (state.lastFolder) {
-    try {
-      folder = await assertDirectory(state.lastFolder)
-    } catch {
-      // the folder is gone: show no folder.
-    }
+  const adapter = adapterOf(source)
+  const target = await adapter.restore(state)
+  if (!target) return { source, folder: null, lastSync: null }
+  return {
+    source,
+    folder: 'folder' in target ? target.folder : null,
+    lastSync: state.syncs[adapter.key(target)] ?? null,
   }
-  const lastSync = folder ? (state.syncs[syncKey({ source, folder })] ?? null) : null
-  return { source, folder, lastSync }
+}
+
+/** makes `target` the selected one and lets its source keep what it needs to bring it back. */
+function remember(state: AppState, target: SyncTarget): void {
+  state.lastSource = target.source
+  adapterFor(target).remember(state, target)
 }
 
 /** counts the notes of a target (`target` is validated first): files under the folder, or Bear's. */
@@ -53,23 +57,20 @@ export async function syncTarget(
   { stateFile, cacheUrl, onProgress }: SyncRunOptions,
 ): Promise<SyncResult> {
   const checked = await parseTarget(target)
-  const loaded = await adapterFor(checked).load(checked)
+  const adapter = adapterFor(checked)
+  const loaded = await adapter.load(checked)
   const result = await syncNotes(checked.source, loaded, { baseUrl: cacheUrl, onProgress })
   const syncedAt = new Date().toISOString()
   await updateState(stateFile, (state) => {
-    state.lastSource = checked.source
-    if (checked.source === 'file') state.lastFolder = checked.folder
-    state.syncs[syncKey(checked)] = { syncedAt, notes: result.notes }
+    remember(state, checked)
+    state.syncs[adapter.key(checked)] = { syncedAt, notes: result.notes }
   })
   return result
 }
 
 /** remembers a folder the user picked as the file source's folder (and the file source). */
 export async function rememberFolder(stateFile: string, folder: string): Promise<void> {
-  await updateState(stateFile, (state) => {
-    state.lastSource = 'file'
-    state.lastFolder = folder
-  })
+  await updateState(stateFile, (state) => remember(state, { source: 'file', folder }))
 }
 
 /** remembers `source` as the selected one and returns its folder and last sync. */

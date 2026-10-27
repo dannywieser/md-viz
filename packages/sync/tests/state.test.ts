@@ -2,7 +2,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { readState, syncKey, updateState } from '../src/state'
+import { readState, updateState } from '../src/state'
 
 describe('state file', () => {
   let dir: string
@@ -63,13 +63,5 @@ describe('state file', () => {
 
     await writeFile(file, '{"lastSource":"notion","lastFolder":null,"syncs":{}}')
     expect((await readState(file)).lastSource).toBe('file')
-  })
-})
-
-describe('syncKey', () => {
-  it('is one key per folder for files and one for Bear', () => {
-    expect(syncKey({ source: 'file', folder: '/notes' })).toBe('file:/notes')
-    expect(syncKey({ source: 'file', folder: '/other' })).not.toBe('file:/notes')
-    expect(syncKey({ source: 'bear' })).toBe('bear')
   })
 })

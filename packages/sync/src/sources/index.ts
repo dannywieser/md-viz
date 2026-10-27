@@ -9,10 +9,20 @@ export const sources = {
   bear: bearSource,
 } satisfies { [S in Source]: SourceAdapter<Extract<SyncTarget, { source: S }>> }
 
+/** whether `value` names a registered source. */
+export function isSource(value: unknown): value is Source {
+  return typeof value === 'string' && Object.hasOwn(sources, value)
+}
+
 /**
- * the adapter that reads `target`. TypeScript cannot tie a target to its own source's adapter
- * through a union, so this is the one cast: `target.source` picks the adapter made for it.
+ * the adapter of `source`. TypeScript cannot tie a target to its own source's adapter through a
+ * union, so this is the one cast: `source` picks the adapter made for it.
  */
+export function adapterOf(source: Source): SourceAdapter<SyncTarget> {
+  return sources[source] as SourceAdapter<SyncTarget>
+}
+
+/** the adapter that reads `target`. */
 export function adapterFor(target: SyncTarget): SourceAdapter<SyncTarget> {
-  return sources[target.source] as SourceAdapter<SyncTarget>
+  return adapterOf(target.source)
 }
