@@ -66,12 +66,12 @@ Implementation (steps 7+, refined at the checkpoint):
 3. Progress variants: placement (in the status row, a strip under it, replacing the grids), `Loader` placement, counters, and a "now syncing" line with the current note title (batch vs per-note shown side by side).
 4. State coverage: scanning, syncing, done, empty, error in each variant, switchable on the page.
 5. Run format, lint, typecheck, coverage for `apps/design`; commit and push the exploration.
-6. **Checkpoint:** the user reviews the exploration; together choose the layout, window size, progress design and whether the pipeline reports per note. Update this plan's implementation steps to match and log the decision.
-7. Window and layout: fixed window size in main; grids fit the width and fill the height; lattice stays aligned; tests.
-8. Compact status card per the chosen design; tests.
-9. Progress UI (`Loader`, counters, note title) wired to `useScan`/`useSync`; tests.
-10. If chosen: per-note progress in `packages/sync` (pipeline, types, IPC type, README), with tests.
-11. Update `CLAUDE.md` (Electron renderer, window and layout notes) and the design guidelines if a decision changed.
+6. **Checkpoint (done):** chosen with the user: progress as a see-through overlay over the grids (C, overlay); columns keep today's 272px width and 32px gap, so the window is 912px wide (just fits them) and 520px high; the grid of few notes (deleted) keeps its 160px drawing height (3 wide, 2 tall) while the grids of many notes (updated, unchanged) fill the height; the status card is one line; "batching is fine": the sync logic does not change, so the progress shows what it reports today (pushed and deleted of the total, scan folders and notes so far) and the note title is not shown.
+7. Window and layout: fixed 912x520 non-resizable window in main; `SyncGrids` always shows the three grids (empty ones too, also before the first sync) at the fixed column width; updated and unchanged fill the available height, deleted keeps 160px; lattice stays aligned; tests.
+8. Status card as one line (source, last synced, count) in `FolderCard`, no more tall stacked card; the header and card are as wide as the grid row; tests.
+9. Progress overlay: a `SyncOverlay` component (loader, line, bar when the total is known, counts) over the grids with a semi-opaque veil, shown while scanning or syncing; the text progress leaves `FolderCard`; wired to `useScan` / `useSync`; tests.
+10. (dropped) per-note progress in `packages/sync`: not needed, batching is fine.
+11. Update `CLAUDE.md` (Electron renderer notes: window size, layout, overlay) and the design guidelines if a decision changed.
 12. Run `pnpm format`, `pnpm lint`, `pnpm typecheck` and `pnpm coverage`; bring every workspace to at least 95% (lines, statements, branches, functions); fix any shortfall.
 
 ## Open questions / risks
@@ -79,5 +79,4 @@ Implementation (steps 7+, refined at the checkpoint):
 - The exact window size is decided in the exploration. Anything fixed must hold the three columns (today 272px wide plus gaps) and a sensible grid height; a smaller height means fewer rows of squares for big note sets.
 - Fitting the grids to a fixed width changes `COLUMN_WIDTH` from a constant into something derived, and the "gap widened to a whole number of dot spacings" rule must keep working. The lattice is the main risk in step 7.
 - Fixed-size windows on small displays or with OS scaling can clip content; the page must not scroll (dots do not move with it).
-- Per-note progress adds many IPC events; throttle it like the scan progress (50 ms) if chosen.
-- Steps 7-11 are provisional until the checkpoint.
+- The overlay hides the status grids while it runs (the last result shows through the veil); the sync button is disabled meanwhile, so nothing under the overlay needs clicking.

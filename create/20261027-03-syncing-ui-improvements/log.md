@@ -95,3 +95,9 @@ Took it as: no per-note pipeline progress; the sync logic stays as it is. Remove
 
 ### [2026-10-27 09:14:54] Claude
 No reason: the mock had pt-6 (24px) above the status card and gap-4 (16px) below it, a leftover from the app's own spacing. Made both 16px (pt-4, gap-4).
+
+### [2026-10-27 09:15:09] User
+(mid-turn) I like the overlay
+
+### [2026-10-27 09:15:09] Decision
+Checkpoint passed: overlay (C) chosen; fixed 272px columns, window 912x520; deleted keeps 160px (3x2), updated and unchanged fill the height; one-line status card; no pipeline change (batching is fine, step 10 dropped). plan.md steps 6-12 updated. Proceeding to implementation (steps 7-12).
