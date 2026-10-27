@@ -58,6 +58,25 @@ export default tseslint.config(
     rules: { 'react/no-multi-comp': 'off' },
   },
   {
+    // a source folder's index.ts is its public surface: the rest of the package imports the
+    // folder, never the private files inside it. (tests may import the files of their own folder.)
+    files: ['packages/sync/src/**'],
+    ignores: ['packages/sync/src/sources/*/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/sources/*/*', '!**/sources/*/index'],
+              message: 'import the source folder (its index.ts), not the private files in it.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.config.{js,ts}'],
     extends: [tseslint.configs.disableTypeChecked],
   },

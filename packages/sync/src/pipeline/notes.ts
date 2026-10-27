@@ -1,4 +1,4 @@
-import type { Source } from '../shared/ipc'
+import type { Source } from '../types'
 
 /** a note from any source, the one shape the sync pipeline works with. */
 export interface Note {

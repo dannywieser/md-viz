@@ -2,10 +2,10 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { scanMarkdown } from '../../src/main/scan'
-import type { ScanProgress } from '../../src/shared/ipc'
+import { scanMarkdown } from '../../../src/sources/file/scan'
+import type { ScanProgress } from '../../../src/types'
 
-const DEMO = path.resolve(import.meta.dirname, '../../../../demo')
+const DEMO = path.resolve(import.meta.dirname, '../../../../../demo')
 
 describe('scanMarkdown', () => {
   it('counts the markdown notes in the demo folder', async () => {

@@ -1,8 +1,8 @@
 // @vitest-environment node
-import { listBearRows, type BearRow } from '../../src/main/bearcli'
-import { loadBearNotes } from '../../src/main/load-bear-notes'
+import { listBearRows, type BearRow } from '../../../src/sources/bear/bearcli'
+import { loadBearNotes } from '../../../src/sources/bear/load'
 
-vi.mock('../../src/main/bearcli', () => ({ listBearRows: vi.fn() }))
+vi.mock('../../../src/sources/bear/bearcli', () => ({ listBearRows: vi.fn() }))
 
 const row = (overrides: Partial<BearRow> = {}): BearRow => ({
   id: 'B1',

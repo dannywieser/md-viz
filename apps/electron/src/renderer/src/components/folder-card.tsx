@@ -28,7 +28,7 @@ export function FolderCard({
   return (
     <Card className={cn('max-w-full gap-2 px-4 py-3', className)}>
       <p className="break-all text-sm" aria-label="chosen source">
-        {target.source === 'bear' ? 'bear' : target.folder}
+        {'folder' in target ? target.folder : target.source}
       </p>
       <p className="text-sm text-muted-foreground">
         {lastSync ? `last synced ${formatTime(lastSync.syncedAt)}` : 'never synced'}

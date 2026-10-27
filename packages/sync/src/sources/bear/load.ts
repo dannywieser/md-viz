@@ -1,5 +1,5 @@
 import { listBearRows } from './bearcli'
-import type { LoadedNotes } from './load-file-notes'
+import type { LoadedNotes } from '../types'
 
 /**
  * reads the notes of the Bear library, the archive included, as notes. trashed notes are not
