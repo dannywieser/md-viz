@@ -18,7 +18,7 @@ A fix session is a create session with `Kind: fix`. It uses the same three phase
 ## Steps
 
 1. If `$ARGUMENTS` is empty, ask the user for a title and stop.
-2. Run `bash .claude/skills/create/scripts/new-session.sh --kind fix $ARGUMENTS`. It prints the slug (`YYYYMMDD-xx-fix-<title>`), creates the folder and log (header has `- **Kind:** fix`), adds the index row (`fix: <title>`, status `review`) and records the slug in `create/.current`.
+2. Run `bash .claude/skills/create/scripts/new-session.sh --kind fix $ARGUMENTS`. It prints the slug (`YYYYMMDD-xx-fix-<title>`), creates the folder and log (header has `- **Kind:** fix`), adds the index row (`fix: <title>`, status `review`) and records the slug in `create/.current`, and creates and switches to the branch `fix/<slug>`.
 3. Tell the user the slug and folder, then ask them to describe the bug.
 4. Facilitate the investigation. Ask a few focused questions at a time, covering:
    - the symptom: what was expected and what happens instead (error text, screenshot, log)

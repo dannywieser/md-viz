@@ -65,4 +65,4 @@ New apps go in `apps/*`, shared code in `packages/*`.
 - Dependency versions shared by several workspaces (currently `zod`, `@tanstack/react-query`) live in the `catalog:` of `pnpm-workspace.yaml`; reference them as `"catalog:"`.
 - TypeScript is pinned to 6.0.x because typescript-eslint does not support TypeScript 7. Do not upgrade `typescript` until it does.
 - Prettier: no semicolons, single quotes, trailing commas, 100 columns. 2-space indent, LF.
-- Don't commit unless asked.
+- Don't commit unless asked, except in `/create` and `/fix` sessions: they work on their own `create/<slug>` or `fix/<slug>` branch and commit, push and open/ready the PR themselves (see `create/README.md`).
