@@ -5,7 +5,18 @@
 export type Source = 'file' | 'bear'
 
 /** what a scan or sync runs on: a file source needs its folder, Bear needs nothing. */
-export type SyncTarget = { source: 'file'; folder: string } | { source: 'bear' }
+export type SyncTarget = FileTarget | BearTarget
+
+/** the target of the file source: the folder of markdown files. */
+export interface FileTarget {
+  source: 'file'
+  folder: string
+}
+
+/** the target of the Bear source: the Bear library needs nothing else. */
+export interface BearTarget {
+  source: 'bear'
+}
 
 export interface ScanProgress {
   /** directories visited so far. */
