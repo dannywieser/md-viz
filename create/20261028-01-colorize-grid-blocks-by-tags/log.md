@@ -246,3 +246,6 @@ Step 10 done (apps/electron): renderer lib/cells.ts (toCells: the last sync's No
 
 ### [2026-10-28 16:59:22] Claude
 Step 11 done (apps/design board): sections/themes.tsx and theme-row.tsx (a row per theme: the ui roles and the 25 note colors as swatches that do not depend on the board's own theme), registered on the board after the palette; the palette section adds the focus and shadow-color roles and the 25 note colors; the note grid demo gives its notes tags so the tooltip shows them; guidelines gain "themes" and "tag colors" (the "cards" and "inputs and focus" guidelines were already updated during the exploration). Tests for the new sections; design 176 tests, coverage 99.7%.
+
+### [2026-10-28 17:00:01] Claude
+Step 12 done: CLAUDE.md updated (intro, packages/ui and cache entries, the design-token rule now names themes.ts, new "Themes" and "Tag colours" conventions, the cache's /tag-colors, DEFAULT_NOTE_COLOR is the neutral grey). pnpm format, lint and typecheck pass.
