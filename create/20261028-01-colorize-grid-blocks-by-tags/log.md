@@ -121,3 +121,9 @@ ocean doesn't seem right, can you read this: https://term.const.net/en/themes/oc
 
 ### [2026-10-28 07:42:20] Claude
 Read the page: ocean is the iTerm2 Ocean scheme with a bright blue background (#224fbc), white text, ANSI red #e64c4c, green #00a600 (bright #00d900), yellow #999900 (bright #e5e500), blue #0000b2 (bright #7373ff), magenta #d826d8, cyan #00a6b2 (bright #00e5e5). My earlier ocean was the mdm one (navy) with invented accents. Replaced it in candidate-themes.ts with the real scheme: background, text and selection (as border) from it; panel and muted derived; hues from the bright ANSI colors; orange (red+yellow) and violet (bright blue+magenta) are mixes since the scheme has none. Checked in the viewer.
+
+### [2026-10-28 07:42:50] User
+ocean shouldn't be dark only
+
+### [2026-10-28 07:42:50] Claude
+Added an ocean light variant (ours, not from the scheme): pale blue background #eaf1ff, navy text, the scheme's normal ANSI colors as hues (orange and violet mixed again). Dark stays the iTerm2 scheme.

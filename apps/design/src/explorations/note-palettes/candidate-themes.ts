@@ -98,7 +98,7 @@ const GOTHAM: ThemeVariant = {
   },
 }
 
-const OCEAN: ThemeVariant = {
+const OCEAN_DARK: ThemeVariant = {
   // the iTerm2 Ocean terminal scheme (term.const.net): a bright blue background; panel, muted and border are derived from it.
   ui: {
     background: '#224fbc',
@@ -119,6 +119,30 @@ const OCEAN: ThemeVariant = {
     cyan: '#00e5e5',
     blue: '#7373ff',
     violet: '#ac39f2',
+    magenta: '#d826d8',
+  },
+}
+
+// the scheme is one (blue background) variant, so the light one is ours: a pale blue page with the scheme's normal (darker) ANSI colours; orange and violet are mixes again.
+const OCEAN_LIGHT: ThemeVariant = {
+  ui: {
+    background: '#eaf1ff',
+    panel: '#d6e3fb',
+    text: '#0b1f4d',
+    muted: '#3d5a99',
+    accent: '#224fbc',
+    border: '#a9bfe8',
+    success: '#00a600',
+    successText: '#ffffff',
+  },
+  hues: {
+    red: '#e64c4c',
+    orange: '#c07226',
+    yellow: '#999900',
+    green: '#00a600',
+    cyan: '#00a6b2',
+    blue: '#0000b2',
+    violet: '#6c13c5',
     magenta: '#d826d8',
   },
 }
@@ -323,8 +347,9 @@ export const candidateThemes: CandidateTheme[] = [
     id: 'ocean',
     name: 'ocean',
     source:
-      'the iTerm2 ocean terminal scheme (dark only; orange and violet are mixes of its colours)',
-    dark: OCEAN,
+      'the iTerm2 ocean terminal scheme for dark; the light variant and orange and violet are ours, from its colours',
+    dark: OCEAN_DARK,
+    light: OCEAN_LIGHT,
   },
   {
     id: 'high-contrast',
