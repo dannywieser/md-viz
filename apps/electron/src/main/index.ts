@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { app, BrowserWindow } from 'electron'
+import { WINDOW_HEIGHT, WINDOW_WIDTH } from '../shared/window-size'
 import { registerIpc } from './ipc'
 
 // the app icon, drawn from the logo by scripts/make-icon.mjs.
@@ -7,8 +8,13 @@ const ICON = path.join(import.meta.dirname, '../../resources/icon.png')
 
 function createWindow(): void {
   const window = new BrowserWindow({
-    width: 960,
-    height: 640,
+    // a fixed size, just wide enough for the three status columns.
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
+    useContentSize: true,
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
     show: false,
     title: 'md-viz sync',
     // windows and linux take the window icon here; macOS ignores it and uses the dock icon below.

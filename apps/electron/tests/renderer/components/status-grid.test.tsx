@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { NoteGrid } from '@md-viz/ui'
 import { StatusGrid } from '../../../src/renderer/src/components/status-grid'
-import { COLUMN_WIDTH, GRID_HEIGHT } from '../../../src/renderer/src/lib/sync-layout'
+import { COLUMN_WIDTH } from '../../../src/shared/window-size'
 
 vi.mock('@md-viz/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@md-viz/ui')>()),
@@ -10,7 +10,6 @@ vi.mock('@md-viz/ui', async (importOriginal) => ({
 
 const notes = [{ id: 'a', title: 'plan' }]
 const gridRef = { current: null }
-const size = { width: 267, height: 135 }
 const lastProps = () => vi.mocked(NoteGrid).mock.lastCall![0]
 
 describe('StatusGrid', () => {
@@ -27,7 +26,8 @@ describe('StatusGrid', () => {
         onCellChange={vi.fn()}
         cellStep={undefined}
         gridRef={gridRef}
-        emptySize={size}
+        height={160}
+        align="start"
       />,
     )
 
@@ -36,12 +36,29 @@ describe('StatusGrid', () => {
     })
     expect(lastProps()).toMatchObject({
       label: 'updated',
-      height: GRID_HEIGHT,
+      height: 160,
       align: 'start',
       compactEmpty: true,
-      emptySize: size,
     })
     expect(lastProps().notes).toEqual([{ id: 'a', title: 'plan', color: 0 }])
+  })
+
+  it('fills the height of the column when it has no height, and can sit at the end of it', () => {
+    render(
+      <StatusGrid
+        label="unchanged"
+        notes={notes}
+        reference={false}
+        onCellChange={vi.fn()}
+        cellStep={undefined}
+        gridRef={gridRef}
+        height={undefined}
+        align="end"
+      />,
+    )
+
+    expect(lastProps().height).toBeUndefined()
+    expect(lastProps().align).toBe('end')
   })
 
   it('lets the reference grid report its cell and hold the ref', () => {
@@ -54,7 +71,8 @@ describe('StatusGrid', () => {
         onCellChange={onCellChange}
         cellStep={20}
         gridRef={gridRef}
-        emptySize={size}
+        height={undefined}
+        align="start"
       />,
     )
 
@@ -72,7 +90,8 @@ describe('StatusGrid', () => {
         onCellChange={vi.fn()}
         cellStep={20}
         gridRef={gridRef}
-        emptySize={size}
+        height={160}
+        align="start"
       />,
     )
 
