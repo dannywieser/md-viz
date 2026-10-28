@@ -42,6 +42,8 @@
   --border: color-mix(in srgb, var(--sol-base1) 40%, transparent);
   --input: color-mix(in srgb, var(--sol-base1) 40%, transparent);
   --ring: var(--sol-blue);
+  /* the keyboard focus ring and border of buttons and inputs. */
+  --focus: #000000;
   --radius: 0;
 
   --grid-size: 16px;
@@ -85,6 +87,7 @@
   --border: color-mix(in srgb, var(--sol-base01) 60%, transparent);
   --input: color-mix(in srgb, var(--sol-base01) 60%, transparent);
   --ring: var(--sol-blue);
+  --focus: var(--sol-base3);
 
   --grid-dot: color-mix(in srgb, var(--sol-base01) 55%, transparent);
 }
@@ -130,6 +133,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-focus: var(--focus);
   --radius-sm: var(--radius);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);

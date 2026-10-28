@@ -45,15 +45,15 @@ describe('focus rings', () => {
     return (high + 0.05) / (low + 0.05)
   }
 
-  it('keeps solarized blue, as the app has today', () => {
-    expect(candidateThemes[0].ui.ring).toBe('#268bd2')
+  it('keeps solarized black, as the app has today', () => {
+    expect(candidateThemes[0].ui.focus).toBe('#000000')
   })
 
   it.each(candidateThemes.filter((theme) => theme.ui.background.startsWith('#')))(
-    '$id has a ring of at least 3:1 against its background and card',
+    '$id has a focus colour of at least 3:1 against its background and card',
     ({ ui }) => {
-      expect(contrast(ui.ring, ui.background)).toBeGreaterThanOrEqual(3)
-      expect(contrast(ui.ring, ui.card)).toBeGreaterThanOrEqual(3)
+      expect(contrast(ui.focus, ui.background)).toBeGreaterThanOrEqual(3)
+      expect(contrast(ui.focus, ui.card)).toBeGreaterThanOrEqual(3)
     },
   )
 })

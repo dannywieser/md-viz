@@ -164,3 +164,9 @@ I guess just review all the focus borders for contrast
 
 ### [2026-10-28 07:50:34] Claude
 Added a `ring` (focus ring) role to every theme and set it on the panels (before, every panel inherited solarized blue). Computed WCAG contrast of each theme's hues against its background and card and chose a ring of at least 3:1 on both, with a test for it. Rings: solarized #268bd2 (as today), gruvbox-dark #83a598, nord-dark #8fbcbb (its blue failed, 3.1/2.5), nord-light #5e81ac (3.5/3.3, same as its primary), catppuccin-mocha #89b4fa, catppuccin-latte #1e66f5, dracula #8be9fd (blue #6272a4 failed, 3.0/2.6), gotham #33859d (blue #195466 failed, 2.3/2.2), ocean #e5e500 (its blue failed, 1.9), high-contrast #0349b4.
+
+### [2026-10-28 07:53:14] User
+I'm still seeing a black focus border in gotham in the exploration
+
+### [2026-10-28 07:53:14] Claude
+Cause: Button and Select hard-coded the focus border and ring (focus-visible:border-black / ring-black, base3 under .dark), so the --ring token I set on the panels was never used; black on gotham's near-black page. Added a --focus token in packages/ui globals.css (black in light, base3 under .dark, so the apps look as before), mapped it as the focus color utility, and switched Button and Select to it. The theme role ring is now focus (set as --focus and --ring on the panels); solarized is black as today, the others keep the contrast-checked colors. Updated the "inputs and focus" guideline. Verified by keyboard Tab in the viewer: gotham's focused button shows the teal ring. Not changed: the select popup border and separator still hard-code black / base3.

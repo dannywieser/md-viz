@@ -33,7 +33,8 @@ export function ThemePanel({ theme }: ThemePanelProps) {
     '--accent': ui.panel,
     '--accent-foreground': ui.text,
     '--border': ui.border,
-    '--ring': ui.ring,
+    '--ring': ui.focus,
+    '--focus': ui.focus,
     '--input': ui.border,
     '--grid-dot': ui.border,
   } as CSSProperties

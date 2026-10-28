@@ -39,8 +39,8 @@ const guidelines = [
   },
   {
     name: 'inputs and focus',
-    rule: 'inputs have a 2px primary border and no shadow, so they sit flat beside the buttons. their popups float with a 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is the same thick black ring as buttons, and the border turns black with it.',
-    example: 'select · 2px orange border · thick black focus ring',
+    rule: 'inputs have a 2px primary border and no shadow, so they sit flat beside the buttons. their popups float with a 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is the same thick ring as buttons, and the border takes its color (black in solarized, the focus color of the theme otherwise, at least 3:1 against the page and the card).',
+    example: 'select · 2px orange border · thick focus ring · set by --focus',
   },
   {
     name: 'pixel logo',
