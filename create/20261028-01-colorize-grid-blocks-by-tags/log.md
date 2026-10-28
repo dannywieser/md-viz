@@ -190,3 +190,12 @@ for gotham, the box shadow is invisible
 
 ### [2026-10-28 07:58:53] Claude
 Cause: --shadow-hard in packages/ui globals.css was a literal 4px 4px 0 0 #000, and black on gotham's #0c1014 page has a contrast of 1.1:1. Made the color a --shadow-color token (black by default, so the apps are unchanged), used by --shadow-hard; themes get a shadow role, set on the panels. Gotham uses its blue #195466 (2.3:1 against the page); every other theme stays black. Black against the page for the others: solarized 19.5, nord-light 18.2, latte 18.6, ocean 2.9, nord-dark 1.7, dracula 1.5, gruvbox-dark 1.4, mocha 1.3 (the last four are faint too). Updated the card guideline. Checked in the viewer: gotham card shadow is rgb(25, 84, 102).
+
+### [2026-10-28 07:59:28] User
+ok, these themes are good and we'll consider them final. what other items are open?
+
+### [2026-10-28 07:59:28] Decision
+Themes final: solarized (light), gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean. Light/dark matching dropped. plan.md updated (flat themes, no .dark, tokens to make: strokes, select popup, destructive).
+
+### [2026-10-28 07:59:28] Claude
+Listed the open items: color count (25 vs fewer), stripes at 3-4px (cap), shadow on four faint dark themes, select popup border/separator and other hard-coded values, where the switcher sits and where the choice is stored (localStorage default), the plan's unanswered defaults (tag index assignment), and design board/guidelines. See the reply.

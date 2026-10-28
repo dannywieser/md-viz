@@ -15,8 +15,7 @@ has chosen from it.
 In:
 
 - Design exploration `note-palettes` (themes, 20+ note colors each, striped blocks at small sizes).
-- Themes starting from the mdm `palettes.ts` (dracula, gruvbox, nord, catppuccin, solarized, gotham,
-  ocean, highContrast); Solarized stays the default. The exploration decides which ship.
+- Nine themes, final after the exploration (solarized light, the default and the look of the app today; gruvbox dark; nord dark and light; catppuccin mocha and latte; dracula; gotham; ocean), each a flat entry with its UI tokens (background, text, card, panel, muted, primary, on-primary, border, focus, shadow) and 25 note colors (8 hues x 3 tiers + neutral). Dropped: solarized dark, gruvbox light, ocean light, high contrast.
 - `NoteGrid`: several colors per note (horizontal stripes, first 3), neutral default, tooltip with
   title and all tags.
 - Cache: tag-color mapping (storage, routes, spec, README).
@@ -31,7 +30,7 @@ Out:
 - A legend, tag filtering or clicking a tag.
 - Manual tag colors, recoloring a tag, freeing the index of unused tags.
 - Sharing the theme choice between apps through the cache.
-- A light/dark toggle in the apps (they follow the system, see risks).
+- Light/dark modes: a theme is one fixed look and the apps do not follow the system setting.
 
 ## Technologies
 
@@ -70,8 +69,8 @@ Exploration (design app):
 
 Implementation (after the user chooses):
 
-- `packages/ui/src/lib/themes.ts` - the chosen themes: UI tokens and note colors per light/dark variant, `DEFAULT_THEME`.
-- `packages/ui/src/lib/apply-theme.ts` - sets the tokens and `--note-N` on `<html>`, toggles `.dark`.
+- `packages/ui/src/lib/themes.ts` - the nine themes (ported from the exploration's `candidate-themes.ts`): UI tokens and hues, `DEFAULT_THEME` (solarized).
+- `packages/ui/src/lib/apply-theme.ts` - sets the tokens (including `--focus` and `--shadow-color`) and `--note-N` on `<html>`.
 - `packages/ui/src/lib/tag-stripes.ts` - splits a cell into stripe heights (whole pixels) for 1-3 colors.
 - `packages/ui/src/hooks/use-theme.ts` - current theme from `localStorage`, applies it, setter.
 - `packages/ui/src/components/theme-select.tsx` - the switcher (`Select`).
@@ -94,11 +93,11 @@ Phase 1: exploration (review it, then choose)
 1. Candidate themes: port the 8 mdm themes' UI roles into `candidate-themes.ts`, add each theme's accent colors, and derive 20-24 note colors (about 8 hues x 2-3 tiers + neutrals) in an order where consecutive indexes are far apart. Include the neutral default.
 2. Exploration page, panels, strip and striped-grid components; register it.
 3. Tests for the exploration (one file per source file, under `tests/explorations/note-palettes/`).
-4. **Pause:** the user reviews the exploration and chooses themes, color count, ordering and how light/dark behaves; log the decision and update this plan.
+4. **Done:** the user reviewed the exploration: the nine themes above are final, light/dark matching is dropped. Still to choose: the color count (25 or fewer) and whether stripes read at 3-4px (see the log).
 
 Phase 2: implementation
 
-5. `packages/ui`: themes, `applyTheme`, `useTheme`, `ThemeSelect`, `tag-stripes`; tests.
+5. `packages/ui`: themes, `applyTheme`, `useTheme`, `ThemeSelect`, `tag-stripes`; tests. Also make the remaining hard-coded Solarized/black values tokens: the note square and placeholder stroke, the select popup border and separator, destructive; the `--focus` and `--shadow-color` tokens already exist (added during the exploration).
 6. `NoteGrid`: `colors`/`tags`, stripes, neutral default, tooltip with tags; CSS for all note colors; tests.
 7. Cache: `tag_colors` table, routes, schemas, spec (`pnpm openapi`, `pnpm generate`), README; tests.
 8. Sync package: `assignTagColors`, tags on `NoteRef`, push mapping, state and result changes, README; tests (including old state files).
@@ -115,7 +114,7 @@ Defaults chosen for questions that were not answered; correct them if wrong.
 - One global tag-to-index table; known tags keep their index, new tags get the next one; unused tags keep theirs. Past the number of colors the indexes wrap, so two tags can share a color.
 - The assignment is done in `packages/sync`; the cache only stores it and never interprets it.
 - Theme choice is stored in `localStorage` in both apps (Electron's renderer keeps it in its `userData` too), not in `state.json` as first suggested; simpler, and the sync state stays about syncs. Say if you want `state.json`.
-- The apps have no dark toggle today. Default: they follow `prefers-color-scheme`, and dark-only or light-only themes show their one variant. The exploration decides the rule.
+- Decided: no light/dark; every theme is one fixed look (the apps' `.dark` class is unused).
 - Switching the whole UI theme touches every token (and the hard shadow, dot grid and note stroke, currently hard-coded to Solarized values); some themes (ocean, highContrast) may need token tweaks to fit the lowercase, square-edged look.
 - Stripes in squares of 3-4px: at most 3 stripes of whole pixels; the exploration shows whether that reads.
 - Stripes add up to 2 more rects for multi-tag notes; stay within the "no per-item handlers" rule, and check performance with thousands of notes.
