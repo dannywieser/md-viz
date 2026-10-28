@@ -58,3 +58,6 @@ Deviation from plan.md: the dot lattice always follows the all-notes grid (it al
 
 ### [2026-10-28 07:08:55] Claude
 Step 5 done: checked the dashboard in the browser pane against the running cache (Bear data: 4874 notes, sets 1 / 193 / 2 / 583) at 1024x768 and 1440x900. Five grids render and float independently, hover/labels show, no page scroll (scrollHeight == viewport), no console errors. Observation for iteration: the all-notes grid is a full-height narrow column of tiny cells; the dots follow it. No code changes in this step.
+
+### [2026-10-28 07:09:44] Claude
+Step 6 done: updated CLAUDE.md (intro, `apps/web` structure entry describing the dashboard, the lattice note). `pnpm format`, `pnpm lint` and `pnpm typecheck` are clean; `pnpm coverage` passes in every workspace (web: 30 tests, all files covered; others above 95%). No deviations beyond those logged at step 4.
