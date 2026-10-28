@@ -67,3 +67,9 @@ there is a bug with the tooltip on the all notes grid. since this grid is on the
 
 ### [2026-10-28 07:12:33] Claude
 Fixed the tooltip flicker. Cause: `NoteGrid` clamped its shared tooltip to `window.innerWidth`, which includes a classic scrollbar's width. On the all-notes grid at the right edge a long tooltip could end under the scrollbar zone, overflow the page (`clientWidth`), add a scrollbar, shrink the grid via its ResizeObserver, move the tooltip back inside, remove the scrollbar, and repeat. Fix: use `document.documentElement.clientWidth` (viewport less scrollbar) in `packages/ui/src/components/note-grid.tsx`. Tests first: the right-edge test now uses clientWidth and a new test simulates a 15px scrollbar (both failed before, 121 ui tests pass now). Could not reproduce visually in the browser pane (overlay scrollbars, clientWidth == innerWidth), so verified by the unit test. This is a change in `packages/ui`, outside the web app but the same session.
+
+### [2026-10-28 07:13:24] User
+the padding on the left and right of the app header doesn't match the padding on the left and right of the body with the grids. Can you fix this?
+
+### [2026-10-28 07:13:44] Claude
+Fixed the padding mismatch: `AppHeader` has `mx-4` while the web `main` had `p-6`, so the grids sat 8px further in than the header. `main` is now `px-4 py-6` in `apps/web/src/app.tsx`. Checked in the browser: the header and the grid container both span x 16 to 1008 at 1024px wide, and grids that fill their cell are flush with the header's edges. No test changes needed (30 web tests pass).
