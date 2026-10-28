@@ -63,8 +63,8 @@ describe('useDashboard', () => {
 
     expect(result.current.status).toBe('ready')
     expect(result.current.notes).toEqual([
-      { id: 'a', title: 'plan', color: 0 },
-      { id: 'untitled', title: 'untitled', color: 0 },
+      { id: 'a', title: 'plan', colors: [] },
+      { id: 'untitled', title: 'untitled', colors: [] },
     ])
     expect(result.current.sets).toEqual([
       { id: 'bear:modified-today', label: 'modified today', count: 1 },

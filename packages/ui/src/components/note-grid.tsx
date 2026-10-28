@@ -4,6 +4,7 @@ import { cn } from 'cn'
 import { Card } from './card'
 import { EmptyState } from './empty-state'
 import { DEFAULT_NOTE_COLOR, NOTE_COLORS } from '../lib/note-colors'
+import { stripeColors, stripeHeights } from '../lib/tag-stripes'
 import { STROKE_ROOM, layoutGrid } from '../lib/note-grid-layout'
 import { tooltipShift } from '../lib/tooltip-shift'
 import { useElementSize } from '../hooks/use-element-size'
@@ -13,8 +14,10 @@ export { NOTE_COLORS, DEFAULT_NOTE_COLOR }
 export type Note = {
   id: string
   title: string
-  /** index into the note palette; wraps around after NOTE_COLORS. */
-  color: number
+  /** indexes into the note palette, one per tag; the first three are drawn as horizontal stripes, none gives the neutral grey. */
+  colors: number[]
+  /** all the tags of the note, listed in the tooltip. */
+  tags?: string[]
 }
 
 type NoteGridProps = {
@@ -62,17 +65,41 @@ const Cells = React.memo(function Cells({ notes, columns, cell }: CellsProps) {
   const cellY = (i: number) => Math.floor(i / columns) * cell + 1.5
   return (
     <>
-      {notes.map((note, i) => (
-        <rect
-          key={note.id}
-          className="note-square"
-          data-color={((note.color % NOTE_COLORS) + NOTE_COLORS) % NOTE_COLORS}
-          x={cellX(i)}
-          y={cellY(i)}
-          width={cell}
-          height={cell}
-        />
-      ))}
+      {notes.map((note, i) => {
+        const colors = stripeColors(note.colors)
+        // the stripes sit inside the gridlines: the first is the square itself, the others cover the rest of its inner area.
+        const heights = stripeHeights(cell - 1, colors.length)
+        let top = cellY(i) + 0.5 + heights[0]
+        return (
+          <React.Fragment key={note.id}>
+            <rect
+              className="note-square"
+              data-color={colors[0]}
+              x={cellX(i)}
+              y={cellY(i)}
+              width={cell}
+              height={cell}
+            />
+            {colors.slice(1).map((color, j) => {
+              const y = top
+              top += heights[j + 1]
+              return (
+                heights[j + 1] > 0 && (
+                  <rect
+                    key={j}
+                    className="note-stripe"
+                    data-color={color}
+                    x={cellX(i) + 0.5}
+                    y={y}
+                    width={cell - 1}
+                    height={heights[j + 1]}
+                  />
+                )
+              )
+            })}
+          </React.Fragment>
+        )
+      })}
       {Array.from({ length: placeholders }, (_, k) => (
         <rect
           key={`placeholder-${k}`}
@@ -184,7 +211,10 @@ function NoteGrid({
           className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap border bg-card px-2 py-1 text-xs text-card-foreground shadow-hard"
           style={{ left: cellX(active) + cell / 2, top: cellY(active) - 8 }}
         >
-          {notes[active].title}
+          <div>{notes[active].title}</div>
+          {notes[active].tags && notes[active].tags.length > 0 && (
+            <div className="text-muted-foreground">{notes[active].tags.join(', ')}</div>
+          )}
         </div>
       )}
     </>,

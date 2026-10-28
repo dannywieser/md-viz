@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DEFAULT_NOTE_COLOR, NoteGrid } from '@md-viz/ui'
+import { NoteGrid } from '@md-viz/ui'
 import type { Note } from '@md-viz/ui'
 import type { NoteRef } from '../../../shared/ipc'
 import { COLUMN_WIDTH } from '../../../shared/window-size'
@@ -32,7 +32,7 @@ export function StatusGrid({
   align,
 }: StatusGridProps) {
   const cells = useMemo<Note[]>(
-    () => notes.map((note) => ({ id: note.id, title: note.title, color: DEFAULT_NOTE_COLOR })),
+    () => notes.map((note) => ({ id: note.id, title: note.title, colors: [] })),
     [notes],
   )
   return (

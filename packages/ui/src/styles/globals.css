@@ -177,80 +177,111 @@
   stroke: var(--note-stroke);
   stroke-width: 1;
 }
-.note-square[data-color='0'] {
+.note-square[data-color='0'],
+.note-stripe[data-color='0'] {
   --c: var(--note-0);
 }
-.note-square[data-color='1'] {
+.note-square[data-color='1'],
+.note-stripe[data-color='1'] {
   --c: var(--note-1);
 }
-.note-square[data-color='2'] {
+.note-square[data-color='2'],
+.note-stripe[data-color='2'] {
   --c: var(--note-2);
 }
-.note-square[data-color='3'] {
+.note-square[data-color='3'],
+.note-stripe[data-color='3'] {
   --c: var(--note-3);
 }
-.note-square[data-color='4'] {
+.note-square[data-color='4'],
+.note-stripe[data-color='4'] {
   --c: var(--note-4);
 }
-.note-square[data-color='5'] {
+.note-square[data-color='5'],
+.note-stripe[data-color='5'] {
   --c: var(--note-5);
 }
-.note-square[data-color='6'] {
+.note-square[data-color='6'],
+.note-stripe[data-color='6'] {
   --c: var(--note-6);
 }
-.note-square[data-color='7'] {
+.note-square[data-color='7'],
+.note-stripe[data-color='7'] {
   --c: var(--note-7);
 }
-.note-square[data-color='8'] {
+.note-square[data-color='8'],
+.note-stripe[data-color='8'] {
   --c: var(--note-8);
 }
-.note-square[data-color='9'] {
+.note-square[data-color='9'],
+.note-stripe[data-color='9'] {
   --c: var(--note-9);
 }
-.note-square[data-color='10'] {
+.note-square[data-color='10'],
+.note-stripe[data-color='10'] {
   --c: var(--note-10);
 }
-.note-square[data-color='11'] {
+.note-square[data-color='11'],
+.note-stripe[data-color='11'] {
   --c: var(--note-11);
 }
-.note-square[data-color='12'] {
+.note-square[data-color='12'],
+.note-stripe[data-color='12'] {
   --c: var(--note-12);
 }
-.note-square[data-color='13'] {
+.note-square[data-color='13'],
+.note-stripe[data-color='13'] {
   --c: var(--note-13);
 }
-.note-square[data-color='14'] {
+.note-square[data-color='14'],
+.note-stripe[data-color='14'] {
   --c: var(--note-14);
 }
-.note-square[data-color='15'] {
+.note-square[data-color='15'],
+.note-stripe[data-color='15'] {
   --c: var(--note-15);
 }
-.note-square[data-color='16'] {
+.note-square[data-color='16'],
+.note-stripe[data-color='16'] {
   --c: var(--note-16);
 }
-.note-square[data-color='17'] {
+.note-square[data-color='17'],
+.note-stripe[data-color='17'] {
   --c: var(--note-17);
 }
-.note-square[data-color='18'] {
+.note-square[data-color='18'],
+.note-stripe[data-color='18'] {
   --c: var(--note-18);
 }
-.note-square[data-color='19'] {
+.note-square[data-color='19'],
+.note-stripe[data-color='19'] {
   --c: var(--note-19);
 }
-.note-square[data-color='20'] {
+.note-square[data-color='20'],
+.note-stripe[data-color='20'] {
   --c: var(--note-20);
 }
-.note-square[data-color='21'] {
+.note-square[data-color='21'],
+.note-stripe[data-color='21'] {
   --c: var(--note-21);
 }
-.note-square[data-color='22'] {
+.note-square[data-color='22'],
+.note-stripe[data-color='22'] {
   --c: var(--note-22);
 }
-.note-square[data-color='23'] {
+.note-square[data-color='23'],
+.note-stripe[data-color='23'] {
   --c: var(--note-23);
 }
-.note-square[data-color='24'] {
+.note-square[data-color='24'],
+.note-stripe[data-color='24'] {
   --c: var(--note-24);
+}
+
+/* the stripes of a square with several tags: no lines of their own, they sit inside the square's. */
+.note-stripe {
+  fill: var(--c);
+  stroke: none;
 }
 
 /* empty cells that complete the last row: card colour (white in light mode) with the same gridlines. */

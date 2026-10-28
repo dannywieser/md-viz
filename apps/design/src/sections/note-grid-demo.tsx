@@ -25,7 +25,13 @@ function makeNotes(count: number): Note[] {
   let seed = 7
   return Array.from({ length: count }, (_, i) => {
     seed = (seed * 1103515245 + 12345) % 2147483648
-    return { id: `note-${i}`, title: `note ${i + 1}`, color: seed % NOTE_COLORS }
+    // one to three colours, so the board shows the stripes too
+    const stripes = 1 + (seed % 3)
+    const colors = Array.from(
+      { length: stripes },
+      (_, j) => ((seed >> (j * 4 + 3)) >>> 0) % (NOTE_COLORS - 1),
+    )
+    return { id: `note-${i}`, title: `note ${i + 1}`, colors }
   })
 }
 

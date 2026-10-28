@@ -6,7 +6,7 @@ function makeNotes(count: number): Note[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `n${i}`,
     title: `note ${i}`,
-    color: i % 10,
+    colors: [i % 10],
   }))
 }
 
@@ -240,8 +240,8 @@ describe('NoteGrid', () => {
 
   it('wraps colour indexes onto the palette', () => {
     const notes = [
-      { id: 'a', title: 'a', color: 27 },
-      { id: 'b', title: 'b', color: -1 },
+      { id: 'a', title: 'a', colors: [27] },
+      { id: 'b', title: 'b', colors: [-1] },
     ]
     const { container } = render(<NoteGrid notes={notes} />)
 
@@ -249,6 +249,101 @@ describe('NoteGrid', () => {
       el.getAttribute('data-color'),
     )
     expect(colors).toEqual(['2', '24'])
+  })
+
+  describe('stripes', () => {
+    // a cell is at least 8px in a 400x320 grid of a few notes, so every stripe is whole pixels
+    const stripeNote = (colors: number[]): Note => ({ id: 'a', title: 'a', colors })
+
+    it('draws a note with one tag as one square', () => {
+      const { container } = render(<NoteGrid notes={[stripeNote([3])]} />)
+
+      expect(container.querySelectorAll('.note-square')).toHaveLength(1)
+      expect(container.querySelectorAll('.note-stripe')).toHaveLength(0)
+    })
+
+    it('draws a note with no tags in the neutral grey', () => {
+      const { container } = render(<NoteGrid notes={[stripeNote([])]} />)
+
+      expect(container.querySelector('.note-square')).toHaveAttribute('data-color', '24')
+    })
+
+    it('adds a stripe for each further tag, down the square', () => {
+      const { container } = render(<NoteGrid notes={[stripeNote([1, 2, 3])]} />)
+
+      const square = container.querySelector('.note-square')!
+      const stripes = [...container.querySelectorAll('.note-stripe')]
+      expect(square).toHaveAttribute('data-color', '1')
+      expect(stripes.map((stripe) => stripe.getAttribute('data-color'))).toEqual(['2', '3'])
+      const [first, second] = stripes.map((stripe) => Number(stripe.getAttribute('y')))
+      expect(second).toBeGreaterThan(first)
+      const cell = Number(square.getAttribute('width'))
+      expect(Number(stripes[1].getAttribute('y')) + Number(stripes[1].getAttribute('height'))).toBe(
+        Number(square.getAttribute('y')) + cell - 0.5,
+      )
+    })
+
+    it('shows only the first three tags', () => {
+      const { container } = render(<NoteGrid notes={[stripeNote([1, 2, 3, 4, 5])]} />)
+
+      expect(container.querySelectorAll('.note-stripe')).toHaveLength(2)
+    })
+
+    it('keeps the stripes inside the gridlines', () => {
+      const { container } = render(<NoteGrid notes={[stripeNote([1, 2])]} />)
+
+      const square = container.querySelector('.note-square')!
+      const stripe = container.querySelector('.note-stripe')!
+      expect(Number(stripe.getAttribute('x'))).toBe(Number(square.getAttribute('x')) + 0.5)
+      expect(Number(stripe.getAttribute('width'))).toBe(Number(square.getAttribute('width')) - 1)
+    })
+
+    it('draws no stripe that would be less than a pixel high', () => {
+      const notes = Array.from({ length: 100 }, (_, i) => ({
+        id: `n${i}`,
+        title: `note ${i}`,
+        colors: [1, 2, 3],
+      }))
+      // a 3px drawing area makes 3px cells: 2px inside the lines, so only two of the three stripes get a pixel
+      const { container } = render(<NoteGrid notes={notes} height={6} />)
+
+      const stripes = [...container.querySelectorAll('.note-stripe')]
+      expect(container.querySelector('.note-square')).toHaveAttribute('width', '3')
+      expect(stripes).toHaveLength(notes.length)
+      expect(stripes.every((stripe) => stripe.getAttribute('height') === '1')).toBe(true)
+    })
+  })
+
+  describe('tooltip tags', () => {
+    it('lists all the tags of the hovered note under its title', () => {
+      const notes: Note[] = [
+        { id: 'a', title: 'plan', colors: [1, 2], tags: ['work', 'ideas', 'q4'] },
+      ]
+      const { container } = render(<NoteGrid notes={notes} />)
+      const svg = container.querySelector('svg')!
+      const rect = container.querySelector('.note-square')!
+
+      fireEvent.pointerMove(svg, {
+        clientX: Number(rect.getAttribute('x')) + 2,
+        clientY: Number(rect.getAttribute('y')) + 2,
+      })
+
+      expect(screen.getByRole('tooltip')).toHaveTextContent('plan')
+      expect(screen.getByRole('tooltip')).toHaveTextContent('work, ideas, q4')
+    })
+
+    it('shows only the title for a note without tags', () => {
+      const notes: Note[] = [{ id: 'a', title: 'plan', colors: [], tags: [] }]
+      const { container } = render(<NoteGrid notes={notes} />)
+      const rect = container.querySelector('.note-square')!
+
+      fireEvent.pointerMove(container.querySelector('svg')!, {
+        clientX: Number(rect.getAttribute('x')) + 2,
+        clientY: Number(rect.getAttribute('y')) + 2,
+      })
+
+      expect(screen.getByRole('tooltip').children).toHaveLength(1)
+    })
   })
 
   it('shows a lowercase empty state as a shadowed block, with its label', () => {

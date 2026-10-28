@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listNotesOptions, listSetsOptions } from '@md-viz/api-client/cache/react-query'
-import { DEFAULT_NOTE_COLOR } from '@md-viz/ui'
 import type { Note } from '@md-viz/ui'
 import { pickSource, setsFor } from '../lib/dashboard-sets'
 
@@ -15,7 +14,7 @@ export function useDashboard() {
       (notesQuery.data ?? []).map((note) => ({
         id: note.id,
         title: note.fields.title ?? note.id,
-        color: DEFAULT_NOTE_COLOR,
+        colors: [],
       })),
     [notesQuery.data],
   )

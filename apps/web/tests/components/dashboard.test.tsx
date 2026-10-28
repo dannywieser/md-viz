@@ -19,7 +19,7 @@ vi.mock('@md-viz/ui', async (importOriginal) => ({
 }))
 
 const lattice = { ref: { current: null }, cell: null, onCellChange: vi.fn() }
-const notes = [{ id: 'a', title: 'plan', color: 0 }]
+const notes = [{ id: 'a', title: 'plan', colors: [] }]
 const sets = [
   { id: 'bear:created-today', label: 'created today', count: 1 },
   { id: 'bear:modified-today', label: 'modified today', count: 1 },

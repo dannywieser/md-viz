@@ -40,7 +40,7 @@ describe('StatusGrid', () => {
       align: 'start',
       compactEmpty: true,
     })
-    expect(lastProps().notes).toEqual([{ id: 'a', title: 'plan', color: 0 }])
+    expect(lastProps().notes).toEqual([{ id: 'a', title: 'plan', colors: [] }])
   })
 
   it('fills the height of the column when it has no height, and can sit at the end of it', () => {
