@@ -99,26 +99,27 @@ const GOTHAM: ThemeVariant = {
 }
 
 const OCEAN: ThemeVariant = {
+  // the iTerm2 Ocean terminal scheme (term.const.net): a bright blue background; panel, muted and border are derived from it.
   ui: {
-    background: '#0d1b2e',
-    panel: '#112340',
-    text: '#e2f0fb',
-    muted: '#7bafd4',
-    accent: '#38c4e8',
-    border: '#1c3354',
-    success: '#22d07a',
-    successText: '#071018',
+    background: '#224fbc',
+    panel: '#1d43a0',
+    text: '#ffffff',
+    muted: '#c8d3ee',
+    accent: '#00e5e5',
+    border: '#216dff',
+    success: '#00d900',
+    successText: '#000000',
   },
-  // the mdm theme has no accents of its own: these are made up around its blues.
+  // the scheme has no orange or violet: orange mixes its red and yellow, violet its bright blue and magenta.
   hues: {
-    red: '#ff6b81',
-    orange: '#ff9f43',
-    yellow: '#feca57',
-    green: '#22d07a',
-    cyan: '#38c4e8',
-    blue: '#4a90e2',
-    violet: '#8e7cf0',
-    magenta: '#e06bc4',
+    red: '#e64c4c',
+    orange: '#c07226',
+    yellow: '#e5e500',
+    green: '#00d900',
+    cyan: '#00e5e5',
+    blue: '#7373ff',
+    violet: '#ac39f2',
+    magenta: '#d826d8',
   },
 }
 
@@ -321,7 +322,8 @@ export const candidateThemes: CandidateTheme[] = [
   {
     id: 'ocean',
     name: 'ocean',
-    source: 'ocean (dark only; accents made up, the mdm theme has none)',
+    source:
+      'the iTerm2 ocean terminal scheme (dark only; orange and violet are mixes of its colours)',
     dark: OCEAN,
   },
   {
