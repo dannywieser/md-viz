@@ -14,6 +14,8 @@ export interface UiRoles {
   /** text on the primary colour. */
   onPrimary: string
   border: string
+  /** the focus ring colour: at least 3:1 against the background and the card. */
+  ring: string
 }
 
 /** a theme is one fixed look; there is no light or dark mode. */
@@ -63,6 +65,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#cb4b16',
       onPrimary: '#fdf6e3',
       border: 'color-mix(in srgb, #93a1a1 40%, transparent)',
+      ring: '#268bd2',
     },
     hues: SOLARIZED_HUES,
   },
@@ -79,6 +82,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#d79921',
       onPrimary: '#282828',
       border: '#504945',
+      ring: '#83a598',
     },
     hues: {
       red: '#fb4934',
@@ -104,6 +108,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#88c0d0',
       onPrimary: '#2e3440',
       border: '#4c566a',
+      ring: '#8fbcbb',
     },
     hues: NORD_HUES,
   },
@@ -120,6 +125,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#5e81ac',
       onPrimary: '#eceff4',
       border: '#d8dee9',
+      ring: '#5e81ac',
     },
     hues: NORD_HUES,
   },
@@ -136,6 +142,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#cba6f7',
       onPrimary: '#1e1e2e',
       border: '#585b70',
+      ring: '#89b4fa',
     },
     hues: {
       red: '#f38ba8',
@@ -161,6 +168,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#8839ef',
       onPrimary: '#eff1f5',
       border: '#ccd0da',
+      ring: '#1e66f5',
     },
     hues: {
       red: '#d20f39',
@@ -186,6 +194,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#bd93f9',
       onPrimary: '#282a36',
       border: '#44475a',
+      ring: '#8be9fd',
     },
     hues: {
       red: '#ff5555',
@@ -211,6 +220,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#7ecbd4',
       onPrimary: '#0c1014',
       border: '#1f2b38',
+      ring: '#33859d',
     },
     hues: {
       red: '#c33027',
@@ -237,6 +247,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#00e5e5',
       onPrimary: '#224fbc',
       border: '#216dff',
+      ring: '#e5e500',
     },
     hues: {
       red: '#e64c4c',
@@ -262,6 +273,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#0349b4',
       onPrimary: '#ffffff',
       border: '#818b98',
+      ring: '#0349b4',
     },
     hues: {
       red: '#a0111f',

@@ -21,6 +21,7 @@ describe('ThemePanel', () => {
     expect(screen.getByRole('region', { name: 'nord light' })).toHaveStyle({
       '--background': '#eceff4',
       '--primary': '#5e81ac',
+      '--ring': '#5e81ac',
     })
   })
 })

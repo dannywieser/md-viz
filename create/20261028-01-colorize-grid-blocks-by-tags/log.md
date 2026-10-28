@@ -155,3 +155,12 @@ drop ocean light, the dark version is better
 
 ### [2026-10-28 07:48:09] Claude
 Dropped ocean-light. Remaining themes: solarized (light), gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean, high-contrast.
+
+### [2026-10-28 07:50:34] User
+gotham and dracula need to switch focus border color
+
+### [2026-10-28 07:50:34] User
+I guess just review all the focus borders for contrast
+
+### [2026-10-28 07:50:34] Claude
+Added a `ring` (focus ring) role to every theme and set it on the panels (before, every panel inherited solarized blue). Computed WCAG contrast of each theme's hues against its background and card and chose a ring of at least 3:1 on both, with a test for it. Rings: solarized #268bd2 (as today), gruvbox-dark #83a598, nord-dark #8fbcbb (its blue failed, 3.1/2.5), nord-light #5e81ac (3.5/3.3, same as its primary), catppuccin-mocha #89b4fa, catppuccin-latte #1e66f5, dracula #8be9fd (blue #6272a4 failed, 3.0/2.6), gotham #33859d (blue #195466 failed, 2.3/2.2), ocean #e5e500 (its blue failed, 1.9), high-contrast #0349b4.
