@@ -28,4 +28,10 @@ describe('ThemeSelect', () => {
 
     expect(onChange).toHaveBeenCalledWith('dracula')
   })
+
+  it('passes classes on to the trigger', () => {
+    render(<ThemeSelect value="solarized" themes={themes} onChange={vi.fn()} className="w-44" />)
+
+    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveClass('w-44')
+  })
 })

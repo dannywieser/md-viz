@@ -6,13 +6,15 @@ type ThemeSelectProps = {
   value: string
   themes: Theme[]
   onChange: (id: string) => void
+  /** classes for the trigger, e.g. a width. */
+  className?: string
 }
 
 /** picks the theme of the whole app. */
-export function ThemeSelect({ value, themes, onChange }: ThemeSelectProps) {
+export function ThemeSelect({ value, themes, onChange, className }: ThemeSelectProps) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label="theme">
+      <SelectTrigger aria-label="theme" className={className}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

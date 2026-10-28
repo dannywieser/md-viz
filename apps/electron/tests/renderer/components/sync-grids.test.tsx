@@ -41,6 +41,7 @@ describe('SyncGrids', () => {
   it('shows the updated, deleted and unchanged grids with their notes', () => {
     render(
       <SyncGrids
+        tagColors={{}}
         notes={{ updated: [note('a')], deleted: [], unchanged: [note('b'), note('c')] }}
       />,
     )
@@ -54,6 +55,7 @@ describe('SyncGrids', () => {
   it('uses the grid with the most notes as the reference', () => {
     render(
       <SyncGrids
+        tagColors={{}}
         notes={{ updated: [note('a')], deleted: [], unchanged: [note('b'), note('c')] }}
       />,
     )
@@ -65,16 +67,18 @@ describe('SyncGrids', () => {
 
   it('only lines the page up while the reference grid has notes', () => {
     const { rerender } = render(
-      <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
+      <SyncGrids tagColors={{}} notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
     expect(useGridLattice).toHaveBeenLastCalledWith(true)
 
-    rerender(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
+    rerender(<SyncGrids tagColors={{}} notes={{ updated: [], deleted: [], unchanged: [] }} />)
     expect(useGridLattice).toHaveBeenLastCalledWith(false)
   })
 
   it('keeps the small height for a few notes and fills the height for many', () => {
-    render(<SyncGrids notes={{ updated: many(40), deleted: many(6), unchanged: [] }} />)
+    render(
+      <SyncGrids tagColors={{}} notes={{ updated: many(40), deleted: many(6), unchanged: [] }} />,
+    )
 
     expect(grids().updated.height).toBeUndefined()
     expect(grids().deleted.height).toBe(SMALL_GRID_HEIGHT)
@@ -82,7 +86,7 @@ describe('SyncGrids', () => {
   })
 
   it('pins the last block to the right of its column, the others to the left', () => {
-    render(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
+    render(<SyncGrids tagColors={{}} notes={{ updated: [], deleted: [], unchanged: [] }} />)
 
     expect(grids().updated.align).toBe('start')
     expect(grids().deleted.align).toBe('start')
@@ -90,7 +94,9 @@ describe('SyncGrids', () => {
   })
 
   it('gives the reference grid the lattice ref and cell callback', () => {
-    render(<SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />)
+    render(
+      <SyncGrids tagColors={{}} notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
+    )
 
     expect(grids().updated.gridRef).toBe(ref)
     expect(grids().updated.onCellChange).toBe(onCellChange)
@@ -98,7 +104,7 @@ describe('SyncGrids', () => {
 
   it('has the plain gap and no cell step until the reference reports its cell', () => {
     const { container } = render(
-      <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
+      <SyncGrids tagColors={{}} notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
 
     expect(grids().deleted.cellStep).toBeUndefined()
@@ -108,11 +114,22 @@ describe('SyncGrids', () => {
   it('follows the reference cell: spacing for the other grids and a gap in whole spacings', () => {
     latticeCell(30)
     const { container } = render(
-      <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
+      <SyncGrids tagColors={{}} notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
 
     expect(grids().deleted.cellStep).toBe(30)
     // the column pitch is 10 spacings of 30 (300px), so the gap is 300 - 272.
     expect(container.firstElementChild).toHaveStyle({ columnGap: `${300 - COLUMN_WIDTH}px` })
+  })
+
+  it('gives every grid the tag colours', () => {
+    render(
+      <SyncGrids
+        notes={{ updated: [note('a')], deleted: [], unchanged: [] }}
+        tagColors={{ work: 3 }}
+      />,
+    )
+
+    for (const props of Object.values(grids())) expect(props.tagColors).toEqual({ work: 3 })
   })
 })

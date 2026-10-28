@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { AppHeader, Button, ErrorState, StateBlock } from '@md-viz/ui'
-import type { LastSelection, Source, SyncNotes, SyncTarget } from '../../shared/ipc'
+import { AppHeader, Button, ErrorState, StateBlock, ThemeSelect, useTheme } from '@md-viz/ui'
+import type { LastSelection, Source, SyncNotes, SyncTarget, TagColors } from '../../shared/ipc'
 import { FolderCard } from './components/folder-card'
 import { SourceSelect } from './components/source-select'
 import { SyncGrids } from './components/sync-grids'
@@ -15,8 +15,10 @@ const headerClearance = navigator.userAgent.includes('Macintosh') ? 'pl-24' : 'p
 
 /** the grids before anything has been synced. */
 const NO_NOTES: SyncNotes = { updated: [], deleted: [], unchanged: [] }
+const NO_TAG_COLORS: TagColors = {}
 
 export function App() {
+  const { theme, themes, setTheme } = useTheme()
   const [error, setError] = useState<string | null>(null)
   const [source, setSource] = useState<Source>('file')
   const scan = useScan(setError)
@@ -66,6 +68,7 @@ export function App() {
   return (
     <div className="flex h-screen flex-col">
       <AppHeader title="md-viz sync" subtitle="sync" className={headerClearance}>
+        <ThemeSelect value={theme.id} themes={themes} onChange={setTheme} className="w-44" />
         <SourceSelect value={source} onChange={(next) => void changeSource(next)} disabled={busy} />
         {source === 'file' && (
           <Button onClick={() => void chooseFolder()} disabled={busy}>
@@ -86,7 +89,12 @@ export function App() {
               <ErrorState detail={error} />
             </StateBlock>
           ) : (
-            scan.target && <SyncGrids notes={sync.lastSync?.notes ?? NO_NOTES} />
+            scan.target && (
+              <SyncGrids
+                notes={sync.lastSync?.notes ?? NO_NOTES}
+                tagColors={sync.lastSync?.tagColors ?? NO_TAG_COLORS}
+              />
+            )
           )}
           <SyncOverlay
             scanning={scan.scanning}
