@@ -61,3 +61,9 @@ Step 5 done: checked the dashboard in the browser pane against the running cache
 
 ### [2026-10-28 07:09:44] Claude
 Step 6 done: updated CLAUDE.md (intro, `apps/web` structure entry describing the dashboard, the lattice note). `pnpm format`, `pnpm lint` and `pnpm typecheck` are clean; `pnpm coverage` passes in every workspace (web: 30 tests, all files covered; others above 95%). No deviations beyond those logged at step 4.
+
+### [2026-10-28 07:11:28] User
+there is a bug with the tooltip on the all notes grid. since this grid is on the far right, long tooltips are causing scrollbars to flicker in and out
+
+### [2026-10-28 07:12:33] Claude
+Fixed the tooltip flicker. Cause: `NoteGrid` clamped its shared tooltip to `window.innerWidth`, which includes a classic scrollbar's width. On the all-notes grid at the right edge a long tooltip could end under the scrollbar zone, overflow the page (`clientWidth`), add a scrollbar, shrink the grid via its ResizeObserver, move the tooltip back inside, remove the scrollbar, and repeat. Fix: use `document.documentElement.clientWidth` (viewport less scrollbar) in `packages/ui/src/components/note-grid.tsx`. Tests first: the right-edge test now uses clientWidth and a new test simulates a 15px scrollbar (both failed before, 121 ui tests pass now). Could not reproduce visually in the browser pane (overlay scrollbars, clientWidth == innerWidth), so verified by the unit test. This is a change in `packages/ui`, outside the web app but the same session.
