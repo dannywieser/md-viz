@@ -203,10 +203,10 @@
   stroke-width: 1;
 }
 
-/* outline on the hovered cell; thicker than the gridlines and centred on the cell edge, so on an edge cell it reaches past the grid. */
+/* outline on the hovered cell, in the focus colour so it shows on every theme; thicker than the gridlines and centred on the cell edge, so on an edge cell it reaches past the grid. */
 .note-hover {
   fill: none;
-  stroke: #000;
+  stroke: var(--focus);
   stroke-width: 4;
   pointer-events: none;
 }

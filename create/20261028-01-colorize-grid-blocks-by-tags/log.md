@@ -199,3 +199,16 @@ Themes final: solarized (light), gruvbox-dark, nord-dark, nord-light, catppuccin
 
 ### [2026-10-28 07:59:28] Claude
 Listed the open items: color count (25 vs fewer), stripes at 3-4px (cap), shadow on four faint dark themes, select popup border/separator and other hard-coded values, where the switcher sits and where the choice is stored (localStorage default), the plan's unanswered defaults (tag index assignment), and design board/guidelines. See the reply.
+
+### [2026-10-28 08:05:21] User
+1. I think the 25 colors are good for now, we can revisit later if we run into issues
+2. see note below
+3. yeah, let's review all dark themes for contrast there
+
+For the stripes, can you add a hover state to the exploration so it's a little easier for me to see where each grid square is. I like how the colors and stripes lead to a pixel-art feel as a whole - but I still want to be able to highlight a specific grid square
+
+### [2026-10-28 08:05:21] Decision
+Keep 25 note colors for now (8 hues x 3 tiers + neutral); revisit if problems show up.
+
+### [2026-10-28 08:05:21] Claude
+1. Kept 25. 2. Added hover to the exploration's StripedGrid: one pointer handler derives the square from the layout, a 4px outline centred on the cell edge (the note grid's .note-hover) and a tooltip naming the note's color indexes; the stripes themselves are unchanged. Changed .note-hover in packages/ui to stroke var(--focus) (was black, invisible on dark themes; black in light, so apps look the same). 3. Reviewed dark shadows against the page (black contrast: nord-dark 1.7, dracula 1.5, gruvbox-dark 1.4, mocha 1.3, gotham 1.1, ocean 2.9): the primary darkened for those that fail, tested at least 2:1 against the page: gruvbox-dark #815c14 (2.4), nord-dark #52737d (2.4), mocha #66537c (2.4), dracula #715895 (2.4), gotham keeps #195466 (2.3), ocean stays black (2.9). Checked hover in the viewer on gotham.

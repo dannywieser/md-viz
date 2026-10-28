@@ -16,7 +16,7 @@ export interface UiRoles {
   border: string
   /** the keyboard focus ring and border colour: at least 3:1 against the background and the card, and clearly a different colour from the primary (a buttons's own colour). */
   focus: string
-  /** the hard shadow colour: black, unless the page is too dark for black to show. */
+  /** the hard shadow colour: black, or on a dark page the primary darkened, so it shows (at least 2:1 against the page). */
   shadow: string
 }
 
@@ -86,7 +86,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#282828',
       border: '#504945',
       focus: '#83a598',
-      shadow: '#000000',
+      shadow: '#815c14',
     },
     hues: {
       red: '#fb4934',
@@ -113,7 +113,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#2e3440',
       border: '#4c566a',
       focus: '#ebcb8b',
-      shadow: '#000000',
+      shadow: '#52737d',
     },
     hues: NORD_HUES,
   },
@@ -149,7 +149,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#1e1e2e',
       border: '#585b70',
       focus: '#94e2d5',
-      shadow: '#000000',
+      shadow: '#66537c',
     },
     hues: {
       red: '#f38ba8',
@@ -203,7 +203,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#282a36',
       border: '#44475a',
       focus: '#8be9fd',
-      shadow: '#000000',
+      shadow: '#715895',
     },
     hues: {
       red: '#ff5555',
