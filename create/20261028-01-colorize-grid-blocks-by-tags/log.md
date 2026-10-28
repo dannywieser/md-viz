@@ -149,3 +149,9 @@ drop gruvbox light, it's too close to solarized
 
 ### [2026-10-28 07:47:44] Claude
 Restructured the exploration to a flat list: a theme is one fixed look (ui: background, text, card, panel, muted, primary, onPrimary, border; plus 8 hues); no mode switcher, no variantFor. Solarized is light only and matches the app today (base3 background, white card, base2 panels, orange primary, base01 text). Dropped solarized dark and gruvbox light. Remaining: solarized, gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean, ocean-light, high-contrast. Tests updated; design suite, typecheck and lint pass.
+
+### [2026-10-28 07:48:09] User
+drop ocean light, the dark version is better
+
+### [2026-10-28 07:48:09] Claude
+Dropped ocean-light. Remaining themes: solarized (light), gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean, high-contrast.

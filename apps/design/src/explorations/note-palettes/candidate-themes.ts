@@ -250,32 +250,6 @@ export const candidateThemes: CandidateTheme[] = [
     },
   },
   {
-    id: 'ocean-light',
-    name: 'ocean light',
-    source:
-      "a light ocean of ours: the scheme's normal colours on a pale blue page; orange and violet are mixes",
-    ui: {
-      background: '#eaf1ff',
-      text: '#0b1f4d',
-      card: '#d6e3fb',
-      panel: '#d6e3fb',
-      muted: '#3d5a99',
-      primary: '#224fbc',
-      onPrimary: '#eaf1ff',
-      border: '#a9bfe8',
-    },
-    hues: {
-      red: '#e64c4c',
-      orange: '#c07226',
-      yellow: '#999900',
-      green: '#00a600',
-      cyan: '#00a6b2',
-      blue: '#0000b2',
-      violet: '#6c13c5',
-      magenta: '#d826d8',
-    },
-  },
-  {
     id: 'high-contrast',
     name: 'high contrast',
     source: 'a high contrast light set',
