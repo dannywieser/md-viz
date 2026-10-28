@@ -63,7 +63,11 @@ export async function syncTarget(
   const syncedAt = new Date().toISOString()
   await updateState(stateFile, (state) => {
     remember(state, checked)
-    state.syncs[adapter.key(checked)] = { syncedAt, notes: result.notes }
+    state.syncs[adapter.key(checked)] = {
+      syncedAt,
+      notes: result.notes,
+      tagColors: result.tagColors,
+    }
   })
   return result
 }

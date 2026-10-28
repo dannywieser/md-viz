@@ -8,7 +8,7 @@ vi.mock('@md-viz/ui', async (importOriginal) => ({
   NoteGrid: vi.fn(() => <div />),
 }))
 
-const notes = [{ id: 'a', title: 'plan' }]
+const notes = [{ id: 'a', title: 'plan', tags: [] }]
 const gridRef = { current: null }
 const lastProps = () => vi.mocked(NoteGrid).mock.lastCall![0]
 

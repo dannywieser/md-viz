@@ -19,7 +19,7 @@ const ref = { current: null }
 const latticeCell = (cell: number | null) =>
   vi.mocked(useGridLattice).mockReturnValue({ ref, cell, onCellChange })
 
-const note = (id: string) => ({ id, title: id })
+const note = (id: string) => ({ id, title: id, tags: [] })
 const many = (count: number) => Array.from({ length: count }, (_, i) => note(`n${i}`))
 const grids = () =>
   Object.fromEntries(

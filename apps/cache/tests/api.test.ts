@@ -262,7 +262,7 @@ describe('api', () => {
       const res = await post(body)
 
       expect(res.status).toBe(400)
-      expect(await res.json()).toEqual({ error: expect.any(String) })
+      expect(((await res.json()) as { error?: string }).error).toEqual(expect.any(String))
     })
   })
 })

@@ -33,6 +33,7 @@ describe('FolderCard', () => {
         lastSync={{
           syncedAt: '2026-10-20T09:30:00.000Z',
           notes: { updated: [], deleted: [], unchanged: [] },
+          tagColors: {},
         }}
       />,
     )

@@ -1,14 +1,17 @@
 import {
+  addTagColors,
   configureCacheClient,
   deleteNote,
   listNotes,
+  listTagColors,
   replaceSet,
   upsertNotes,
 } from '@md-viz/api-client/cache'
-import type { NoteRef, Source, SyncProgress, SyncResult } from '../types'
+import type { NoteRef, Source, SyncProgress, SyncResult, TagColors } from '../types'
 import type { LoadedNotes } from '../sources/types'
 import { buildNoteSets } from './note-sets'
 import { noteToFields, type Note } from './notes'
+import { assignTagColors } from './tag-colors'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
 
@@ -26,14 +29,31 @@ export interface SyncOptions {
 
 interface CachedNote {
   title: string
+  tags: string[]
   /** NaN when the note has no usable `synced`. */
   synced: number
+}
+
+/** the tags of a cached note: its `tags` field is a JSON array of strings; anything else is no tags. */
+function parseTags(value: string | undefined): string[] {
+  try {
+    const parsed: unknown = JSON.parse(value ?? '[]')
+    return Array.isArray(parsed) ? parsed.filter((tag) => typeof tag === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+/** the colour the cache has for each tag. */
+async function fetchTagColors(): Promise<TagColors> {
+  const { data } = await listTagColors({ throwOnError: true })
+  return Object.fromEntries(data.tags.map(({ tag, color }) => [tag, color]))
 }
 
 /** reads the titles and sync times of the cached notes that came from `source`, by id. */
 async function fetchCachedNotes(source: Source): Promise<Map<string, CachedNote>> {
   const { data: rows } = await listNotes({
-    query: { fields: 'synced,title,source' },
+    query: { fields: 'synced,title,source,tags' },
     throwOnError: true,
   })
   return new Map(
@@ -41,7 +61,11 @@ async function fetchCachedNotes(source: Source): Promise<Map<string, CachedNote>
       .filter((row) => row.fields['source'] === source)
       .map((row) => [
         row.id,
-        { title: row.fields['title'] ?? row.id, synced: Date.parse(row.fields['synced'] ?? '') },
+        {
+          title: row.fields['title'] ?? row.id,
+          tags: parseTags(row.fields['tags']),
+          synced: Date.parse(row.fields['synced'] ?? ''),
+        },
       ]),
   )
 }
@@ -61,7 +85,8 @@ function needsPush(note: Note, cached: Map<string, CachedNote>): boolean {
  * same source that are no longer in `loaded` are deleted. notes that exist but could not be
  * read (`loaded.failed`) are neither pushed nor deleted. the notes are loaded before this
  * runs, so nothing is deleted when loading failed; nothing is deleted either when the cache
- * cannot be listed. afterwards the source's automatic sets are recomputed at `now` and replaced
+ * cannot be listed. tags that have no colour in the cache get one first (see `assignTagColors`),
+ * and the colours of all tags come back in the result. afterwards the source's automatic sets are recomputed at `now` and replaced
  * in the cache, even when no note changed, because they move with the clock.
  */
 export async function syncNotes(
@@ -73,11 +98,16 @@ export async function syncNotes(
 
   const { notes, failed } = loaded
   const cached = await fetchCachedNotes(source)
+  const known = await fetchTagColors()
+  const added = assignTagColors(
+    known,
+    notes.flatMap((note) => note.tags),
+  )
   const present = new Set([...notes.map((note) => note.id), ...failed])
   const changed = notes.filter((note) => needsPush(note, cached))
   const changedIds = new Set(changed.map((note) => note.id))
   const gone = [...cached.keys()].filter((id) => !present.has(id))
-  const ref = (note: Note): NoteRef => ({ id: note.id, title: note.title })
+  const ref = (note: Note): NoteRef => ({ id: note.id, title: note.title, tags: note.tags })
 
   const total = changed.length + gone.length
   const result: SyncResult = {
@@ -91,9 +121,19 @@ export async function syncNotes(
       deleted: [],
       unchanged: notes.filter((note) => !changedIds.has(note.id)).map(ref),
     },
+    tagColors: { ...known, ...added },
   }
   const report = () => onProgress?.({ synced: result.synced, deleted: result.deleted, total })
   report()
+
+  // give the new tags their colours before any note is pushed, so no note is ever stored with a tag that has none.
+  const addedTags = Object.entries(added)
+  if (addedTags.length > 0) {
+    await addTagColors({
+      body: { tags: addedTags.map(([tag, color]) => ({ tag, color })) },
+      throwOnError: true,
+    })
+  }
 
   // push new and changed notes, one batch per request.
   for (let i = 0; i < changed.length; i += BATCH_SIZE) {
@@ -112,7 +152,13 @@ export async function syncNotes(
     const ids = gone.slice(i, i + DELETE_CONCURRENCY)
     await Promise.all(ids.map((id) => deleteNote({ path: { id }, throwOnError: true })))
     result.deleted += ids.length
-    result.notes.deleted.push(...ids.map((id) => ({ id, title: cached.get(id)?.title ?? id })))
+    result.notes.deleted.push(
+      ...ids.map((id) => ({
+        id,
+        title: cached.get(id)?.title ?? id,
+        tags: cached.get(id)?.tags ?? [],
+      })),
+    )
     report()
   }
 
