@@ -26,6 +26,16 @@ describe('NoteGrid', () => {
     expect(container.querySelectorAll('.note-square')).toHaveLength(12)
   })
 
+  it.each([
+    ['center', 'justify-center'],
+    ['start', 'justify-start'],
+    ['end', 'justify-end'],
+  ] as const)('sits %s in its container', (align, className) => {
+    const { container } = render(<NoteGrid notes={makeNotes(3)} align={align} />)
+
+    expect(container.querySelector('.note-square')?.closest('.flex')).toHaveClass(className)
+  })
+
   it('fills the height of its container when no height is given', () => {
     const { container } = render(<NoteGrid notes={makeNotes(2000)} />)
     const area = container.querySelector('[data-slot="note-grid"]') as HTMLElement

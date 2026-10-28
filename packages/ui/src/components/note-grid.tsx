@@ -27,8 +27,8 @@ type NoteGridProps = {
   height?: number
   /** shown on a small card hanging above the grid, with the note count; room for it is added above the drawing area. */
   label?: string
-  /** where the grid sits in its container; the container is the drawing area, so a grid that does not fill it floats in it. */
-  align?: 'center' | 'start'
+  /** where the grid sits in its container; the container is the drawing area, so a grid that does not fill it floats in it: `start` pins it to the top-left, `end` to the top-right. */
+  align?: 'center' | 'start' | 'end'
   /** use only whole multiples of this cell, so grids next to each other share a lattice. */
   cellStep?: number
   /** show the compact empty state (small muted ghost, no text) when there are no notes. */
@@ -40,6 +40,13 @@ type NoteGridProps = {
   /** the grid block (the shadowed element holding the squares), e.g. to line the page's dots up with it. */
   ref?: React.Ref<HTMLDivElement>
   className?: string
+}
+
+/** how the grid sits in its container for each `align`. */
+const ALIGN_CLASSES = {
+  center: 'items-center justify-center',
+  start: 'items-start justify-start',
+  end: 'items-start justify-end',
 }
 
 /** px kept between the tooltip and the window edge. */
@@ -204,13 +211,7 @@ function NoteGrid({
         ...(label ? { paddingTop: LABEL_ROOM } : undefined),
       }}
     >
-      <div
-        ref={areaRef}
-        className={cn(
-          'flex min-h-0 w-full flex-1',
-          align === 'center' ? 'items-center justify-center' : 'items-start justify-start',
-        )}
-      >
+      <div ref={areaRef} className={cn('flex min-h-0 w-full flex-1', ALIGN_CLASSES[align])}>
         {notes.length === 0 ? empty : width > 0 && height > 0 && grid}
       </div>
     </div>

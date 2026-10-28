@@ -5,19 +5,18 @@ import { FolderCard } from '../../../src/renderer/src/components/folder-card'
 const props: ComponentProps<typeof FolderCard> = {
   target: { source: 'file', folder: '/notes' },
   lastSync: null,
-  scanning: false,
-  scanProgress: null,
   count: null,
-  syncing: false,
-  syncProgress: null,
 }
 
 describe('FolderCard', () => {
-  it('shows the folder and that it was never synced', () => {
+  it('shows the folder and that it was never synced on one line', () => {
     render(<FolderCard {...props} />)
 
     expect(screen.getByLabelText('chosen source')).toHaveTextContent('/notes')
-    expect(screen.getByText('never synced')).toBeInTheDocument()
+    expect(screen.getByText(/never synced/)).toBeInTheDocument()
+    expect(screen.getByLabelText('chosen source').parentElement).toHaveTextContent(
+      '/notes · never synced',
+    )
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
@@ -25,12 +24,6 @@ describe('FolderCard', () => {
     render(<FolderCard {...props} target={{ source: 'bear' }} />)
 
     expect(screen.getByLabelText('chosen source')).toHaveTextContent('bear')
-  })
-
-  it('takes extra classes for its width', () => {
-    render(<FolderCard {...props} className="w-full" />)
-
-    expect(screen.getByLabelText('chosen source').parentElement).toHaveClass('w-full')
   })
 
   it('shows when it was last synced', () => {
@@ -44,19 +37,7 @@ describe('FolderCard', () => {
       />,
     )
 
-    expect(screen.getByText(/^last synced /)).toBeInTheDocument()
-  })
-
-  it('shows the scan progress only while scanning', () => {
-    const scanProgress = { dirs: 3, mdFiles: 7 }
-    const { rerender } = render(<FolderCard {...props} scanning scanProgress={scanProgress} />)
-    expect(screen.getByText('scanning… 3 folders, 7 notes so far')).toBeInTheDocument()
-
-    rerender(<FolderCard {...props} scanProgress={scanProgress} />)
-    expect(screen.queryByText(/so far/)).not.toBeInTheDocument()
-
-    rerender(<FolderCard {...props} scanning />)
-    expect(screen.queryByText(/so far/)).not.toBeInTheDocument()
+    expect(screen.getByText(/last synced /)).toBeInTheDocument()
   })
 
   it('shows the note count, singular or plural', () => {
@@ -68,17 +49,5 @@ describe('FolderCard', () => {
 
     rerender(<FolderCard {...props} count={0} />)
     expect(screen.getByText('0 notes')).toBeInTheDocument()
-  })
-
-  it('shows the sync progress only while syncing', () => {
-    const syncProgress = { synced: 3, deleted: 1, total: 8 }
-    const { rerender } = render(<FolderCard {...props} syncing syncProgress={syncProgress} />)
-    expect(screen.getByText('syncing… 3 pushed, 1 deleted of 8')).toBeInTheDocument()
-
-    rerender(<FolderCard {...props} syncProgress={syncProgress} />)
-    expect(screen.queryByText(/pushed/)).not.toBeInTheDocument()
-
-    rerender(<FolderCard {...props} syncing />)
-    expect(screen.queryByText(/pushed/)).not.toBeInTheDocument()
   })
 })

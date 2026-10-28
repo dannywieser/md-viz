@@ -134,34 +134,65 @@ describe('App', () => {
     expect(screen.getByText('18 notes')).toBeInTheDocument()
   })
 
-  it('shows the note grids of the last sync under the folder card, which is as wide as they are', () => {
+  it('shows the note grids of the last sync under the one-line folder card', () => {
     mockHooks({ scanState: { target: file }, syncState: { lastSync } })
     render(<App />)
 
-    const card = screen.getByLabelText('chosen source').parentElement
     expect(screen.getByRole('region', { name: 'unchanged' })).toHaveTextContent('1')
-    expect(card).toHaveClass('w-full')
-    expect(card?.parentElement).toContainElement(screen.getByRole('region', { name: 'unchanged' }))
+    expect(screen.getAllByRole('region')).toHaveLength(3)
+    expect(screen.getByLabelText('chosen source')).toBeInTheDocument()
   })
 
-  it('makes the header as wide as the status grids while they are shown', () => {
-    const { rerender } = render(<App />)
-    expect(screen.getByRole('banner').style.width).toBe('')
-
-    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
-    rerender(<App />)
-    expect(screen.getByRole('banner').style.width).toMatch(/^\d+px$/)
-
-    mockHooks({ scanState: { target: file } })
-    rerender(<App />)
-    expect(screen.getByRole('banner').style.width).toBe('')
-  })
-
-  it('keeps the folder card at its own width until there is a sync', () => {
+  it('shows empty grids for a source that has not been synced', () => {
     mockHooks({ scanState: { target: file } })
     render(<App />)
 
-    expect(screen.getByLabelText('chosen source').parentElement).not.toHaveClass('w-full')
+    expect(screen.getAllByRole('region')).toHaveLength(3)
+    expect(screen.getByText(/never synced/)).toBeInTheDocument()
+  })
+
+  it('shows no grids until a source is chosen', () => {
+    render(<App />)
+
+    expect(screen.queryByRole('region')).not.toBeInTheDocument()
+  })
+
+  it('shows the scan progress over the grids while scanning', () => {
+    mockHooks({
+      scanState: { target: file, scanning: true, progress: { dirs: 2, mdFiles: 5 } },
+    })
+    render(<App />)
+
+    expect(screen.getByRole('dialog', { name: 'scanning' })).toBeInTheDocument()
+    expect(screen.getByText('2 folders, 5 notes so far')).toBeInTheDocument()
+  })
+
+  it('shows the sync progress over the grids while syncing', () => {
+    mockHooks({
+      scanState: { target: file },
+      syncState: { lastSync, syncing: true, progress: { synced: 1, deleted: 0, total: 4 } },
+    })
+    render(<App />)
+
+    expect(screen.getByRole('dialog', { name: 'syncing' })).toBeInTheDocument()
+    expect(screen.getByText('1 pushed, 0 deleted of 4')).toBeInTheDocument()
+    expect(screen.getAllByRole('region')).toHaveLength(3)
+  })
+
+  it('shows no overlay while idle', () => {
+    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
+    render(<App />)
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('shows the error in place of the grids', () => {
+    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
+    render(<App />)
+    act(() => vi.mocked(useScan).mock.lastCall![0]('cache is down'))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('cache is down')
+    expect(screen.queryByRole('region')).not.toBeInTheDocument()
   })
 
   it('shows an error reported by either hook, and clears it', () => {

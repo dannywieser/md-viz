@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { DEFAULT_NOTE_COLOR, NoteGrid } from '@md-viz/ui'
 import type { Note } from '@md-viz/ui'
 import type { NoteRef } from '../../../shared/ipc'
-import { COLUMN_WIDTH, GRID_HEIGHT, type Group } from '../lib/sync-layout'
+import { COLUMN_WIDTH } from '../../../shared/window-size'
+import type { Group } from '../lib/sync-layout'
 
 interface StatusGridProps {
   label: Group
@@ -14,8 +15,10 @@ interface StatusGridProps {
   /** the other grids only use whole multiples of this, so their squares sit on the dots too. */
   cellStep: number | undefined
   gridRef: React.RefObject<HTMLDivElement | null>
-  /** the size of the reference grid's block, which an empty grid copies. */
-  emptySize: { width: number; height: number } | undefined
+  /** the drawing height (px), or undefined to fill the height of the column. */
+  height: number | undefined
+  /** where the block sits in its column: the last one is pinned right so its edge meets the status card's. */
+  align: 'start' | 'end'
 }
 
 export function StatusGrid({
@@ -25,7 +28,8 @@ export function StatusGrid({
   onCellChange,
   cellStep,
   gridRef,
-  emptySize,
+  height,
+  align,
 }: StatusGridProps) {
   const cells = useMemo<Note[]>(
     () => notes.map((note) => ({ id: note.id, title: note.title, color: DEFAULT_NOTE_COLOR })),
@@ -36,11 +40,10 @@ export function StatusGrid({
       <NoteGrid
         notes={cells}
         label={label}
-        height={GRID_HEIGHT}
-        // grids start at the column's top-left, so their squares line up across columns.
-        align="start"
+        height={height}
+        // grids start at the column's top, so their squares line up across columns.
+        align={align}
         compactEmpty
-        emptySize={emptySize}
         {...(reference ? { ref: gridRef, onCellChange } : { cellStep })}
       />
     </section>
