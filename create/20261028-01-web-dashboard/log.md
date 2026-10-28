@@ -42,3 +42,6 @@ Committed the discussion and opened the draft PR https://github.com/dannywieser/
 
 ### [2026-10-28 07:05:56] Decision
 Implement everything (option 1), committing and pushing after each plan step.
+
+### [2026-10-28 07:06:21] Claude
+Step 1 done: added `apps/web/src/lib/dashboard-sets.ts` (`pickSource`, `setsFor`) and `apps/web/tests/lib/dashboard-sets.test.ts` (6 tests pass). No deviations.
