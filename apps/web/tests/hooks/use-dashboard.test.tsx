@@ -1,30 +1,35 @@
 import { renderHook } from '@testing-library/react'
 import { useQuery } from '@tanstack/react-query'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { listNotesOptions, listSetsOptions } from '@md-viz/api-client/cache/react-query'
+import {
+  listNotesOptions,
+  listSetsOptions,
+  listTagColorsOptions,
+} from '@md-viz/api-client/cache/react-query'
 import { useDashboard } from '../../src/hooks/use-dashboard'
 
 vi.mock('@tanstack/react-query', () => ({ useQuery: vi.fn() }))
 vi.mock('@md-viz/api-client/cache/react-query', () => ({
   listNotesOptions: vi.fn(() => ({ queryKey: ['notes'] })),
   listSetsOptions: vi.fn(() => ({ queryKey: ['sets'] })),
+  listTagColorsOptions: vi.fn(() => ({ queryKey: ['tag-colors'] })),
 }))
 
 type Result = Record<string, unknown>
 
-/** the first useQuery call is the notes, the second the sets (stable across re-renders). */
-function queriesReturn(notes: Result, sets: Result) {
+/** each query answers by its key: the notes, the sets or the tag colours. */
+function queriesReturn(notes: Result, sets: Result, tagColors: Result = loaded.tagColors) {
+  const byKey: Record<string, Result> = { notes, sets, 'tag-colors': tagColors }
   vi.mocked(useQuery).mockImplementation(
     ((options: { queryKey: string[] }) =>
-      (options.queryKey[0] === 'notes'
-        ? notes
-        : sets) as unknown as UseQueryResult) as typeof useQuery,
+      byKey[options.queryKey[0]] as unknown as UseQueryResult) as typeof useQuery,
   )
 }
 
 const loaded = {
   notes: { isPending: false, data: [{ id: 'a', fields: { title: 'plan' } }] },
   sets: { isPending: false, data: [{ id: 'bear:modified-today', count: 1 }] },
+  tagColors: { isPending: false, data: { tags: [{ tag: 'work', color: 3 }] } },
 }
 
 describe('useDashboard', () => {
@@ -32,12 +37,13 @@ describe('useDashboard', () => {
     vi.clearAllMocks()
   })
 
-  it('asks the cache for the note titles and the sets', () => {
+  it('asks the cache for the note titles and tags, the sets and the tag colours', () => {
     queriesReturn(loaded.notes, loaded.sets)
     renderHook(() => useDashboard())
 
-    expect(listNotesOptions).toHaveBeenCalledWith({ query: { fields: 'title' } })
+    expect(listNotesOptions).toHaveBeenCalledWith({ query: { fields: 'title,tags' } })
     expect(listSetsOptions).toHaveBeenCalled()
+    expect(listTagColorsOptions).toHaveBeenCalled()
   })
 
   it('is pending while either query loads', () => {
@@ -46,6 +52,9 @@ describe('useDashboard', () => {
 
     queriesReturn(loaded.notes, { isPending: true })
     expect(renderHook(() => useDashboard()).result.current.status).toBe('pending')
+
+    queriesReturn(loaded.notes, loaded.sets, { isPending: true })
+    expect(renderHook(() => useDashboard()).result.current.status).toBe('pending')
   })
 
   it('is ready with titled notes and the sets of the source', () => {
@@ -53,7 +62,7 @@ describe('useDashboard', () => {
       {
         isPending: false,
         data: [
-          { id: 'a', fields: { title: 'plan' } },
+          { id: 'a', fields: { title: 'plan', tags: '["work","other"]' } },
           { id: 'untitled', fields: {} },
         ],
       },
@@ -63,8 +72,8 @@ describe('useDashboard', () => {
 
     expect(result.current.status).toBe('ready')
     expect(result.current.notes).toEqual([
-      { id: 'a', title: 'plan', colors: [] },
-      { id: 'untitled', title: 'untitled', colors: [] },
+      { id: 'a', title: 'plan', colors: [3], tags: ['work', 'other'] },
+      { id: 'untitled', title: 'untitled', colors: [], tags: [] },
     ])
     expect(result.current.sets).toEqual([
       { id: 'bear:modified-today', label: 'modified today', count: 1 },
@@ -105,6 +114,33 @@ describe('useDashboard', () => {
 
     expect(result.current.status).toBe('error')
     expect(refetchSets).toHaveBeenCalledOnce()
+    expect(refetchNotes).not.toHaveBeenCalled()
+  })
+
+  it('has no colours while the tag colours are not loaded', () => {
+    queriesReturn(
+      { isPending: false, data: [{ id: 'a', fields: { title: 'plan', tags: '["work"]' } }] },
+      loaded.sets,
+      { isPending: true },
+    )
+    const { result } = renderHook(() => useDashboard())
+
+    expect(result.current.notes).toEqual([{ id: 'a', title: 'plan', colors: [], tags: ['work'] }])
+  })
+
+  it('is in error when the tag colours fail, and retries only that query', () => {
+    const refetchColors = vi.fn()
+    const refetchNotes = vi.fn()
+    queriesReturn({ isPending: false, data: [], refetch: refetchNotes }, loaded.sets, {
+      isPending: false,
+      error: new Error('boom'),
+      refetch: refetchColors,
+    })
+    const { result } = renderHook(() => useDashboard())
+    result.current.retry()
+
+    expect(result.current.status).toBe('error')
+    expect(refetchColors).toHaveBeenCalledOnce()
     expect(refetchNotes).not.toHaveBeenCalled()
   })
 })
