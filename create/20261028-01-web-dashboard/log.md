@@ -2,6 +2,7 @@
 
 - **Slug:** 20261028-01-web-dashboard
 - **Started:** 2026-10-28 06:55:55 MDT
+- **Completed:** 2026-10-28 07:19:07
 
 ---
 
@@ -73,3 +74,12 @@ the padding on the left and right of the app header doesn't match the padding on
 
 ### [2026-10-28 07:13:44] Claude
 Fixed the padding mismatch: `AppHeader` has `mx-4` while the web `main` had `p-6`, so the grids sat 8px further in than the header. `main` is now `px-4 py-6` in `apps/web/src/app.tsx`. Checked in the browser: the header and the grid container both span x 16 to 1008 at 1024px wide, and grids that fill their cell are flush with the header's edges. No test changes needed (30 web tests pass).
+
+### [2026-10-28 07:17:27] User
+/create-complete
+
+### [2026-10-28 07:19:07] Claude
+Ran /create-complete. Merged origin/main (PR #15) into the branch and resolved the CLAUDE.md and create/README.md conflicts; fresh `pnpm coverage` exits 0 with every workspace above 95% (table in summary.md); format, lint and typecheck clean. Wrote summary.md and harvested CLAUDE.md (tooltip clientWidth gotcha, main padding note).
+
+### [2026-10-28 07:19:07] Decision
+Session complete.
