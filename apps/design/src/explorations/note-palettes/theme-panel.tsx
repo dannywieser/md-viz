@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Button, Card } from '@md-viz/ui'
-import { variantFor, type CandidateTheme, type Mode } from './candidate-themes'
+import type { CandidateTheme } from './candidate-themes'
 import { ColorStrip } from './color-strip'
 import { noteColors } from './derive-note-colors'
 import { sampleNotes } from './sample-notes'
@@ -13,21 +13,19 @@ const NOTES = sampleNotes(168)
 
 type ThemePanelProps = {
   theme: CandidateTheme
-  mode: Mode
 }
 
-/** one theme in a mode: the app tokens set on a wrapper, a sample of the UI, the note colours and striped grids. */
-export function ThemePanel({ theme, mode }: ThemePanelProps) {
-  const { ui, hues } = variantFor(theme, mode)
-  const colors = noteColors({ ui, hues })
-  const only = theme.light && theme.dark ? null : theme.light ? 'light only' : 'dark only'
+/** one theme: the app tokens set on a wrapper, a sample of the UI, the note colours and striped grids. */
+export function ThemePanel({ theme }: ThemePanelProps) {
+  const { ui } = theme
+  const colors = noteColors(theme)
   const tokens = {
     '--background': ui.background,
     '--foreground': ui.text,
-    '--card': ui.panel,
+    '--card': ui.card,
     '--card-foreground': ui.text,
-    '--primary': ui.accent,
-    '--primary-foreground': ui.background,
+    '--primary': ui.primary,
+    '--primary-foreground': ui.onPrimary,
     '--secondary': ui.panel,
     '--secondary-foreground': ui.text,
     '--muted': ui.panel,
@@ -46,10 +44,7 @@ export function ThemePanel({ theme, mode }: ThemePanelProps) {
       className="space-y-4 border border-border bg-background bg-dots p-6 text-foreground"
     >
       <header className="space-y-1">
-        <h2 className="text-lg font-bold">
-          {theme.name}
-          {only && <span className="ml-2 text-sm font-normal text-muted-foreground">{only}</span>}
-        </h2>
+        <h2 className="text-lg font-bold">{theme.name}</h2>
         <p className="text-xs text-muted-foreground">{theme.source}</p>
       </header>
 

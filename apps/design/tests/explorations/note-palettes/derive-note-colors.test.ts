@@ -1,7 +1,4 @@
-import {
-  candidateThemes,
-  variantFor,
-} from '../../../src/explorations/note-palettes/candidate-themes'
+import { candidateThemes } from '../../../src/explorations/note-palettes/candidate-themes'
 import {
   HUE_COLORS,
   HUE_NAMES,
@@ -10,7 +7,7 @@ import {
   noteColors,
 } from '../../../src/explorations/note-palettes/derive-note-colors'
 
-const solarized = variantFor(candidateThemes[0], 'light')
+const solarized = candidateThemes[0]
 
 describe('noteColors', () => {
   it('gives 24 hue colours and the neutral one', () => {

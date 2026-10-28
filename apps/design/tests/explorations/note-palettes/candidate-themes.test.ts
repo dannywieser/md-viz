@@ -1,40 +1,34 @@
-import {
-  candidateThemes,
-  variantFor,
-} from '../../../src/explorations/note-palettes/candidate-themes'
-import type { CandidateTheme } from '../../../src/explorations/note-palettes/candidate-themes'
-
-const find = (id: string) => candidateThemes.find((theme) => theme.id === id)!
+import { candidateThemes } from '../../../src/explorations/note-palettes/candidate-themes'
+import { HUE_NAMES } from '../../../src/explorations/note-palettes/derive-note-colors'
 
 describe('candidate themes', () => {
-  it('has the eight mdm themes', () => {
+  it('lists every look as its own theme', () => {
     expect(candidateThemes.map((theme) => theme.id)).toEqual([
       'solarized',
-      'gruvbox',
-      'nord',
-      'catppuccin',
+      'gruvbox-dark',
+      'nord-dark',
+      'nord-light',
+      'catppuccin-mocha',
+      'catppuccin-latte',
       'dracula',
       'gotham',
       'ocean',
+      'ocean-light',
       'high-contrast',
     ])
   })
 
-  it('picks the variant of the mode', () => {
-    const gruvbox = find('gruvbox')
+  it('has solarized as the light look the app has today, with orange buttons', () => {
+    const solarized = candidateThemes[0]
 
-    expect(variantFor(gruvbox, 'dark')).toBe(gruvbox.dark)
-    expect(variantFor(gruvbox, 'light')).toBe(gruvbox.light)
+    expect(solarized.ui.background).toBe('#fdf6e3')
+    expect(solarized.ui.card).toBe('#ffffff')
+    expect(solarized.ui.primary).toBe('#cb4b16')
   })
 
-  it('falls back to the one variant a theme has', () => {
-    expect(variantFor(find('dracula'), 'light')).toBe(find('dracula').dark)
-    expect(variantFor(find('high-contrast'), 'dark')).toBe(find('high-contrast').light)
-  })
-
-  it('throws for a theme without variants', () => {
-    const empty: CandidateTheme = { id: 'empty', name: 'empty', source: '' }
-
-    expect(() => variantFor(empty, 'light')).toThrow('theme empty has no variant')
+  it('gives every theme all eight hues', () => {
+    for (const theme of candidateThemes) {
+      expect(Object.keys(theme.hues).sort()).toEqual([...HUE_NAMES].sort())
+    }
   })
 })

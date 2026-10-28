@@ -1,36 +1,33 @@
 import type { HueName } from './derive-note-colors'
 
-export type Mode = 'light' | 'dark'
-
-/** the UI roles of a theme, ported from the mdm palettes. */
+/** the UI roles of a theme, as the app tokens they set. */
 export interface UiRoles {
   background: string
-  panel: string
   text: string
+  card: string
+  /** secondary, muted and accent backgrounds. */
+  panel: string
+  /** muted text. */
   muted: string
-  accent: string
+  /** the primary colour: buttons and highlights. */
+  primary: string
+  /** text on the primary colour. */
+  onPrimary: string
   border: string
-  success: string
-  successText: string
 }
 
-export interface ThemeVariant {
+/** a theme is one fixed look; there is no light or dark mode. */
+export interface CandidateTheme {
+  id: string
+  name: string
+  /** where the colours come from. */
+  source: string
   ui: UiRoles
   /** the eight accent hues the note colours are derived from. */
   hues: Record<HueName, string>
 }
 
-export interface CandidateTheme {
-  id: string
-  name: string
-  /** where the hues come from. */
-  source: string
-  /** a theme with one mode shows that variant in both. */
-  light?: ThemeVariant
-  dark?: ThemeVariant
-}
-
-const SOLARIZED_HUES: ThemeVariant['hues'] = {
+const SOLARIZED_HUES: CandidateTheme['hues'] = {
   red: '#dc322f',
   orange: '#cb4b16',
   yellow: '#b58900',
@@ -41,7 +38,7 @@ const SOLARIZED_HUES: ThemeVariant['hues'] = {
   magenta: '#d33682',
 }
 
-const NORD_HUES: ThemeVariant['hues'] = {
+const NORD_HUES: CandidateTheme['hues'] = {
   red: '#bf616a',
   orange: '#d08770',
   yellow: '#ebcb8b',
@@ -52,316 +49,255 @@ const NORD_HUES: ThemeVariant['hues'] = {
   magenta: '#81a1c1',
 }
 
-const DRACULA: ThemeVariant = {
-  ui: {
-    background: '#282a36',
-    panel: '#303445',
-    text: '#f8f8f2',
-    muted: '#bcc4e0',
-    accent: '#bd93f9',
-    border: '#44475a',
-    success: '#50fa7b',
-    successText: '#1f232d',
-  },
-  hues: {
-    red: '#ff5555',
-    orange: '#ffb86c',
-    yellow: '#f1fa8c',
-    green: '#50fa7b',
-    cyan: '#8be9fd',
-    blue: '#6272a4',
-    violet: '#bd93f9',
-    magenta: '#ff79c6',
-  },
-}
-
-const GOTHAM: ThemeVariant = {
-  ui: {
-    background: '#0c1014',
-    panel: '#10151c',
-    text: '#c5d8de',
-    muted: '#7a94a5',
-    accent: '#7ecbd4',
-    border: '#1f2b38',
-    success: '#2aa198',
-    successText: '#0c1014',
-  },
-  hues: {
-    red: '#c33027',
-    orange: '#d26937',
-    yellow: '#edb54b',
-    green: '#26a98b',
-    cyan: '#33859d',
-    blue: '#195466',
-    violet: '#4e5165',
-    magenta: '#888ba5',
-  },
-}
-
-const OCEAN_DARK: ThemeVariant = {
-  // the iTerm2 Ocean terminal scheme (term.const.net): a bright blue background; panel, muted and border are derived from it.
-  ui: {
-    background: '#224fbc',
-    panel: '#1d43a0',
-    text: '#ffffff',
-    muted: '#c8d3ee',
-    accent: '#00e5e5',
-    border: '#216dff',
-    success: '#00d900',
-    successText: '#000000',
-  },
-  // the scheme has no orange or violet: orange mixes its red and yellow, violet its bright blue and magenta.
-  hues: {
-    red: '#e64c4c',
-    orange: '#c07226',
-    yellow: '#e5e500',
-    green: '#00d900',
-    cyan: '#00e5e5',
-    blue: '#7373ff',
-    violet: '#ac39f2',
-    magenta: '#d826d8',
-  },
-}
-
-// the scheme is one (blue background) variant, so the light one is ours: a pale blue page with the scheme's normal (darker) ANSI colours; orange and violet are mixes again.
-const OCEAN_LIGHT: ThemeVariant = {
-  ui: {
-    background: '#eaf1ff',
-    panel: '#d6e3fb',
-    text: '#0b1f4d',
-    muted: '#3d5a99',
-    accent: '#224fbc',
-    border: '#a9bfe8',
-    success: '#00a600',
-    successText: '#ffffff',
-  },
-  hues: {
-    red: '#e64c4c',
-    orange: '#c07226',
-    yellow: '#999900',
-    green: '#00a600',
-    cyan: '#00a6b2',
-    blue: '#0000b2',
-    violet: '#6c13c5',
-    magenta: '#d826d8',
-  },
-}
-
-const HIGH_CONTRAST: ThemeVariant = {
-  ui: {
-    background: '#ffffff',
-    panel: '#f0f3f6',
-    text: '#0e1116',
-    muted: '#424a53',
-    accent: '#0349b4',
-    border: '#818b98',
-    success: '#055d20',
-    successText: '#ffffff',
-  },
-  hues: {
-    red: '#a0111f',
-    orange: '#a04100',
-    yellow: '#744500',
-    green: '#055d20',
-    cyan: '#0a6b7a',
-    blue: '#0349b4',
-    violet: '#622cbc',
-    magenta: '#971368',
-  },
-}
-
 export const candidateThemes: CandidateTheme[] = [
   {
     id: 'solarized',
     name: 'solarized',
-    source: 'the solarized accents (the current app theme)',
-    dark: {
-      ui: {
-        background: '#002b36',
-        panel: '#073642',
-        text: '#eee8d5',
-        muted: '#93a1a1',
-        accent: '#b58900',
-        border: '#586e75',
-        success: '#859900',
-        successText: '#002b36',
-      },
-      hues: SOLARIZED_HUES,
+    source: "the app's solarized light today: orange buttons, white cards, base2 panels",
+    ui: {
+      background: '#fdf6e3',
+      text: '#586e75',
+      card: '#ffffff',
+      panel: '#eee8d5',
+      muted: '#657b83',
+      primary: '#cb4b16',
+      onPrimary: '#fdf6e3',
+      border: 'color-mix(in srgb, #93a1a1 40%, transparent)',
     },
-    light: {
-      ui: {
-        background: '#fdf6e3',
-        panel: '#eee8d5',
-        text: '#073642',
-        muted: '#506870',
-        accent: '#268bd2',
-        border: '#d3cbb8',
-        success: '#859900',
-        successText: '#fdf6e3',
-      },
-      hues: SOLARIZED_HUES,
+    hues: SOLARIZED_HUES,
+  },
+  {
+    id: 'gruvbox-dark',
+    name: 'gruvbox dark',
+    source: 'the gruvbox bright colours',
+    ui: {
+      background: '#282828',
+      text: '#ebdbb2',
+      card: '#3c3836',
+      panel: '#3c3836',
+      muted: '#b5a292',
+      primary: '#d79921',
+      onPrimary: '#282828',
+      border: '#504945',
+    },
+    hues: {
+      red: '#fb4934',
+      orange: '#fe8019',
+      yellow: '#fabd2f',
+      green: '#b8bb26',
+      cyan: '#8ec07c',
+      blue: '#83a598',
+      violet: '#b16286',
+      magenta: '#d3869b',
     },
   },
   {
-    id: 'gruvbox',
-    name: 'gruvbox',
-    source: 'the gruvbox bright (dark) and faded (light) colours',
-    dark: {
-      ui: {
-        background: '#282828',
-        panel: '#3c3836',
-        text: '#ebdbb2',
-        muted: '#b5a292',
-        accent: '#d79921',
-        border: '#504945',
-        success: '#98971a',
-        successText: '#1d2021',
-      },
-      hues: {
-        red: '#fb4934',
-        orange: '#fe8019',
-        yellow: '#fabd2f',
-        green: '#b8bb26',
-        cyan: '#8ec07c',
-        blue: '#83a598',
-        violet: '#b16286',
-        magenta: '#d3869b',
-      },
-    },
-    light: {
-      ui: {
-        background: '#fbf1c7',
-        panel: '#e8d5a3',
-        text: '#3c3836',
-        muted: '#5c5248',
-        accent: '#076678',
-        border: '#d5c4a1',
-        success: '#79740e',
-        successText: '#fbf1c7',
-      },
-      hues: {
-        red: '#9d0006',
-        orange: '#af3a03',
-        yellow: '#b57614',
-        green: '#79740e',
-        cyan: '#427b58',
-        blue: '#076678',
-        violet: '#8f3f71',
-        magenta: '#b16286',
-      },
-    },
-  },
-  {
-    id: 'nord',
-    name: 'nord',
+    id: 'nord-dark',
+    name: 'nord dark',
     source: 'nord aurora and frost (only seven hues: magenta is a light steel blue)',
-    dark: {
-      ui: {
-        background: '#2e3440',
-        panel: '#3b4252',
-        text: '#eceff4',
-        muted: '#a3b1c6',
-        accent: '#88c0d0',
-        border: '#4c566a',
-        success: '#a3be8c',
-        successText: '#2e3440',
-      },
-      hues: NORD_HUES,
+    ui: {
+      background: '#2e3440',
+      text: '#eceff4',
+      card: '#3b4252',
+      panel: '#3b4252',
+      muted: '#a3b1c6',
+      primary: '#88c0d0',
+      onPrimary: '#2e3440',
+      border: '#4c566a',
     },
-    light: {
-      ui: {
-        background: '#eceff4',
-        panel: '#e5e9f0',
-        text: '#2e3440',
-        muted: '#4c566a',
-        accent: '#5e81ac',
-        border: '#d8dee9',
-        success: '#4c7a34',
-        successText: '#eceff4',
-      },
-      hues: NORD_HUES,
+    hues: NORD_HUES,
+  },
+  {
+    id: 'nord-light',
+    name: 'nord light',
+    source: 'nord aurora and frost (only seven hues: magenta is a light steel blue)',
+    ui: {
+      background: '#eceff4',
+      text: '#2e3440',
+      card: '#e5e9f0',
+      panel: '#e5e9f0',
+      muted: '#4c566a',
+      primary: '#5e81ac',
+      onPrimary: '#eceff4',
+      border: '#d8dee9',
+    },
+    hues: NORD_HUES,
+  },
+  {
+    id: 'catppuccin-mocha',
+    name: 'catppuccin mocha',
+    source: 'catppuccin mocha',
+    ui: {
+      background: '#1e1e2e',
+      text: '#cdd6f4',
+      card: '#313244',
+      panel: '#313244',
+      muted: '#a6adc8',
+      primary: '#cba6f7',
+      onPrimary: '#1e1e2e',
+      border: '#585b70',
+    },
+    hues: {
+      red: '#f38ba8',
+      orange: '#fab387',
+      yellow: '#f9e2af',
+      green: '#a6e3a1',
+      cyan: '#94e2d5',
+      blue: '#89b4fa',
+      violet: '#cba6f7',
+      magenta: '#f5c2e7',
     },
   },
   {
-    id: 'catppuccin',
-    name: 'catppuccin',
-    source: 'catppuccin mocha (dark) and latte (light)',
-    dark: {
-      ui: {
-        background: '#1e1e2e',
-        panel: '#313244',
-        text: '#cdd6f4',
-        muted: '#a6adc8',
-        accent: '#cba6f7',
-        border: '#585b70',
-        success: '#a6e3a1',
-        successText: '#1e1e2e',
-      },
-      hues: {
-        red: '#f38ba8',
-        orange: '#fab387',
-        yellow: '#f9e2af',
-        green: '#a6e3a1',
-        cyan: '#94e2d5',
-        blue: '#89b4fa',
-        violet: '#cba6f7',
-        magenta: '#f5c2e7',
-      },
+    id: 'catppuccin-latte',
+    name: 'catppuccin latte',
+    source: 'catppuccin latte',
+    ui: {
+      background: '#eff1f5',
+      text: '#4c4f69',
+      card: '#e6e9ef',
+      panel: '#e6e9ef',
+      muted: '#626578',
+      primary: '#8839ef',
+      onPrimary: '#eff1f5',
+      border: '#ccd0da',
     },
-    light: {
-      ui: {
-        background: '#eff1f5',
-        panel: '#e6e9ef',
-        text: '#4c4f69',
-        muted: '#626578',
-        accent: '#8839ef',
-        border: '#ccd0da',
-        success: '#40a02b',
-        successText: '#eff1f5',
-      },
-      hues: {
-        red: '#d20f39',
-        orange: '#fe640b',
-        yellow: '#df8e1d',
-        green: '#40a02b',
-        cyan: '#179299',
-        blue: '#1e66f5',
-        violet: '#8839ef',
-        magenta: '#ea76cb',
-      },
+    hues: {
+      red: '#d20f39',
+      orange: '#fe640b',
+      yellow: '#df8e1d',
+      green: '#40a02b',
+      cyan: '#179299',
+      blue: '#1e66f5',
+      violet: '#8839ef',
+      magenta: '#ea76cb',
     },
   },
   {
     id: 'dracula',
     name: 'dracula',
-    source: 'dracula (dark only; blue is its comment colour)',
-    dark: DRACULA,
+    source: 'dracula (blue is its comment colour)',
+    ui: {
+      background: '#282a36',
+      text: '#f8f8f2',
+      card: '#303445',
+      panel: '#303445',
+      muted: '#bcc4e0',
+      primary: '#bd93f9',
+      onPrimary: '#282a36',
+      border: '#44475a',
+    },
+    hues: {
+      red: '#ff5555',
+      orange: '#ffb86c',
+      yellow: '#f1fa8c',
+      green: '#50fa7b',
+      cyan: '#8be9fd',
+      blue: '#6272a4',
+      violet: '#bd93f9',
+      magenta: '#ff79c6',
+    },
   },
   {
     id: 'gotham',
     name: 'gotham',
-    source: 'gotham (dark only; its blue, violet and magenta are very dim)',
-    dark: GOTHAM,
+    source: 'gotham (its blue, violet and magenta are very dim)',
+    ui: {
+      background: '#0c1014',
+      text: '#c5d8de',
+      card: '#10151c',
+      panel: '#10151c',
+      muted: '#7a94a5',
+      primary: '#7ecbd4',
+      onPrimary: '#0c1014',
+      border: '#1f2b38',
+    },
+    hues: {
+      red: '#c33027',
+      orange: '#d26937',
+      yellow: '#edb54b',
+      green: '#26a98b',
+      cyan: '#33859d',
+      blue: '#195466',
+      violet: '#4e5165',
+      magenta: '#888ba5',
+    },
   },
   {
     id: 'ocean',
     name: 'ocean',
     source:
-      'the iTerm2 ocean terminal scheme for dark; the light variant and orange and violet are ours, from its colours',
-    dark: OCEAN_DARK,
-    light: OCEAN_LIGHT,
+      'the iTerm2 ocean terminal scheme (bright blue background); panel and muted are derived, orange and violet are mixes of its colours',
+    ui: {
+      background: '#224fbc',
+      text: '#ffffff',
+      card: '#1d43a0',
+      panel: '#1d43a0',
+      muted: '#c8d3ee',
+      primary: '#00e5e5',
+      onPrimary: '#224fbc',
+      border: '#216dff',
+    },
+    hues: {
+      red: '#e64c4c',
+      orange: '#c07226',
+      yellow: '#e5e500',
+      green: '#00d900',
+      cyan: '#00e5e5',
+      blue: '#7373ff',
+      violet: '#ac39f2',
+      magenta: '#d826d8',
+    },
+  },
+  {
+    id: 'ocean-light',
+    name: 'ocean light',
+    source:
+      "a light ocean of ours: the scheme's normal colours on a pale blue page; orange and violet are mixes",
+    ui: {
+      background: '#eaf1ff',
+      text: '#0b1f4d',
+      card: '#d6e3fb',
+      panel: '#d6e3fb',
+      muted: '#3d5a99',
+      primary: '#224fbc',
+      onPrimary: '#eaf1ff',
+      border: '#a9bfe8',
+    },
+    hues: {
+      red: '#e64c4c',
+      orange: '#c07226',
+      yellow: '#999900',
+      green: '#00a600',
+      cyan: '#00a6b2',
+      blue: '#0000b2',
+      violet: '#6c13c5',
+      magenta: '#d826d8',
+    },
   },
   {
     id: 'high-contrast',
     name: 'high contrast',
-    source: 'a high contrast light set (light only)',
-    light: HIGH_CONTRAST,
+    source: 'a high contrast light set',
+    ui: {
+      background: '#ffffff',
+      text: '#0e1116',
+      card: '#f0f3f6',
+      panel: '#f0f3f6',
+      muted: '#424a53',
+      primary: '#0349b4',
+      onPrimary: '#ffffff',
+      border: '#818b98',
+    },
+    hues: {
+      red: '#a0111f',
+      orange: '#a04100',
+      yellow: '#744500',
+      green: '#055d20',
+      cyan: '#0a6b7a',
+      blue: '#0349b4',
+      violet: '#622cbc',
+      magenta: '#971368',
+    },
   },
 ]
-
-/** the variant a theme shows in `mode`: its other variant when it has only one. */
-export function variantFor(theme: CandidateTheme, mode: Mode): ThemeVariant {
-  const variant = theme[mode] ?? theme.light ?? theme.dark
-  if (!variant) throw new Error(`theme ${theme.id} has no variant`)
-  return variant
-}

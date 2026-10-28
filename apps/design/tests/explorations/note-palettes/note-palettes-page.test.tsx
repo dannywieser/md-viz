@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { candidateThemes } from '../../../src/explorations/note-palettes/candidate-themes'
 import { NotePalettes } from '../../../src/explorations/note-palettes/note-palettes-page'
 
 describe('NotePalettes', () => {
@@ -7,15 +7,13 @@ describe('NotePalettes', () => {
     render(<NotePalettes />)
 
     expect(screen.getByRole('heading', { name: 'note palettes' })).toBeInTheDocument()
-    expect(screen.getAllByRole('region')).toHaveLength(8)
+    expect(screen.getAllByRole('region')).toHaveLength(candidateThemes.length)
   })
 
-  it('switches the mode of the panels', async () => {
+  it('has no light or dark switch', () => {
     render(<NotePalettes />)
-    expect(screen.getByRole('region', { name: 'nord' })).toHaveStyle({ '--background': '#2e3440' })
 
-    await userEvent.click(screen.getByRole('button', { name: 'light' }))
-
-    expect(screen.getByRole('region', { name: 'nord' })).toHaveStyle({ '--background': '#eceff4' })
+    expect(screen.queryByRole('button', { name: 'light' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'dark' })).not.toBeInTheDocument()
   })
 })

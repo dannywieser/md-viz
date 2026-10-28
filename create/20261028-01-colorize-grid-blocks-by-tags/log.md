@@ -127,3 +127,25 @@ ocean shouldn't be dark only
 
 ### [2026-10-28 07:42:50] Claude
 Added an ocean light variant (ours, not from the scheme): pale blue background #eaf1ff, navy text, the scheme's normal ANSI colors as hues (orange and violet mixed again). Dark stays the iTerm2 scheme.
+
+### [2026-10-28 07:44:45] User
+I can't decide if maybe I should drop the matching of system palette and just have color theme palettes. Because each of these looks better in a light or dark mode (or doesn't even work in one of them)
+
+### [2026-10-28 07:44:45] Claude
+Recommended dropping system light/dark matching: a theme is one fixed look, the switcher is one flat list; families with two good variants become separate entries (e.g. solarized light, solarized dark); themes that only work in one mode ship one entry; no mode toggle, no prefers-color-scheme, no .dark handling in the apps. Offered to restructure the exploration into a flat list (every variant its own panel, ocean light dropped unless wanted) so the user can pick entries.
+
+### [2026-10-28 07:46:12] User
+ok, let's go one by one then:
+solarized is light only, and bring it closer to what the theme is today for solarized light, including the orange buttons
+
+### [2026-10-28 07:46:12] Decision
+Dropped system light/dark matching: a theme is one fixed look; the exploration becomes a flat list (every variant its own entry) and the user prunes them one by one. Solarized is light only, with the app's current tokens (orange primary, white card, base2 secondary).
+
+### [2026-10-28 07:47:44] User
+I guess we can drop the light/dark switcher in the exploration
+
+### [2026-10-28 07:47:44] User
+drop gruvbox light, it's too close to solarized
+
+### [2026-10-28 07:47:44] Claude
+Restructured the exploration to a flat list: a theme is one fixed look (ui: background, text, card, panel, muted, primary, onPrimary, border; plus 8 hues); no mode switcher, no variantFor. Solarized is light only and matches the app today (base3 background, white card, base2 panels, orange primary, base01 text). Dropped solarized dark and gruvbox light. Remaining: solarized, gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean, ocean-light, high-contrast. Tests updated; design suite, typecheck and lint pass.

@@ -1,4 +1,4 @@
-import type { ThemeVariant } from './candidate-themes'
+import type { CandidateTheme } from './candidate-themes'
 
 /** hue names in the order the exploration shows them. */
 export const HUE_NAMES = [
@@ -44,17 +44,17 @@ function tierColor(hue: string, tier: number, muted: string): string {
 }
 
 /**
- * the note colours of a theme variant: 8 hues x 3 tiers (full, muted into the theme's muted text
+ * the note colours of a theme: 8 hues x 3 tiers (full, muted into the theme's muted text
  * colour, darkened), each tier turning the hue order, then the neutral grey as the last entry.
  */
-export function noteColors(variant: ThemeVariant): string[] {
+export function noteColors(theme: CandidateTheme): string[] {
   const colors: string[] = []
   for (let tier = 0; tier < TIERS; tier++) {
     for (let i = 0; i < HUE_ORDER.length; i++) {
       const name = HUE_ORDER[(i + tier * TIER_TURN) % HUE_ORDER.length]
-      colors.push(tierColor(variant.hues[name], tier, variant.ui.muted))
+      colors.push(tierColor(theme.hues[name], tier, theme.ui.muted))
     }
   }
-  colors.push(variant.ui.muted)
+  colors.push(theme.ui.muted)
   return colors
 }
