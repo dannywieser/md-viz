@@ -45,3 +45,6 @@ Implement everything (option 1), committing and pushing after each plan step.
 
 ### [2026-10-28 07:06:21] Claude
 Step 1 done: added `apps/web/src/lib/dashboard-sets.ts` (`pickSource`, `setsFor`) and `apps/web/tests/lib/dashboard-sets.test.ts` (6 tests pass). No deviations.
+
+### [2026-10-28 07:06:43] Claude
+Step 2 done: added `apps/web/src/hooks/use-dashboard.ts` (notes with titles + the sets of the picked source, `status` pending/error/ready, `retry`) and `apps/web/tests/hooks/use-dashboard.test.tsx` (6 tests pass). No deviations.
