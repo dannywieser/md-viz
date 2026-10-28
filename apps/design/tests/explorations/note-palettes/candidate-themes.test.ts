@@ -1,4 +1,7 @@
-import { candidateThemes, variantFor } from '../../../src/explorations/note-palettes/candidate-themes'
+import {
+  candidateThemes,
+  variantFor,
+} from '../../../src/explorations/note-palettes/candidate-themes'
 import type { CandidateTheme } from '../../../src/explorations/note-palettes/candidate-themes'
 
 const find = (id: string) => candidateThemes.find((theme) => theme.id === id)!

@@ -109,3 +109,9 @@ Step 1 done: apps/design/src/explorations/note-palettes/candidate-themes.ts (8 t
 
 ### [2026-10-28 07:39:12] Claude
 Step 2 done: note-palettes exploration page (note-palettes-page.tsx, theme-panel.tsx, color-strip.tsx, striped-grid.tsx, stripes.ts, sample-notes.ts, index.ts) registered in registry.ts. Checked in the design viewer at /explorations/note-palettes: renders, no console errors. Typecheck and lint clean. No deviations (added stripes.ts and sample-notes.ts helpers).
+
+### [2026-10-28 07:40:22] Claude
+Step 3 done: one test file per exploration source file under apps/design/tests/explorations/note-palettes/ (stripes, sample-notes, color-strip, striped-grid, theme-panel, note-palettes-page, index, plus the two from step 1). Design suite 143 tests pass, design coverage above 95%, lint, typecheck and format clean.
+
+### [2026-10-28 07:40:22] Decision
+Step 4: paused for the user to review the exploration (pnpm dev:design, /explorations/note-palettes) and choose themes, color count, ordering and the light/dark rule before phase 2.

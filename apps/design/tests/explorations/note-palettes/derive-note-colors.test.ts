@@ -1,4 +1,7 @@
-import { candidateThemes, variantFor } from '../../../src/explorations/note-palettes/candidate-themes'
+import {
+  candidateThemes,
+  variantFor,
+} from '../../../src/explorations/note-palettes/candidate-themes'
 import {
   HUE_COLORS,
   HUE_NAMES,
@@ -27,7 +30,9 @@ describe('noteColors', () => {
   it('mutes the second tier into the muted text and darkens the third', () => {
     const colors = noteColors(solarized)
 
-    expect(colors[8]).toBe(`color-mix(in srgb, ${solarized.hues.violet} 55%, ${solarized.ui.muted})`)
+    expect(colors[8]).toBe(
+      `color-mix(in srgb, ${solarized.hues.violet} 55%, ${solarized.ui.muted})`,
+    )
     expect(colors[16]).toBe(`color-mix(in srgb, ${solarized.hues.blue} 65%, black)`)
   })
 
