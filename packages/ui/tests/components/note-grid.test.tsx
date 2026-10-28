@@ -131,12 +131,25 @@ describe('NoteGrid', () => {
       })
 
       it('moves a tooltip that overflows the right edge to the left', () => {
-        stubTooltipRect(window.innerWidth - 60, 80)
+        stubTooltipRect(document.documentElement.clientWidth - 60, 80)
         const { container } = render(<NoteGrid notes={makeNotes(6)} />)
 
         hover(container, 5)
 
         expect(screen.getByRole('tooltip').style.marginLeft).toBe('-28px')
+      })
+
+      it('keeps a tooltip clear of the scrollbar, so it never makes the page scroll sideways', () => {
+        // a classic scrollbar takes room from clientWidth but not from innerWidth
+        vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
+          document.documentElement.clientWidth + 15,
+        )
+        stubTooltipRect(document.documentElement.clientWidth - 70, 80)
+        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
+
+        hover(container, 5)
+
+        expect(screen.getByRole('tooltip').style.marginLeft).toBe('-18px')
       })
 
       it('leaves a tooltip that fits centred', () => {

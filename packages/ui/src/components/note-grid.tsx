@@ -124,12 +124,13 @@ function NoteGrid({
   const active = hovered !== null && hovered < notes.length ? hovered : null
 
   // the one shared tooltip is centred on its cell; near a window edge it is moved sideways just enough to stay on screen.
+  // the room is the viewport less any scrollbar (clientWidth, not innerWidth): a tooltip reaching under a scrollbar would overflow the page, which adds the scrollbar and resizes the grid, and the tooltip flickers.
   React.useLayoutEffect(() => {
     const tooltip = tooltipRef.current
     if (!tooltip) return
     tooltip.style.marginLeft = '0px'
     const { left, width } = tooltip.getBoundingClientRect()
-    tooltip.style.marginLeft = `${tooltipShift(left, width, window.innerWidth, TOOLTIP_MARGIN)}px`
+    tooltip.style.marginLeft = `${tooltipShift(left, width, document.documentElement.clientWidth, TOOLTIP_MARGIN)}px`
   }, [active, notes])
 
   // one handler for the whole grid: the cell under the pointer follows from the uniform layout.

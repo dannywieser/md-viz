@@ -67,3 +67,4 @@ New sessions are appended to the bottom of this table.
 | [20261027-01-automatic-note-cache-sets](20261027-01-automatic-note-cache-sets/) | automatic note cache sets | complete | 2026-10-27 |
 | [20261027-02-refactor-extract-syncing-logic-into-package](20261027-02-refactor-extract-syncing-logic-into-package/) | refactor: extract syncing logic into package | complete | 2026-10-27 |
 | [20261027-03-syncing-ui-improvements](20261027-03-syncing-ui-improvements/) | syncing UI improvements | complete | 2026-10-27 |
+| [20261028-01-web-dashboard](20261028-01-web-dashboard/) | web dashboard | complete | 2026-10-28 |
