@@ -31,7 +31,12 @@ function makeNotes(count: number): Note[] {
       { length: stripes },
       (_, j) => ((seed >> (j * 4 + 3)) >>> 0) % (NOTE_COLORS - 1),
     )
-    return { id: `note-${i}`, title: `note ${i + 1}`, colors }
+    return {
+      id: `note-${i}`,
+      title: `note ${i + 1}`,
+      colors,
+      tags: colors.map((color) => `tag ${color}`),
+    }
   })
 }
 

@@ -43,6 +43,16 @@ const guidelines = [
     example: 'select · 2px orange border · thick focus ring · set by --focus',
   },
   {
+    name: 'themes',
+    rule: 'a theme is one fixed look for the whole ui, with no light or dark mode to match: every theme sets the tokens (background, card, primary, border, focus ring, shadow) and 25 note colors. each theme keeps its focus ring at least 3:1 against the page and the card and clearly apart from the primary color, and its shadow at least 2:1 against the page. solarized light is the default.',
+    example: 'solarized · gruvbox dark · nord · catppuccin · dracula · gotham · ocean',
+  },
+  {
+    name: 'tag colors',
+    rule: 'a note square takes its colors from the note tags: each tag gets a palette index when it is synced and keeps it, so a tag looks the same in every app and theme. a note with several tags is striped horizontally by its first three, a note without tags is the neutral grey, and the tooltip lists all the tags.',
+    example: 'one tag · plain square · three tags · three stripes · none · grey',
+  },
+  {
     name: 'pixel logo',
     rule: 'the logo is pixel art from 5 wide bitmap glyphs: no smoothing, no rounding. the dot of the mark and the viz of the wordmark use the primary color, the rest the text color; the wordmark draws each cell as a 2x2 block of small squares. the favicon is a static copy with fixed solarized colors, so update it by hand with the theme.',
     example: '.md · md-viz',

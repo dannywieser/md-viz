@@ -33,11 +33,18 @@ const roles = [
   'border',
   'input',
   'ring',
+  'focus',
+  'shadow-color',
 ]
+
+const noteColors = Array.from({ length: 25 }, (_, index) => index)
 
 export function Palette() {
   return (
-    <Section title="color" description="solarized palette and the semantic roles mapped onto it.">
+    <Section
+      title="color"
+      description="solarized palette, the semantic roles mapped onto it and the note colors of the current theme."
+    >
       <h3 className="text-sm font-bold">solarized</h3>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
         {solarized.map((name) => (
@@ -48,6 +55,16 @@ export function Palette() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         {roles.map((name) => (
           <ColorSwatch key={name} label={name} cssVar={`--${name}`} />
+        ))}
+      </div>
+      <h3 className="text-sm font-bold">note colors</h3>
+      <div className="grid grid-cols-5 gap-4 sm:grid-cols-8 lg:grid-cols-10">
+        {noteColors.map((index) => (
+          <ColorSwatch
+            key={index}
+            label={index === 24 ? 'untagged' : `${index}`}
+            cssVar={`--note-${index}`}
+          />
         ))}
       </div>
     </Section>

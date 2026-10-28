@@ -5,6 +5,7 @@ import { LogoSection } from './sections/logo'
 import { NoteGridDemo } from './sections/note-grid-demo'
 import { Palette } from './sections/palette'
 import { Spacing } from './sections/spacing'
+import { Themes } from './sections/themes'
 import { Typography } from './sections/typography'
 
 export function Board() {
@@ -13,6 +14,7 @@ export function Board() {
       <Guidelines />
       <LogoSection />
       <Palette />
+      <Themes />
       <Typography />
       <Spacing />
       <Grid />
