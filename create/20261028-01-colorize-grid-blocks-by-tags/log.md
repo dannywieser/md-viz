@@ -103,3 +103,6 @@ Approach: implement phase 1 only (steps 1-4, the note-palettes exploration), com
 
 ### [2026-10-28 07:38:13] Claude
 Step 1 done: apps/design/src/explorations/note-palettes/candidate-themes.ts (8 themes, UI roles + 8 hues per variant, variantFor) and derive-note-colors.ts (8 hues x 3 tiers in a spread order + neutral = 25 colors), with tests. No deviations.
+
+### [2026-10-28 07:38:21] Claude
+Step 1 done: apps/design/src/explorations/note-palettes/candidate-themes.ts (8 themes, UI roles + 8 hues per variant, variantFor) and derive-note-colors.ts (8 hues x 3 tiers in a spread order + neutral = 25 colors), with tests. No deviations.

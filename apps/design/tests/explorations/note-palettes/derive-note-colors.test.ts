@@ -27,7 +27,7 @@ describe('noteColors', () => {
   it('mutes the second tier into the muted text and darkens the third', () => {
     const colors = noteColors(solarized)
 
-    expect(colors[8]).toBe(`color-mix(in srgb, ${solarized.hues.green} 55%, ${solarized.ui.muted})`)
+    expect(colors[8]).toBe(`color-mix(in srgb, ${solarized.hues.violet} 55%, ${solarized.ui.muted})`)
     expect(colors[16]).toBe(`color-mix(in srgb, ${solarized.hues.blue} 65%, black)`)
   })
 
