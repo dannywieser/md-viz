@@ -249,3 +249,8 @@ Step 11 done (apps/design board): sections/themes.tsx and theme-row.tsx (a row p
 
 ### [2026-10-28 17:00:01] Claude
 Step 12 done: CLAUDE.md updated (intro, packages/ui and cache entries, the design-token rule now names themes.ts, new "Themes" and "Tag colours" conventions, the cache's /tag-colors, DEFAULT_NOTE_COLOR is the neutral grey). pnpm format, lint and typecheck pass.
+
+### [2026-10-28 17:00:53] Claude
+Step 13 done: pnpm coverage (workspaces one after another) exits 0: cache 96.4% lines / 100% branches, api-client 100%, ui 100% lines / 99.4% branches, design 99.7% lines / 98.6% functions, web 100%, sync 100% lines / 97.3% branches, electron 100%. pnpm format:check, lint and typecheck pass.
+Not verified: the apps in a running browser or window. Ports 8787 (cache) and 5175 (web) are in use by dev servers the user started, so I did not start copies or seed data into their cache; the web and Electron changes are covered by tests only. The Electron header width with the theme select on non-mac (pr-40) was computed (about 889px of 880px, slightly tight), not seen.
+Environment: design tests stalled for minutes while the Claude app's browser pane held the design page open; with the pane closed they run in seconds. A keep-awake request was denied and not worked around.
