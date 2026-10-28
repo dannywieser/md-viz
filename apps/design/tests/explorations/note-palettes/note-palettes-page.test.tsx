@@ -13,7 +13,7 @@ describe('NotePalettes', () => {
   it('has no light or dark switch', () => {
     render(<NotePalettes />)
 
-    expect(screen.queryByRole('button', { name: 'light' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'dark' })).not.toBeInTheDocument()
+    // a text query: role queries are slow on a page this size
+    expect(screen.queryByText(/^(light|dark)$/)).not.toBeInTheDocument()
   })
 })

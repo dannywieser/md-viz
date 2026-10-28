@@ -212,3 +212,19 @@ Keep 25 note colors for now (8 hues x 3 tiers + neutral); revisit if problems sh
 
 ### [2026-10-28 08:05:21] Claude
 1. Kept 25. 2. Added hover to the exploration's StripedGrid: one pointer handler derives the square from the layout, a 4px outline centred on the cell edge (the note grid's .note-hover) and a tooltip naming the note's color indexes; the stripes themselves are unchanged. Changed .note-hover in packages/ui to stroke var(--focus) (was black, invisible on dark themes; black in light, so apps look the same). 3. Reviewed dark shadows against the page (black contrast: nord-dark 1.7, dracula 1.5, gruvbox-dark 1.4, mocha 1.3, gotham 1.1, ocean 2.9): the primary darkened for those that fail, tested at least 2:1 against the page: gruvbox-dark #815c14 (2.4), nord-dark #52737d (2.4), mocha #66537c (2.4), dracula #715895 (2.4), gotham keeps #195466 (2.3), ocean stays black (2.9). Checked hover in the viewer on gotham.
+
+### [2026-10-28 08:06:25] User
+ok, this is all good, are we ready for phase 2?
+
+### [2026-10-28 08:06:25] Claude
+Yes. Phase 1 closed (stripe cap left at 3, 25 colors). Phase 2 steps 5-13 with the unanswered defaults (localStorage theme choice, switcher in the header, assignment in packages/sync, unused tags keep their index, wrap-around). Asked how to pace phase 2: all steps with a commit and push per step, or pause after each.
+
+### [2026-10-28 08:08:02] User
+I'm going to leave you to do the whole of phase 2 and update the PR. I'll come back to review later.
+
+### [2026-10-28 08:08:02] Decision
+Approach for phase 2: do steps 5-13 end to end without pausing, one commit per step (pushed at once) with a log entry each; defaults for unanswered questions as in plan.md; deviations logged and the plan updated if material.
+
+### [2026-10-28 16:49:02] Claude
+Step 5 done (packages/ui): lib/note-colors.ts (NOTE_COLORS 25, HUE_COLORS 24, ACCENT_COLORS 8, DEFAULT_NOTE_COLOR 24 = the neutral grey, HUE_ORDER, TIERS), lib/themes.ts (the nine themes, findTheme, DEFAULT_THEME_ID), lib/note-palette.ts (noteColors), lib/apply-theme.ts (themeVariables, applyTheme: sets the tokens, --focus, --shadow-color, --note-stroke, --note-0..24 and data-theme on <html>), hooks/use-theme.ts (localStorage key md-viz-theme, applied in a layout effect), components/theme-select.tsx. globals.css: 25 solarized --note-N defaults, --note-stroke, .note-square rules for 25 colors; select popup border and separator use the focus color; the hard-coded .dark note-mute is gone. Loader and PixelIcon cycle through the 8 full hues (ACCENT_COLORS), so their colors follow the new order (last ghost row is now color 1). Tests added for all new modules; ui coverage 99.7%; design pixel-art uses ACCENT_COLORS. Deviation: the note-palettes page test no longer queries by role (too slow on that page under load).
+Environment note: design tests stalled for minutes while the Claude app's browser pane held the design page open (renderer at 160% CPU); closed the pane and stopped the design preview server, after which the suite runs in about 10 seconds. A keep-awake request was denied, not worked around.

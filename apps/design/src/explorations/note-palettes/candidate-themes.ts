@@ -14,7 +14,7 @@ export interface UiRoles {
   /** text on the primary colour. */
   onPrimary: string
   border: string
-  /** the keyboard focus ring and border colour: at least 3:1 against the background and the card, and clearly a different colour from the primary (a buttons's own colour). */
+  /** the keyboard focus ring and border colour: at least 3:1 against the background and the card, and clearly a different colour from the primary (a button's own colour). */
   focus: string
   /** the hard shadow colour: black, or on a dark page the primary darkened, so it shows (at least 2:1 against the page). */
   shadow: string

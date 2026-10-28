@@ -240,7 +240,7 @@ describe('NoteGrid', () => {
 
   it('wraps colour indexes onto the palette', () => {
     const notes = [
-      { id: 'a', title: 'a', color: 13 },
+      { id: 'a', title: 'a', color: 27 },
       { id: 'b', title: 'b', color: -1 },
     ]
     const { container } = render(<NoteGrid notes={notes} />)
@@ -248,7 +248,7 @@ describe('NoteGrid', () => {
     const colors = [...container.querySelectorAll('.note-square')].map((el) =>
       el.getAttribute('data-color'),
     )
-    expect(colors).toEqual(['3', '9'])
+    expect(colors).toEqual(['2', '24'])
   })
 
   it('shows a lowercase empty state as a shadowed block, with its label', () => {

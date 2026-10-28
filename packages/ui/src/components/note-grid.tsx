@@ -3,15 +3,12 @@ import * as React from 'react'
 import { cn } from 'cn'
 import { Card } from './card'
 import { EmptyState } from './empty-state'
-import { NOTE_COLORS } from '../lib/note-colors'
+import { DEFAULT_NOTE_COLOR, NOTE_COLORS } from '../lib/note-colors'
 import { STROKE_ROOM, layoutGrid } from '../lib/note-grid-layout'
 import { tooltipShift } from '../lib/tooltip-shift'
 import { useElementSize } from '../hooks/use-element-size'
 
-export { NOTE_COLORS }
-
-/** the color of every note until color carries meaning. */
-export const DEFAULT_NOTE_COLOR = 0
+export { NOTE_COLORS, DEFAULT_NOTE_COLOR }
 
 export type Note = {
   id: string
