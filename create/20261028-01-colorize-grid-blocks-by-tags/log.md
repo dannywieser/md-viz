@@ -106,3 +106,6 @@ Step 1 done: apps/design/src/explorations/note-palettes/candidate-themes.ts (8 t
 
 ### [2026-10-28 07:38:21] Claude
 Step 1 done: apps/design/src/explorations/note-palettes/candidate-themes.ts (8 themes, UI roles + 8 hues per variant, variantFor) and derive-note-colors.ts (8 hues x 3 tiers in a spread order + neutral = 25 colors), with tests. No deviations.
+
+### [2026-10-28 07:39:12] Claude
+Step 2 done: note-palettes exploration page (note-palettes-page.tsx, theme-panel.tsx, color-strip.tsx, striped-grid.tsx, stripes.ts, sample-notes.ts, index.ts) registered in registry.ts. Checked in the design viewer at /explorations/note-palettes: renders, no console errors. Typecheck and lint clean. No deviations (added stripes.ts and sample-notes.ts helpers).
