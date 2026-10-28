@@ -35,6 +35,7 @@ export function ThemePanel({ theme }: ThemePanelProps) {
     '--border': ui.border,
     '--ring': ui.focus,
     '--focus': ui.focus,
+    '--shadow-color': ui.shadow,
     '--input': ui.border,
     '--grid-dot': ui.border,
   } as CSSProperties

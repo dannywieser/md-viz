@@ -184,3 +184,9 @@ same for nord light
 
 ### [2026-10-28 07:55:38] Claude
 Nord dark's focus (#8fbcbb) was nearly its primary (#88c0d0) and nord light's was exactly its primary (#5e81ac). Luminance contrast cannot tell colors apart by hue, so I measured the color distance (CIE Lab) between each theme's focus and primary and added a test (at least 35, plus the 3:1 contrast against background and card). Changed: nord-dark #ebcb8b (yellow, distance 53), nord-light #2e3440 (dark text color, 36), catppuccin-mocha #94e2d5 (teal, 66; was 26), gotham #edb54b (yellow, 78; was 27). Unchanged: solarized black (88), gruvbox-dark #83a598 (69), latte #1e66f5 (35), dracula #8be9fd (67), ocean #e5e500 (103).
+
+### [2026-10-28 07:58:53] User
+for gotham, the box shadow is invisible
+
+### [2026-10-28 07:58:53] Claude
+Cause: --shadow-hard in packages/ui globals.css was a literal 4px 4px 0 0 #000, and black on gotham's #0c1014 page has a contrast of 1.1:1. Made the color a --shadow-color token (black by default, so the apps are unchanged), used by --shadow-hard; themes get a shadow role, set on the panels. Gotham uses its blue #195466 (2.3:1 against the page); every other theme stays black. Black against the page for the others: solarized 19.5, nord-light 18.2, latte 18.6, ocean 2.9, nord-dark 1.7, dracula 1.5, gruvbox-dark 1.4, mocha 1.3 (the last four are faint too). Updated the card guideline. Checked in the viewer: gotham card shadow is rgb(25, 84, 102).

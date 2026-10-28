@@ -13,7 +13,7 @@ const guidelines = [
   },
   {
     name: 'cards',
-    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px black shadow in both and no other decoration.',
+    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px shadow (black unless the page is too dark for it, set by --shadow-color) in both and no other decoration.',
     example: 'white card · 4px black shadow',
   },
   {

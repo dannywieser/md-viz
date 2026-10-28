@@ -22,6 +22,7 @@ describe('ThemePanel', () => {
       '--background': '#eceff4',
       '--primary': '#5e81ac',
       '--focus': '#2e3440',
+      '--shadow-color': '#000000',
     })
   })
 })

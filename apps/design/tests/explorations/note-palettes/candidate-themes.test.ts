@@ -72,3 +72,16 @@ describe('focus rings', () => {
     expect(distance(ui.focus, ui.primary)).toBeGreaterThanOrEqual(35)
   })
 })
+
+describe('shadows', () => {
+  const shadow = (id: string) => candidateThemes.find((theme) => theme.id === id)!.ui.shadow
+
+  it('is black, as the app has today, unless the page is too dark for it', () => {
+    expect(shadow('solarized')).toBe('#000000')
+    expect(shadow('nord-light')).toBe('#000000')
+  })
+
+  it('is lighter than black on gotham, whose page is almost black', () => {
+    expect(shadow('gotham')).toBe('#195466')
+  })
+})

@@ -16,6 +16,8 @@ export interface UiRoles {
   border: string
   /** the keyboard focus ring and border colour: at least 3:1 against the background and the card, and clearly a different colour from the primary (a buttons's own colour). */
   focus: string
+  /** the hard shadow colour: black, unless the page is too dark for black to show. */
+  shadow: string
 }
 
 /** a theme is one fixed look; there is no light or dark mode. */
@@ -66,6 +68,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#fdf6e3',
       border: 'color-mix(in srgb, #93a1a1 40%, transparent)',
       focus: '#000000',
+      shadow: '#000000',
     },
     hues: SOLARIZED_HUES,
   },
@@ -83,6 +86,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#282828',
       border: '#504945',
       focus: '#83a598',
+      shadow: '#000000',
     },
     hues: {
       red: '#fb4934',
@@ -109,6 +113,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#2e3440',
       border: '#4c566a',
       focus: '#ebcb8b',
+      shadow: '#000000',
     },
     hues: NORD_HUES,
   },
@@ -126,6 +131,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#eceff4',
       border: '#d8dee9',
       focus: '#2e3440',
+      shadow: '#000000',
     },
     hues: NORD_HUES,
   },
@@ -143,6 +149,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#1e1e2e',
       border: '#585b70',
       focus: '#94e2d5',
+      shadow: '#000000',
     },
     hues: {
       red: '#f38ba8',
@@ -169,6 +176,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#eff1f5',
       border: '#ccd0da',
       focus: '#1e66f5',
+      shadow: '#000000',
     },
     hues: {
       red: '#d20f39',
@@ -195,6 +203,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#282a36',
       border: '#44475a',
       focus: '#8be9fd',
+      shadow: '#000000',
     },
     hues: {
       red: '#ff5555',
@@ -221,6 +230,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#0c1014',
       border: '#1f2b38',
       focus: '#edb54b',
+      shadow: '#195466',
     },
     hues: {
       red: '#c33027',
@@ -248,6 +258,7 @@ export const candidateThemes: CandidateTheme[] = [
       onPrimary: '#224fbc',
       border: '#216dff',
       focus: '#e5e500',
+      shadow: '#000000',
     },
     hues: {
       red: '#e64c4c',

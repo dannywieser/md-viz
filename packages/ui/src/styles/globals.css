@@ -44,6 +44,8 @@
   --ring: var(--sol-blue);
   /* the keyboard focus ring and border of buttons and inputs. */
   --focus: #000000;
+  /* the colour of the hard shadow of cards and grid blocks. */
+  --shadow-color: #000000;
   --radius: 0;
 
   --grid-size: 16px;
@@ -93,7 +95,7 @@
 }
 
 @theme inline {
-  --shadow-hard: 4px 4px 0 0 #000;
+  --shadow-hard: 4px 4px 0 0 var(--shadow-color);
 
   --font-sans: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
