@@ -33,3 +33,12 @@ Summarised the intent: dashboard of 5 independent, floating NoteGrids in a plain
 
 ### [2026-10-28 07:02:12] User
 /create-plan
+
+### [2026-10-28 07:02:53] Claude
+Committed the discussion and opened the draft PR https://github.com/dannywieser/md-viz/pull/16. Wrote plan.md (6 steps: dashboard-sets lib, use-dashboard hook, set-grid + all-notes-grid, dashboard + app, visual check, docs + coverage). Asked how to proceed.
+
+### [2026-10-28 07:05:56] User
+1
+
+### [2026-10-28 07:05:56] Decision
+Implement everything (option 1), committing and pushing after each plan step.
