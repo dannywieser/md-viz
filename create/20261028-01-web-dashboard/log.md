@@ -55,3 +55,6 @@ Step 3 done: added `components/set-grid.tsx` (fetches one set with `getSetOption
 ### [2026-10-28 07:08:14] Claude
 Step 4 done: added `components/dashboard.tsx` (grid `2fr 2fr 1fr`, two rows: sets in the first two columns, all notes spanning both rows in the third), switched `app.tsx` to it, removed `cache-note-grid.tsx` and its test, new/updated tests (30 web tests pass, tsc and eslint clean).
 Deviation from plan.md: the dot lattice always follows the all-notes grid (it always holds the most notes), so `SetGrid` has no ref/cell props (removed from the component and its test).
+
+### [2026-10-28 07:08:55] Claude
+Step 5 done: checked the dashboard in the browser pane against the running cache (Bear data: 4874 notes, sets 1 / 193 / 2 / 583) at 1024x768 and 1440x900. Five grids render and float independently, hover/labels show, no page scroll (scrollHeight == viewport), no console errors. Observation for iteration: the all-notes grid is a full-height narrow column of tiny cells; the dots follow it. No code changes in this step.
