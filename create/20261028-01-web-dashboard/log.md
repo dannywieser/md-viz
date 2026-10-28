@@ -51,3 +51,7 @@ Step 2 done: added `apps/web/src/hooks/use-dashboard.ts` (notes with titles + th
 
 ### [2026-10-28 07:07:32] Claude
 Step 3 done: added `components/set-grid.tsx` (fetches one set with `getSetOptions`, maps member ids to the cached notes, own loader/error states) and `components/all-notes-grid.tsx`, with tests (8 pass). Also fixed a typing error in the step 2 test (`Result` type). No deviations.
+
+### [2026-10-28 07:08:14] Claude
+Step 4 done: added `components/dashboard.tsx` (grid `2fr 2fr 1fr`, two rows: sets in the first two columns, all notes spanning both rows in the third), switched `app.tsx` to it, removed `cache-note-grid.tsx` and its test, new/updated tests (30 web tests pass, tsc and eslint clean).
+Deviation from plan.md: the dot lattice always follows the all-notes grid (it always holds the most notes), so `SetGrid` has no ref/cell props (removed from the component and its test).

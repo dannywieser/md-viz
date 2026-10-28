@@ -79,14 +79,4 @@ describe('SetGrid', () => {
 
     expect(gridProps().notes).toEqual([])
   })
-
-  it('hands the lattice ref and cell callback to the grid', () => {
-    const gridRef = { current: null }
-    const onCellChange = vi.fn()
-    queryReturns({ isPending: false, data: { id: 'x', updated: '', noteIds: [] } })
-    render(<SetGrid id="x" label="x" notes={notes} gridRef={gridRef} onCellChange={onCellChange} />)
-
-    expect(gridProps().ref).toBe(gridRef)
-    expect(gridProps().onCellChange).toBe(onCellChange)
-  })
 })

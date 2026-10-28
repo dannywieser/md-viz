@@ -10,13 +10,10 @@ type SetGridProps = {
   label: string
   /** every cached note; the set's members are looked up in it. */
   notes: Note[]
-  /** the grid block, when this grid is the one the page's dots follow. */
-  gridRef?: React.Ref<HTMLDivElement>
-  onCellChange?: (cell: number) => void
 }
 
 /** one cached set as a labelled grid of its notes. */
-export function SetGrid({ id, label, notes, gridRef, onCellChange }: SetGridProps) {
+export function SetGrid({ id, label, notes }: SetGridProps) {
   const { data, error, isPending, refetch } = useQuery(getSetOptions({ path: { id } }))
 
   const members = useMemo(() => {
@@ -39,5 +36,5 @@ export function SetGrid({ id, label, notes, gridRef, onCellChange }: SetGridProp
     )
   }
 
-  return <NoteGrid ref={gridRef} label={label} notes={members} onCellChange={onCellChange} />
+  return <NoteGrid label={label} notes={members} />
 }
