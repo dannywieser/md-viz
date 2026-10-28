@@ -13,7 +13,6 @@ describe('candidate themes', () => {
       'dracula',
       'gotham',
       'ocean',
-      'high-contrast',
     ])
   })
 

@@ -170,3 +170,9 @@ I'm still seeing a black focus border in gotham in the exploration
 
 ### [2026-10-28 07:53:14] Claude
 Cause: Button and Select hard-coded the focus border and ring (focus-visible:border-black / ring-black, base3 under .dark), so the --ring token I set on the panels was never used; black on gotham's near-black page. Added a --focus token in packages/ui globals.css (black in light, base3 under .dark, so the apps look as before), mapped it as the focus color utility, and switched Button and Select to it. The theme role ring is now focus (set as --focus and --ring on the panels); solarized is black as today, the others keep the contrast-checked colors. Updated the "inputs and focus" guideline. Verified by keyboard Tab in the viewer: gotham's focused button shows the teal ring. Not changed: the select popup border and separator still hard-code black / base3.
+
+### [2026-10-28 07:53:52] User
+let's drop high contrast for now, the grid colors are too washed out and the text isn't working against the grid
+
+### [2026-10-28 07:53:52] Claude
+Dropped high-contrast. Remaining themes: solarized (light), gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean.
