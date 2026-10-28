@@ -94,3 +94,12 @@ Opened draft PR https://github.com/dannywieser/md-viz/pull/17. Wrote create/2026
 
 ### [2026-10-28 07:35:30] Decision
 Plan written (plan.md), status set to planned. Waiting for the user's choice of approach.
+
+### [2026-10-28 07:37:02] User
+phase 1
+
+### [2026-10-28 07:37:02] Decision
+Approach: implement phase 1 only (steps 1-4, the note-palettes exploration), commit and push after each step, then pause at step 4 for the user's choice before phase 2.
+
+### [2026-10-28 07:38:13] Claude
+Step 1 done: apps/design/src/explorations/note-palettes/candidate-themes.ts (8 themes, UI roles + 8 hues per variant, variantFor) and derive-note-colors.ts (8 hues x 3 tiers in a spread order + neutral = 25 colors), with tests. No deviations.
