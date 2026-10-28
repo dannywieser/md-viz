@@ -208,4 +208,61 @@ describe('api', () => {
       expect(await res.json()).toMatchObject({ noteIds: ['b'] })
     })
   })
+
+  describe('tag colors', () => {
+    const post = (body: unknown) =>
+      app.request('/tag-colors', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+    it('lists no tags at first', async () => {
+      const res = await app.request('/tag-colors')
+
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ tags: [] })
+    })
+
+    it('adds tag colors and lists them', async () => {
+      const res = await post({
+        tags: [
+          { tag: 'work', color: 3 },
+          { tag: 'home', color: 7 },
+        ],
+      })
+
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ added: 2 })
+      expect(await (await app.request('/tag-colors')).json()).toEqual({
+        tags: [
+          { tag: 'home', color: 7 },
+          { tag: 'work', color: 3 },
+        ],
+      })
+    })
+
+    it('keeps the color a tag already has', async () => {
+      await post({ tags: [{ tag: 'work', color: 3 }] })
+
+      const res = await post({ tags: [{ tag: 'work', color: 9 }] })
+
+      expect(await res.json()).toEqual({ added: 0 })
+      expect(await (await app.request('/tag-colors')).json()).toEqual({
+        tags: [{ tag: 'work', color: 3 }],
+      })
+    })
+
+    it.each([
+      ['an empty tag', { tags: [{ tag: '', color: 1 }] }],
+      ['a negative color', { tags: [{ tag: 'a', color: -1 }] }],
+      ['a fractional color', { tags: [{ tag: 'a', color: 1.5 }] }],
+      ['no tags key', {}],
+    ])('rejects %s', async (_name, body) => {
+      const res = await post(body)
+
+      expect(res.status).toBe(400)
+      expect(await res.json()).toEqual({ error: expect.any(String) })
+    })
+  })
 })

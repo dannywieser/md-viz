@@ -209,6 +209,53 @@
           "updated",
           "noteIds"
         ]
+      },
+      "TagColors": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagColor"
+            }
+          }
+        },
+        "required": [
+          "tags"
+        ]
+      },
+      "TagColor": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "minLength": 1,
+            "description": "a note tag, as written in the notes",
+            "example": "work/q4"
+          },
+          "color": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "index into the note palette",
+            "example": 3
+          }
+        },
+        "required": [
+          "tag",
+          "color"
+        ]
+      },
+      "AddTagColorsResult": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "added"
+        ]
       }
     },
     "parameters": {}
@@ -507,6 +554,60 @@
                   "items": {
                     "$ref": "#/components/schemas/SetSummary"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tag-colors": {
+      "get": {
+        "operationId": "listTagColors",
+        "summary": "the color index of every tag, ordered by tag",
+        "responses": {
+          "200": {
+            "description": "one row per tag",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagColors"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "addTagColors",
+        "summary": "give tags a color index; a tag that has one keeps it",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagColors"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "number of tags that had no color yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddTagColorsResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }

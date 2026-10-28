@@ -46,6 +46,15 @@ A set is a named group of note IDs. The Electron sync computes the automatic set
 
 `updated` is stamped by the service. Deleting a note also removes it from every set.
 
+### Tag colors
+
+Each tag gets a color: an index into the note palette that the apps draw squares with. The Electron sync gives tags that have none the next indexes and adds them; a tag that already has a color keeps it, so a tag looks the same on every sync and in every app. The cache only stores the indexes and does not interpret them; the palette (and so the actual color) is the app's theme.
+
+| request            | does                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `GET /tag-colors`  | `{ "tags": [{ "tag", "color" }] }` ordered by tag                                                               |
+| `POST /tag-colors` | add tags: `{ "tags": [{ "tag": "work", "color": 3 }] }`, answers `{ "added": n }`; existing tags are left alone |
+
 `PUT` only writes the fields it names; other stored fields of that note are kept. The service stamps `synced` (ISO 8601 UTC time of the upsert) on every upserted note and overwrites any `synced` the client sends. Errors are `{ "error": "..." }` with `400` for bad input.
 
 ## OpenAPI spec
@@ -120,6 +129,21 @@ curl $BASE/sets/bear:created-today   # only def456 is left
 
 curl -i -X DELETE $BASE/sets/bear:created-today   # 204
 curl -i $BASE/sets/bear:created-today             # 404
+```
+
+### Look at the tag colors
+
+The Electron app adds the colors of the tags it syncs. To see them, or add some by hand:
+
+```bash
+curl $BASE/tag-colors
+
+curl -X POST $BASE/tag-colors -H 'content-type: application/json' \
+  -d '{ "tags": [{ "tag": "work", "color": 3 }, { "tag": "home", "color": 7 }] }'
+
+# a tag that has a color keeps it: this answers { "added": 0 }
+curl -X POST $BASE/tag-colors -H 'content-type: application/json' \
+  -d '{ "tags": [{ "tag": "work", "color": 9 }] }'
 ```
 
 To start over, stop the service and delete `apps/cache/data/`.

@@ -169,4 +169,54 @@ describe('store', () => {
       expect(store.getSet('s2')?.noteIds).toEqual([])
     })
   })
+
+  describe('tag colors', () => {
+    it('starts with no colors', () => {
+      expect(store.listTagColors()).toEqual([])
+    })
+
+    it('stores the color of each tag, ordered by tag, and counts what it added', () => {
+      const added = store.addTagColors([
+        { tag: 'work', color: 3 },
+        { tag: 'home', color: 7 },
+      ])
+
+      expect(added).toBe(2)
+      expect(store.listTagColors()).toEqual([
+        { tag: 'home', color: 7 },
+        { tag: 'work', color: 3 },
+      ])
+    })
+
+    it('keeps the color a tag already has', () => {
+      store.addTagColors([{ tag: 'work', color: 3 }])
+
+      const added = store.addTagColors([
+        { tag: 'work', color: 9 },
+        { tag: 'new', color: 1 },
+      ])
+
+      expect(added).toBe(1)
+      expect(store.listTagColors()).toEqual([
+        { tag: 'new', color: 1 },
+        { tag: 'work', color: 3 },
+      ])
+    })
+
+    it('keeps tags with slashes as they are written', () => {
+      store.addTagColors([{ tag: 'work/q4', color: 2 }])
+
+      expect(store.listTagColors()).toEqual([{ tag: 'work/q4', color: 2 }])
+    })
+
+    it('rolls back the whole batch when a row cannot be stored', () => {
+      const rows = [
+        { tag: 'good', color: 1 },
+        { tag: 'bad', color: undefined as unknown as number },
+      ]
+
+      expect(() => store.addTagColors(rows)).toThrow()
+      expect(store.listTagColors()).toEqual([])
+    })
+  })
 })
