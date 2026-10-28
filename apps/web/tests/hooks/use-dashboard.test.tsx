@@ -10,13 +10,15 @@ vi.mock('@md-viz/api-client/cache/react-query', () => ({
   listSetsOptions: vi.fn(() => ({ queryKey: ['sets'] })),
 }))
 
-type Result = Partial<UseQueryResult>
+type Result = Record<string, unknown>
 
 /** the first useQuery call is the notes, the second the sets (stable across re-renders). */
 function queriesReturn(notes: Result, sets: Result) {
   vi.mocked(useQuery).mockImplementation(
     ((options: { queryKey: string[] }) =>
-      (options.queryKey[0] === 'notes' ? notes : sets) as UseQueryResult) as typeof useQuery,
+      (options.queryKey[0] === 'notes'
+        ? notes
+        : sets) as unknown as UseQueryResult) as typeof useQuery,
   )
 }
 

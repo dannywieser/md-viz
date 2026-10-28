@@ -48,3 +48,6 @@ Step 1 done: added `apps/web/src/lib/dashboard-sets.ts` (`pickSource`, `setsFor`
 
 ### [2026-10-28 07:06:43] Claude
 Step 2 done: added `apps/web/src/hooks/use-dashboard.ts` (notes with titles + the sets of the picked source, `status` pending/error/ready, `retry`) and `apps/web/tests/hooks/use-dashboard.test.tsx` (6 tests pass). No deviations.
+
+### [2026-10-28 07:07:32] Claude
+Step 3 done: added `components/set-grid.tsx` (fetches one set with `getSetOptions`, maps member ids to the cached notes, own loader/error states) and `components/all-notes-grid.tsx`, with tests (8 pass). Also fixed a typing error in the step 2 test (`Result` type). No deviations.
