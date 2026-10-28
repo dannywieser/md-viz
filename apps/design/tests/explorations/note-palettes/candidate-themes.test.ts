@@ -44,6 +44,18 @@ describe('focus rings', () => {
     return (high + 0.05) / (low + 0.05)
   }
 
+  const linear = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+  /** the colour as CIE Lab, to measure how different two colours look. */
+  const lab = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => linear(parseInt(hex.slice(i, i + 2), 16) / 255))
+    const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116)
+    const x = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047)
+    const y = f(0.2126 * r + 0.7152 * g + 0.0722 * b)
+    const z = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883)
+    return [116 * y - 16, 500 * (x - y), 200 * (y - z)]
+  }
+  const distance = (a: string, b: string) => Math.hypot(...lab(a).map((v, i) => v - lab(b)[i]))
+
   it('keeps solarized black, as the app has today', () => {
     expect(candidateThemes[0].ui.focus).toBe('#000000')
   })
@@ -55,4 +67,8 @@ describe('focus rings', () => {
       expect(contrast(ui.focus, ui.card)).toBeGreaterThanOrEqual(3)
     },
   )
+
+  it.each(candidateThemes)('$id has a focus colour that differs from its primary', ({ ui }) => {
+    expect(distance(ui.focus, ui.primary)).toBeGreaterThanOrEqual(35)
+  })
 })

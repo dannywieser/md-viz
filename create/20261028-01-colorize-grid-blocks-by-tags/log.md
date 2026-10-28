@@ -176,3 +176,11 @@ let's drop high contrast for now, the grid colors are too washed out and the tex
 
 ### [2026-10-28 07:53:52] Claude
 Dropped high-contrast. Remaining themes: solarized (light), gruvbox-dark, nord-dark, nord-light, catppuccin-mocha, catppuccin-latte, dracula, gotham, ocean.
+
+### [2026-10-28 07:55:38] User
+for nord dark, the focus border is exactly the same color as the button itself. that won't work
+(for primarY)
+same for nord light
+
+### [2026-10-28 07:55:38] Claude
+Nord dark's focus (#8fbcbb) was nearly its primary (#88c0d0) and nord light's was exactly its primary (#5e81ac). Luminance contrast cannot tell colors apart by hue, so I measured the color distance (CIE Lab) between each theme's focus and primary and added a test (at least 35, plus the 3:1 contrast against background and card). Changed: nord-dark #ebcb8b (yellow, distance 53), nord-light #2e3440 (dark text color, 36), catppuccin-mocha #94e2d5 (teal, 66; was 26), gotham #edb54b (yellow, 78; was 27). Unchanged: solarized black (88), gruvbox-dark #83a598 (69), latte #1e66f5 (35), dracula #8be9fd (67), ocean #e5e500 (103).

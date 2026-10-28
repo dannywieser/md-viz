@@ -14,7 +14,7 @@ export interface UiRoles {
   /** text on the primary colour. */
   onPrimary: string
   border: string
-  /** the keyboard focus ring and border colour: at least 3:1 against the background and the card. */
+  /** the keyboard focus ring and border colour: at least 3:1 against the background and the card, and clearly a different colour from the primary (a buttons's own colour). */
   focus: string
 }
 
@@ -108,7 +108,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#88c0d0',
       onPrimary: '#2e3440',
       border: '#4c566a',
-      focus: '#8fbcbb',
+      focus: '#ebcb8b',
     },
     hues: NORD_HUES,
   },
@@ -125,7 +125,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#5e81ac',
       onPrimary: '#eceff4',
       border: '#d8dee9',
-      focus: '#5e81ac',
+      focus: '#2e3440',
     },
     hues: NORD_HUES,
   },
@@ -142,7 +142,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#cba6f7',
       onPrimary: '#1e1e2e',
       border: '#585b70',
-      focus: '#89b4fa',
+      focus: '#94e2d5',
     },
     hues: {
       red: '#f38ba8',
@@ -220,7 +220,7 @@ export const candidateThemes: CandidateTheme[] = [
       primary: '#7ecbd4',
       onPrimary: '#0c1014',
       border: '#1f2b38',
-      focus: '#33859d',
+      focus: '#edb54b',
     },
     hues: {
       red: '#c33027',
