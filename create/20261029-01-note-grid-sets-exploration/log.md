@@ -64,3 +64,6 @@ Chosen approach: implement everything (option 1), one commit per plan step, each
 
 ### [2026.10.29 08:11:08] Claude
 Step 1 done: CLAUDE.md design paragraph now says an exploration keeps every iteration (new sections on top, older pushed down). Files: CLAUDE.md.
+
+### [2026.10.29 08:11:46] Claude
+Step 2 done: block-shapes.ts, pack-blocks.ts, label-fit.ts with tests (apps/design/src/explorations/note-grid-sets and tests/explorations/note-grid-sets). Added groupOutline (path of a short-last-row group) and blockAt/uniformLayout helpers beyond the plan.
