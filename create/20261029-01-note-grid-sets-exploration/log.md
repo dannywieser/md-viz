@@ -67,3 +67,6 @@ Step 1 done: CLAUDE.md design paragraph now says an exploration keeps every iter
 
 ### [2026.10.29 08:11:46] Claude
 Step 2 done: block-shapes.ts, pack-blocks.ts, label-fit.ts with tests (apps/design/src/explorations/note-grid-sets and tests/explorations/note-grid-sets). Added groupOutline (path of a short-last-row group) and blockAt/uniformLayout helpers beyond the plan.
+
+### [2026.10.29 08:12:17] Claude
+Step 3 done: sample-sets.ts (7 generic sets, 219 notes, 8 tags) and note-colors.ts (colour indexes by set/tag, stripeHeights, colour via the theme's --note-N variables) with tests. note-colors.ts is an addition to the plan's file list.
