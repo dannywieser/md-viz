@@ -48,7 +48,7 @@ A set is a named group of note IDs. The Electron sync computes the automatic set
 
 ### Tag colors
 
-Each tag gets a color: an index into the note palette that the apps draw squares with. The Electron sync gives tags that have none the next indexes and adds them; a tag that already has a color keeps it, so a tag looks the same on every sync and in every app. The cache only stores the indexes and does not interpret them; the palette (and so the actual color) is the app's theme.
+Each tag gets a color: an index into the note palette that the apps draw squares with. The Electron sync gives tags that have none the next indexes and adds them, only for the top level of a nested tag (`daily` for `daily/10/28`); a tag that already has a color keeps it, so a tag looks the same on every sync and in every app. The cache only stores the indexes and does not interpret them (nor the tags: it takes whatever the caller sends); the palette (and so the actual color) is the app's theme.
 
 | request            | does                                                                                                            |
 | ------------------ | --------------------------------------------------------------------------------------------------------------- |

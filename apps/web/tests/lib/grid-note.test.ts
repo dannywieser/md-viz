@@ -53,4 +53,17 @@ describe('toGridNote', () => {
       tags: [],
     })
   })
+
+  it('colours a nested tag by its top level and counts a top level once', () => {
+    const note = toGridNote(
+      {
+        id: 'a',
+        fields: { title: 'log', tags: '["work/q4","work/q3","home/chores"]' },
+      },
+      colors,
+    )
+
+    expect(note.colors).toEqual([3, 7])
+    expect(note.tags).toEqual(['work/q4', 'work/q3', 'home/chores'])
+  })
 })

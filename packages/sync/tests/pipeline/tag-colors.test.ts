@@ -1,4 +1,4 @@
-import { TAG_COLOR_COUNT, assignTagColors } from '../../src/pipeline/tag-colors'
+import { TAG_COLOR_COUNT, assignTagColors, topLevelTag } from '../../src/pipeline/tag-colors'
 
 describe('assignTagColors', () => {
   it('has the 24 hue colours of the note palette', () => {
@@ -54,5 +54,20 @@ describe('assignTagColors', () => {
 
   it('gives nothing when there are no tags', () => {
     expect(assignTagColors({ a: 1 }, [])).toEqual({})
+  })
+})
+
+describe('topLevelTag', () => {
+  it('is the first part of a nested tag', () => {
+    expect(topLevelTag('daily/10/28')).toBe('daily')
+  })
+
+  it('is a plain tag as it is', () => {
+    expect(topLevelTag('ideas')).toBe('ideas')
+  })
+
+  it('keeps a tag that starts with a slash whole', () => {
+    expect(topLevelTag('/odd')).toBe('/odd')
+    expect(topLevelTag('/')).toBe('/')
   })
 })

@@ -11,7 +11,7 @@ import type { NoteRef, Source, SyncProgress, SyncResult, TagColors } from '../ty
 import type { LoadedNotes } from '../sources/types'
 import { buildNoteSets } from './note-sets'
 import { noteToFields, type Note } from './notes'
-import { assignTagColors } from './tag-colors'
+import { assignTagColors, topLevelTag } from './tag-colors'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
 
@@ -85,8 +85,9 @@ function needsPush(note: Note, cached: Map<string, CachedNote>): boolean {
  * same source that are no longer in `loaded` are deleted. notes that exist but could not be
  * read (`loaded.failed`) are neither pushed nor deleted. the notes are loaded before this
  * runs, so nothing is deleted when loading failed; nothing is deleted either when the cache
- * cannot be listed. tags that have no colour in the cache get one first (see `assignTagColors`),
- * and the colours of all tags come back in the result. afterwards the source's automatic sets are recomputed at `now` and replaced
+ * cannot be listed. the top-level tags of the notes (`daily` for `daily/10/28`) that have no colour
+ * in the cache get one first (see `assignTagColors`), and the colours of all tags come back in the
+ * result. afterwards the source's automatic sets are recomputed at `now` and replaced
  * in the cache, even when no note changed, because they move with the clock.
  */
 export async function syncNotes(
@@ -101,7 +102,7 @@ export async function syncNotes(
   const known = await fetchTagColors()
   const added = assignTagColors(
     known,
-    notes.flatMap((note) => note.tags),
+    notes.flatMap((note) => note.tags.map(topLevelTag)),
   )
   const present = new Set([...notes.map((note) => note.id), ...failed])
   const changed = notes.filter((note) => needsPush(note, cached))

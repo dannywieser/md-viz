@@ -254,3 +254,14 @@ Step 12 done: CLAUDE.md updated (intro, packages/ui and cache entries, the desig
 Step 13 done: pnpm coverage (workspaces one after another) exits 0: cache 96.4% lines / 100% branches, api-client 100%, ui 100% lines / 99.4% branches, design 99.7% lines / 98.6% functions, web 100%, sync 100% lines / 97.3% branches, electron 100%. pnpm format:check, lint and typecheck pass.
 Not verified: the apps in a running browser or window. Ports 8787 (cache) and 5175 (web) are in use by dev servers the user started, so I did not start copies or seed data into their cache; the web and Electron changes are covered by tests only. The Electron header width with the theme select on non-mac (pr-40) was computed (about 889px of 880px, slightly tight), not seen.
 Environment: design tests stalled for minutes while the Claude app's browser pane held the design page open; with the pane closed they run in seconds. A keep-awake request was denied and not worked around.
+
+### [2026-10-29 06:31:22] User
+now that I see this in place, I think the way to go will be to only use the top level of nested tags for colorization. I may add a more configurable aspect to this later, but for now if a note has a tag of "daily/10/28", then only the "daily" tag should be tracked.
+
+Don't worry about needing to delete the existing color mappings, you can just clear all data in the cache and restart.
+
+### [2026-10-29 06:31:22] Decision
+Only the top level of a nested tag is used for colors: the sync gives colors to top-level tags only (daily/10/28 is tracked as daily), the apps look a note's colors up by the top-level names of its tags (a note's stripes are its distinct top-level tags, first three), and the tooltip still lists the full tags. No migration of existing tag colors (the user clears the cache data). Configurability later.
+
+### [2026-10-29 06:33:18] Claude
+Done: only the top level of nested tags is colored. packages/sync: topLevelTag (daily/10/28 -> daily, a tag starting with a slash kept whole) and the sync colors the top-level tags of the notes; NoteRef.tags and the tooltip keep the full tags. packages/ui: lib/note-tags.ts (topLevelTag, tagColorIndexes: one color per distinct top-level tag, tags without a color left out), used by the web grid-note and Electron cells. An Electron main test checks the sync package's topLevelTag and TAG_COLOR_COUNT match the UI's. No migration code; I did not delete the user's cache data (the dev cache server of the user is running): they clear apps/cache/data and restart. README (sync, cache), CLAUDE.md and the "tag colors" guideline updated. Tests added; lint, typecheck and pnpm coverage pass (ui 170, sync 139, web 44, electron 100 tests).

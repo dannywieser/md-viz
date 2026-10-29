@@ -25,4 +25,19 @@ describe('toCells', () => {
 
     expect(cells[0]?.colors).toEqual([])
   })
+
+  it('colours a nested tag by its top level and counts a top level once', () => {
+    const cells = toCells(
+      [{ id: 'a', title: 'log', tags: ['daily/10/28', 'daily/10/29', 'work'] }],
+      {
+        daily: 2,
+        work: 9,
+      },
+    )
+
+    expect(cells[0]).toMatchObject({
+      colors: [2, 9],
+      tags: ['daily/10/28', 'daily/10/29', 'work'],
+    })
+  })
 })

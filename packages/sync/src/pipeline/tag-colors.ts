@@ -6,6 +6,12 @@ import type { TagColors } from '../types'
  */
 export const TAG_COLOR_COUNT = 24
 
+/** colours follow only the top level of a nested tag: `daily/10/28` is `daily`. a tag that starts with a slash is kept whole. */
+export function topLevelTag(tag: string): string {
+  const top = tag.split('/')[0] ?? tag
+  return top === '' ? tag : top
+}
+
 /**
  * the colours for the tags that have none in `existing`: each takes the palette colour the fewest
  * tags use so far (the lowest on a tie), so colours are used evenly and wrap around once there are

@@ -113,7 +113,8 @@ describe('syncNotes', () => {
         deleted: [],
         unchanged: [],
       },
-      tagColors: { x: 0, 'x/y': 1 },
+      // `x/y` is coloured as its top level, `x`
+      tagColors: { x: 0 },
     })
     expect(cache.notes.get('a')).toMatchObject({
       title: 'a',
@@ -286,6 +287,24 @@ describe('syncNotes', () => {
 
       expect(Object.fromEntries(cache.tagColors)).toEqual({ home: 0, work: 1 })
       expect(result.tagColors).toEqual({ home: 0, work: 1 })
+    })
+
+    it('colours only the top level of nested tags', async () => {
+      const cache = fakeCache()
+
+      const result = await syncNotes(
+        'file',
+        loaded(
+          note('a', { tags: ['daily/10/28', 'work'] }),
+          note('b', { tags: ['daily/10/29', 'daily'] }),
+        ),
+        { fetch: cache.fetch },
+      )
+
+      expect(Object.fromEntries(cache.tagColors)).toEqual({ daily: 0, work: 1 })
+      expect(result.tagColors).toEqual({ daily: 0, work: 1 })
+      // the notes keep their full tags
+      expect(result.notes.updated[0]?.tags).toEqual(['daily/10/28', 'work'])
     })
 
     it('keeps the colours the cache already has and adds only the new tags', async () => {

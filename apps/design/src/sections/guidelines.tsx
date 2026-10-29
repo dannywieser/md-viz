@@ -49,7 +49,7 @@ const guidelines = [
   },
   {
     name: 'tag colors',
-    rule: 'a note square takes its colors from the note tags: each tag gets a palette index when it is synced and keeps it, so a tag looks the same in every app and theme. a note with several tags is striped horizontally by its first three, a note without tags is the neutral grey, and the tooltip lists all the tags.',
+    rule: 'a note square takes its colors from the top level of its tags (daily/10/28 counts as daily): each top-level tag gets a palette index when it is synced and keeps it, so a tag looks the same in every app and theme. a note with several tags is striped horizontally by its first three, a note without tags is the neutral grey, and the tooltip lists all the full tags.',
     example: 'one tag · plain square · three tags · three stripes · none · grey',
   },
   {
