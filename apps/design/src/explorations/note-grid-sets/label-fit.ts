@@ -17,3 +17,6 @@ export function truncateLabel(text: string, width: number): string {
   if (chars < 2) return ''
   return `${text.slice(0, chars - 1)}…`
 }
+
+/** how a grid labels its blocks: not at all, a chip inside, a tab on the top edge, or only where it fits. */
+export type LabelMode = 'none' | 'inside' | 'tab' | 'threshold'
