@@ -82,3 +82,6 @@ Step 6 done: mode-switch, striped-set-grid, colour-section with tests (colour by
 
 ### [2026.10.29 08:15:00] Claude
 Step 7 done: labels-section.tsx with test (chip inside, tab, threshold, legend beside; small/large grid size switch).
+
+### [2026.10.29 08:15:36] Claude
+Step 8 done: iteration-section, iteration-1, iterations.ts (newest first), note-grid-sets-page, index.ts and the registry line, with tests. Whole design suite passes (97 files).
