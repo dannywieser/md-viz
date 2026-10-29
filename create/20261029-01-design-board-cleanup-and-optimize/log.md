@@ -182,3 +182,9 @@ in the "snapping to the dots": every line is a bullet; and no, not centered - th
 
 ### [2026-10-29 07:38:26] Claude
 All seven lines of "snapping to the dots" (the three intro lines, the three cell-size rules and the closing line) are now one flat bulleted list, left aligned. Checked in the browser.
+
+### [2026-10-29 07:39:37] User
+either way a dot sits on a square corner, and the first square's corner is where the dots start. -> the goal is to always be able to line up the corner of the grid with the background grid
+
+### [2026-10-29 07:39:37] Claude
+Replaced the closing bullet on the grid page with the user's wording.
