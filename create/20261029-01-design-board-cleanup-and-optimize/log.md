@@ -70,3 +70,9 @@ Implemented plan steps 1-6 together (the app needs the router, pages and compone
 
 ### [2026-10-29 07:06:20] Claude
 Steps 7-8 done: CLAUDE.md updated (apps/design entry, themes line, source layout); pnpm format, lint, typecheck and coverage all pass (design 99.39% lines, all workspaces >= 95%). Implementation complete; told the user to type /create-complete.
+
+### [2026-10-29 07:10:06] User
+The narrow theme picker cuts of several of the theme names. I'm wondering if we could have the compact version use a pixel square of the theme palette. When open, the selector would still show the name
+
+### [2026-10-29 07:10:06] Claude
+Added a `compact` prop to ThemeSelect (packages/ui) and a new ThemeSwatch component (3x3 pixel square: eight hues around the background); closed trigger shows only the swatch (title has the name), the open list shows swatch + name. Replaced the "narrow" demo on the theme-select page with "compact". Tests added; CLAUDE.md themes line updated. Note: this touches packages/ui, which the plan had out of scope, at the user's request.

@@ -34,4 +34,19 @@ describe('ThemeSelect', () => {
 
     expect(screen.getByRole('combobox', { name: 'theme' })).toHaveClass('w-44')
   })
+
+  it('compact shows a swatch and no name in the trigger, but the names in the list', async () => {
+    const onChange = vi.fn()
+    render(<ThemeSelect value="gotham" themes={themes} onChange={onChange} compact />)
+
+    const trigger = screen.getByRole('combobox', { name: 'theme' })
+    expect(trigger).toHaveTextContent('')
+    expect(trigger).toHaveAttribute('title', 'gotham')
+    expect(trigger.querySelector('[data-slot="theme-swatch"]')).toBeInTheDocument()
+
+    await userEvent.click(trigger)
+    expect(screen.getByRole('option', { name: 'dracula' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('option', { name: 'dracula' }))
+    expect(onChange).toHaveBeenCalledWith('dracula')
+  })
 })
