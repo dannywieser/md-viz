@@ -52,3 +52,12 @@ Read packages/ui/src/lib/note-grid-layout.ts. Answer to 2: yes in principle. The
 
 ### [2026.10.29 08:08:36] Claude
 Committing the discussion, opening the draft PR, then writing plan.md.
+
+### [2026.10.29 08:09:15] Decision
+Wrote plan.md (exploration note-grid-sets in apps/design, 10 steps, iterations kept newest-first, CLAUDE.md rule). Status set to planned. Draft PR: https://github.com/dannywieser/md-viz/pull/20. Asked the user how to proceed.
+
+### [2026.10.29 08:10:20] User
+1
+
+### [2026.10.29 08:10:20] Decision
+Chosen approach: implement everything (option 1), one commit per plan step, each pushed.

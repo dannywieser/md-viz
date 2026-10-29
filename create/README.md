@@ -70,4 +70,4 @@ New sessions are appended to the bottom of this table.
 | [20261028-01-web-dashboard](20261028-01-web-dashboard/) | web dashboard | complete | 2026.10.28 |
 | [20261028-01-colorize-grid-blocks-by-tags](20261028-01-colorize-grid-blocks-by-tags/) | colorize grid blocks by tags | complete | 2026.10.28 |
 | [20261029-01-design-board-cleanup-and-optimize](20261029-01-design-board-cleanup-and-optimize/) | design board cleanup and optimize | complete | 2026-10-29 |
-| [20261029-01-note-grid-sets-exploration](20261029-01-note-grid-sets-exploration/) | note grid sets exploration | review | 2026.10.29 |
+| [20261029-01-note-grid-sets-exploration](20261029-01-note-grid-sets-exploration/) | note grid sets exploration | planned | 2026.10.29 |
