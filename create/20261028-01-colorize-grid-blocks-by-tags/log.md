@@ -2,6 +2,7 @@
 
 - **Slug:** 20261028-01-colorize-grid-blocks-by-tags
 - **Started:** 2026-10-28 07:20:39 MDT
+- **Completed:** 2026-10-29 06:45:00
 
 ---
 
@@ -273,3 +274,15 @@ We'll set color by the top level tag, but the tooltip should show the entire nes
 
 ### [2026-10-29 06:36:54] Claude
 Not leftover cache entries and not intentional: bearcli lists every level of a nested tag as its own tag (the Bear loader's test fixture already had #garden and #garden/beds on one note), and the loader passed them all on. Fixed in packages/sync/src/sources/bear/load.ts: only the deepest tag is kept (a tag that is the start of another tag of the same note, followed by a slash, is dropped; order kept; dai is not a part of daily/10). Colors are unchanged: they use the top level of each remaining tag. A note's two nested tags that share a start (daily/10/28, daily/11/02) both stay and both count as daily once. Existing cached notes keep their old tags until they change, so the cache needs the clear and re-sync already planned. README updated; sync tests 144, lint and typecheck pass.
+
+### [2026-10-29 06:43:49] User
+/create-complete
+
+### [2026-10-29 06:43:49] Claude
+Started /create-complete: fresh pnpm coverage, then summary.md, the CLAUDE.md / README.md harvest, closing the session and marking the PR ready. Vitest configs: the 95% thresholds are in place in all seven workspaces and none changed on this branch.
+
+### [2026-10-29 06:45:00] Claude
+Fresh pnpm coverage: exit 0, all seven workspaces, every figure at or above 95% (see summary.md). Harvest: README.md (intro, state.json contents and the cache-clearing note, shared UI paragraph) and CLAUDE.md (Bear nested tags, clearing the cache). Wrote create/20261028-01-colorize-grid-blocks-by-tags/summary.md.
+
+### [2026-10-29 06:45:00] Decision
+Session complete.
