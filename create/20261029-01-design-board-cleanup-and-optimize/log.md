@@ -112,3 +112,21 @@ ok, so the weirdness I'm asking about it why it's left aligned inside a wide box
 
 ### [2026-10-29 07:17:52] Claude
 The compact demo on the empty-state page is now a 208x160 card-style box centered in the dotted box, with the ghost centered in it (like an empty note grid in the Electron app). Checked in the browser.
+
+### [2026-10-29 07:19:29] User
+the others are fine
+
+### [2026-10-29 07:19:29] Claude
+Acknowledged; nothing else open.
+
+### [2026-10-29 07:19:29] User
+the last thing I wanted to explore is if we can illustrate the code relating to ensuring that things align to the background grid - probably on the grid page. Can you suggest how we could do this? Different sizes of grids to show different snapping?
+
+### [2026-10-29 07:19:29] Claude
+Suggested a grid page with a small cell-size slider/presets showing the three latticeSpacing cases (cell < 16 gets a whole multiple, 16-32 is the cell, > 32 is divided evenly), a live demo that sets its own local lattice (not the page's), a readout of the formula inputs/outputs, and a multi-grid row using cellStep. Asked which pieces to build.
+
+### [2026-10-29 07:25:11] User
+1,2,4 sound good. go ahead and change the ui package with the proposed target element
+
+### [2026-10-29 07:25:11] Claude
+useDotLattice (packages/ui) takes an optional third argument, a ref to an element with bg-dots, and sets --grid-* on it (origin measured from its padding edge) instead of the page; tests added. Grid page: preset note counts (4, 50, 150, 400, 1200, 3000 notes in a fixed 360x200 area give a cell in each of the three cases), a NoteGrid on its own dotted box lined up by the real hook, a readout (cell, dot spacing, rule) and the real latticeSpacing and useDotLattice source via ?raw imports with the running line highlighted. New: lattice-demo, lattice-code, source-excerpt (+tests). Verified origin numerically in the browser. CLAUDE.md updated.
