@@ -130,3 +130,19 @@ Suggested a grid page with a small cell-size slider/presets showing the three la
 
 ### [2026-10-29 07:25:11] Claude
 useDotLattice (packages/ui) takes an optional third argument, a ref to an element with bg-dots, and sets --grid-* on it (origin measured from its padding edge) instead of the page; tests added. Grid page: preset note counts (4, 50, 150, 400, 1200, 3000 notes in a fixed 360x200 area give a cell in each of the three cases), a NoteGrid on its own dotted box lined up by the real hook, a readout (cell, dot spacing, rule) and the real latticeSpacing and useDotLattice source via ?raw imports with the running line highlighted. New: lattice-demo, lattice-code, source-excerpt (+tests). Verified origin numerically in the browser. CLAUDE.md updated.
+
+### [2026-10-29 07:29:11] User
+that description you have is a bit confusing. let's walk through line by line and come up with something more clear.
+
+first line: "the more notes a grid holds, the smaller its cell."
+
+note grids have a fixed height and width. as the number of notes increases, the size of each cell is decreased.
+
+### [2026-10-29 07:29:11] Claude
+Applied the user's wording for the first line in apps/design/src/sections/grid.tsx (not yet committed; the walk-through continues with the second sentence).
+
+### [2026-10-29 07:30:15] User
+make each sentence on it's own line, centered in the card
+
+### [2026-10-29 07:30:15] Claude
+The grid page explanation is now an array of five sentences, one centered line each (text-center). Wording is still the old text after the user's first line; the walk-through continues. Checked in the browser.
