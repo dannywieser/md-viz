@@ -265,3 +265,11 @@ Only the top level of a nested tag is used for colors: the sync gives colors to 
 
 ### [2026-10-29 06:33:18] Claude
 Done: only the top level of nested tags is colored. packages/sync: topLevelTag (daily/10/28 -> daily, a tag starting with a slash kept whole) and the sync colors the top-level tags of the notes; NoteRef.tags and the tooltip keep the full tags. packages/ui: lib/note-tags.ts (topLevelTag, tagColorIndexes: one color per distinct top-level tag, tags without a color left out), used by the web grid-note and Electron cells. An Electron main test checks the sync package's topLevelTag and TAG_COLOR_COUNT match the UI's. No migration code; I did not delete the user's cache data (the dev cache server of the user is running): they clear apps/cache/data and restart. README (sync, cache), CLAUDE.md and the "tag colors" guideline updated. Tests added; lint, typecheck and pnpm coverage pass (ui 170, sync 139, web 44, electron 100 tests).
+
+### [2026-10-29 06:36:54] User
+the tooltip is still showing each section of the nested tag. Is this intentional or leftover cache entries? For example, a tag of `daily/10/28` is showing as `daily, daily/10, daily/10/28`
+
+We'll set color by the top level tag, but the tooltip should show the entire nested tag and not the parts.
+
+### [2026-10-29 06:36:54] Claude
+Not leftover cache entries and not intentional: bearcli lists every level of a nested tag as its own tag (the Bear loader's test fixture already had #garden and #garden/beds on one note), and the loader passed them all on. Fixed in packages/sync/src/sources/bear/load.ts: only the deepest tag is kept (a tag that is the start of another tag of the same note, followed by a slash, is dropped; order kept; dai is not a part of daily/10). Colors are unchanged: they use the top level of each remaining tag. A note's two nested tags that share a start (daily/10/28, daily/11/02) both stay and both count as daily once. Existing cached notes keep their old tags until they change, so the cache needs the clear and re-sync already planned. README updated; sync tests 144, lint and typecheck pass.
