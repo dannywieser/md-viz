@@ -61,3 +61,6 @@ Wrote plan.md (exploration note-grid-sets in apps/design, 10 steps, iterations k
 
 ### [2026.10.29 08:10:20] Decision
 Chosen approach: implement everything (option 1), one commit per plan step, each pushed.
+
+### [2026.10.29 08:11:08] Claude
+Step 1 done: CLAUDE.md design paragraph now says an exploration keeps every iteration (new sections on top, older pushed down). Files: CLAUDE.md.
