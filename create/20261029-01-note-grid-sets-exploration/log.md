@@ -76,3 +76,6 @@ Step 4 done: grid-tooltip, lattice-stage, block-label, legend-strip, sized-grid,
 
 ### [2026.10.29 08:13:52] Claude
 Step 5 done: grouped-grid.tsx and grouping-section.tsx with tests. Groups use the rectangle packing, every note a square, colour only or with an outline.
+
+### [2026.10.29 08:14:31] Claude
+Step 6 done: mode-switch, striped-set-grid, colour-section with tests (colour by set / by tag, up to three stripes, legend follows the mode).
