@@ -73,3 +73,6 @@ Step 3 done: sample-sets.ts (7 generic sets, 219 notes, 8 tags) and note-colors.
 
 ### [2026.10.29 08:13:21] Claude
 Step 4 done: grid-tooltip, lattice-stage, block-label, legend-strip, sized-grid, sizing-section (+ LabelMode type in label-fit.ts) with tests. Label modes as built: inside = inset chip cut to width, tab = chip flush on the corner, threshold = chip only where the full text fits.
+
+### [2026.10.29 08:13:52] Claude
+Step 5 done: grouped-grid.tsx and grouping-section.tsx with tests. Groups use the rectangle packing, every note a square, colour only or with an outline.
