@@ -88,3 +88,12 @@ Step 8 done: iteration-section, iteration-1, iterations.ts (newest first), note-
 
 ### [2026.10.29 08:16:55] Claude
 Steps 9 and 10 done. Step 9: checked /explorations/note-grid-sets in the running design viewer: no console errors, dots align with block edges (measured offset 0), colour/group views look right. Step 10: pnpm format, lint, typecheck clean; pnpm coverage passes in every workspace (design 99.65 / 98.95 / 98.82 / 99.61). plan.md got an "As built" section for the deviations.
+
+### [2026.10.29 17:08:11] User
+iteration 2: I like "grouped squares" best, so let's hone in on that one. I still want a container and a fill with white squares. We should try to slot in sets of notes into the available space, but keep sets as square as possible.
+
+### [2026.10.29 17:08:11] Decision
+Iteration 2 (added on top, iteration 1 kept): a card container filled with empty (white) squares, the sets slotted into the free cells as squares as possible (first fit, squarest shape first, a smaller set may fill the short last row of another), cell = largest whole px at which all sets slot. Container shape switch (wide/square/tall) and outline switch, with each set's shape listed. Interpretation of "fill with white squares": the unused cells of the container show as empty card-coloured squares.
+
+### [2026.10.29 17:10:56] Claude
+Iteration 2 done: slot-sets.ts (squarest-first first-fit slotting, fitContainer), container-grid.tsx, slotting-section.tsx, iteration-2.tsx, iterations.ts (iteration 2 on top, iteration 1 kept), with tests. Checked in the design viewer: wide container 23 x 10 squares of 31px, 11 of 230 empty; set a is 12 x 10 there because the container is only 10 rows tall (a squarer 11 x 11 would not fit). Format, lint, typecheck clean; coverage passes in every workspace (design 99.7 / 99.09 / 98.93 / 99.66).

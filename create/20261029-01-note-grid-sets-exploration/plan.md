@@ -97,3 +97,7 @@ Create everything in the tree above. Modify:
 - Added `note-colors.ts` (colour by set or tag, `stripeHeights`, theme colours through the `--note-N` variables so the grids follow the theme switcher) and extra helpers `groupOutline` (block-shapes), `blockAt` and `uniformLayout` (pack-blocks).
 - Label modes: `inside` = chip inset in the corner cut to the width, `tab` = chip flush on the top-left corner, `threshold` = chip only where the whole text fits; the legend strip sits beside an unlabelled grid.
 - Checked in the design viewer: dots align with the block edges (offset 0) in the sized and grouped grids; stripes are deliberately inside the cell.
+
+## Iteration 2 (added by the user after implementation)
+
+Hone in on grouped squares: a container (a card block) filled with empty white squares, the sets slotted into the free cells as square as possible. New files in `note-grid-sets/`: `slot-sets.ts` (squarest-first first-fit slotting onto a cell grid, `fitContainer` picks the largest whole-px cell at which every set slots), `container-grid.tsx`, `slotting-section.tsx`, `iteration-2.tsx`; `iterations.ts` gets iteration 2 on top. Tests for each; coverage and checks re-run at the end.
