@@ -176,3 +176,9 @@ take out this line "this box lines up its own dots with the real hook, rather th
 
 ### [2026-10-29 07:37:33] Claude
 Removed the line from the grid page (the demoNote constant and its paragraph).
+
+### [2026-10-29 07:38:26] User
+in the "snapping to the dots": every line is a bullet; and no, not centered - the whole list should be left aligned
+
+### [2026-10-29 07:38:26] Claude
+All seven lines of "snapping to the dots" (the three intro lines, the three cell-size rules and the closing line) are now one flat bulleted list, left aligned. Checked in the browser.

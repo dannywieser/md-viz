@@ -9,7 +9,7 @@ const tokens = ['--grid-size', '--grid-dot']
 /** note counts that give a cell in each case in the demo's fixed area: over 32px, 16 to 32px and under 16px. */
 const presets = [4, 50, 150, 400, 1200, 3000]
 
-/** how the dots are spaced, a sentence a line. */
+/** how the dots are spaced: what a grid does, then the dot spacing for each size of cell. */
 const intro = [
   'note grids have a fixed height and width.',
   'as the number of notes increases, the size of each cell is decreased.',
@@ -25,6 +25,8 @@ const rules = [
 
 const closing =
   "either way a dot sits on a square corner, and the first square's corner is where the dots start."
+
+const snapping = [...intro, ...rules, closing]
 
 export function Grid() {
   const [count, setCount] = useState(presets[2])
@@ -44,17 +46,11 @@ export function Grid() {
         </ul>
       </div>
       <h3 className="text-sm font-bold">snapping to the dots</h3>
-      <div className="space-y-1 text-center text-sm text-muted-foreground">
-        {intro.map((sentence) => (
-          <p key={sentence}>{sentence}</p>
-        ))}
-      </div>
-      <ul className="list-inside list-disc space-y-1 text-center text-sm text-muted-foreground">
-        {rules.map((rule) => (
-          <li key={rule}>{rule}</li>
+      <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        {snapping.map((line) => (
+          <li key={line}>{line}</li>
         ))}
       </ul>
-      <p className="text-center text-sm text-muted-foreground">{closing}</p>
       <h3 className="text-sm font-bold">demo</h3>
       <div className="flex flex-wrap items-center gap-2">
         {presets.map((preset) => (
