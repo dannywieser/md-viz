@@ -12,13 +12,10 @@ export function ThemeSelectPage() {
     <>
       <PageHeading
         title="theme select"
-        description="picks the theme of a whole app. the viewer's header and both apps use it with the theme hook, which applies the choice before paint and remembers it in local storage. the compact picker shows a pixel square of the theme's hues around its neutral grey instead of the name, for tight spaces; the open list still shows the names. the pickers below only preview the choice and does not change the page."
+        description="picks the theme of a whole app. closed, it is a pixel square of the theme (its eight hues around the neutral grey) with the name as its tooltip; open, the list shows each theme with its name. the viewer's header and both apps use it with the theme hook, which applies the choice before paint and remembers it in local storage. the picker below only previews the choice and does not change the page."
       />
       <DemoGroup title="picker">
-        <ThemeSelect value={id} themes={themes} onChange={setId} className="w-56" />
-      </DemoGroup>
-      <DemoGroup title="compact">
-        <ThemeSelect value={id} themes={themes} onChange={setId} compact />
+        <ThemeSelect value={id} themes={themes} onChange={setId} />
       </DemoGroup>
       <DemoGroup title="the chosen theme">
         <div className="space-y-2 border bg-card p-4">

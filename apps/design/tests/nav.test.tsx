@@ -41,7 +41,7 @@ describe('Nav', () => {
 
   it('shows the theme and reports a change', async () => {
     const { onThemeChange } = renderNav()
-    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveTextContent(themes[0].name)
+    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveAttribute('title', themes[0].name)
 
     await userEvent.click(screen.getByRole('combobox', { name: 'theme' }))
     await userEvent.click(screen.getByRole('option', { name: themes[2].name }))

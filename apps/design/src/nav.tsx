@@ -36,7 +36,7 @@ export function Nav({ themeId, themes, onThemeChange }: NavProps) {
           </NavLink>
         ))}
       </nav>
-      <ThemeSelect value={themeId} themes={themes} onChange={onThemeChange} className="w-44" />
+      <ThemeSelect value={themeId} themes={themes} onChange={onThemeChange} />
     </AppHeader>
   )
 }

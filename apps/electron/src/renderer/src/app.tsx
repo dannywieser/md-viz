@@ -68,7 +68,7 @@ export function App() {
   return (
     <div className="flex h-screen flex-col">
       <AppHeader title="md-viz sync" subtitle="sync" className={headerClearance}>
-        <ThemeSelect value={theme.id} themes={themes} onChange={setTheme} className="w-44" />
+        <ThemeSelect value={theme.id} themes={themes} onChange={setTheme} />
         <SourceSelect value={source} onChange={(next) => void changeSource(next)} disabled={busy} />
         {source === 'file' && (
           <Button onClick={() => void chooseFolder()} disabled={busy}>

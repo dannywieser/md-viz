@@ -82,3 +82,9 @@ several of the 3x3 grids have ended up with what looks like a black in the cente
 
 ### [2026-10-29 07:11:33] Claude
 Cause: the center was the theme's page background, near-black on the dark themes. It is now the theme's neutral grey (ui.muted, the untagged-note colour). Updated ThemeSwatch, its test, CLAUDE.md and the theme-select page text.
+
+### [2026-10-29 07:12:47] User
+let's switch this component to always just use the compact mode. Update the 3 apps to use that mode
+
+### [2026-10-29 07:12:47] Claude
+ThemeSelect is always compact now (no compact prop; swatch when closed with the name as title, swatch + name in the list). Dropped the fixed widths in the Electron and design headers (web had none); the web, Electron and design tests check the title instead of the text; the theme-select page has one picker; CLAUDE.md updated. format, lint, typecheck and coverage pass.
