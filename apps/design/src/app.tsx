@@ -1,34 +1,44 @@
-import { AppHeader, Button, buttonVariants } from '@md-viz/ui'
-import { Board } from './board'
-import { ExplorationNotFound } from './explorations/exploration-not-found'
-import { ExplorationPage } from './explorations/exploration-page'
+import { Navigate, Route, Routes } from 'react-router'
+import { useTheme } from '@md-viz/ui'
+import { ComponentRoute } from './component-pages/component-route'
+import { ComponentsLayout } from './component-pages/components-layout'
+import { components } from './component-pages/registry'
+import { ExplorationRoute } from './explorations/exploration-route'
 import { ExplorationsIndex } from './explorations/explorations-index'
-import { resolveRoute } from './route'
-import { useTheme } from './theme'
+import { Nav } from './nav'
+import { NotFound } from './not-found'
+import { PageLayout } from './page-layout'
+import { ColorsPage } from './pages/colors-page'
+import { Grid } from './sections/grid'
+import { Guidelines } from './sections/guidelines'
+import { LogoSection } from './sections/logo'
+import { Spacing } from './sections/spacing'
+import { Typography } from './sections/typography'
 
 export function App() {
-  const { theme, toggle } = useTheme()
-  const route = resolveRoute(window.location.pathname)
-  const onBoard = route.page === 'board'
-  const subtitle = route.page === 'exploration' ? route.exploration.title : 'explorations'
+  const { theme, themes, setTheme } = useTheme()
 
   return (
     <div className="min-h-screen">
-      <AppHeader title="md-viz design" subtitle={onBoard ? 'design' : subtitle}>
-        <a
-          href={onBoard ? '/explorations' : '/'}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          {onBoard ? 'explorations' : 'board'}
-        </a>
-        <Button variant="outline" size="sm" onClick={toggle}>
-          {theme === 'dark' ? 'switch to light' : 'switch to dark'}
-        </Button>
-      </AppHeader>
-      {route.page === 'board' && <Board />}
-      {route.page === 'index' && <ExplorationsIndex />}
-      {route.page === 'exploration' && <ExplorationPage exploration={route.exploration} />}
-      {route.page === 'missing' && <ExplorationNotFound />}
+      <Nav themeId={theme.id} themes={themes} onThemeChange={setTheme} />
+      <Routes>
+        <Route element={<PageLayout />}>
+          <Route index element={<Navigate to="/guidelines" replace />} />
+          <Route path="guidelines" element={<Guidelines />} />
+          <Route path="logo" element={<LogoSection />} />
+          <Route path="colors" element={<ColorsPage />} />
+          <Route path="typography" element={<Typography />} />
+          <Route path="spacing" element={<Spacing />} />
+          <Route path="grid" element={<Grid />} />
+          <Route path="components" element={<ComponentsLayout />}>
+            <Route index element={<Navigate to={`/components/${components[0].slug}`} replace />} />
+            <Route path=":slug" element={<ComponentRoute />} />
+          </Route>
+          <Route path="explorations" element={<ExplorationsIndex />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+        <Route path="explorations/:slug" element={<ExplorationRoute />} />
+      </Routes>
     </div>
   )
 }

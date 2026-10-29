@@ -1,13 +1,8 @@
 import { useMemo, useState } from 'react'
-import {
-  Button,
-  Card,
-  CardDescription,
-  CardHeader,
-  NOTE_COLORS,
-  NoteGrid,
-  type Note,
-} from '@md-viz/ui'
+import { Button, NOTE_COLORS, NoteGrid, type Note } from '@md-viz/ui'
+import { DemoBox } from './demo-box'
+import { DemoGroup } from './demo-group'
+import { PageHeading } from './page-heading'
 
 const presets = [5, 50, 500, 5000]
 const MAX_COUNT = 20000
@@ -40,26 +35,19 @@ function makeNotes(count: number): Note[] {
   })
 }
 
-/**
- * the note grid is never shown on a card: it floats on the page background with its own shadow.
- * only the heading and the controls sit on cards, and the grids sit below them.
- */
-export function NoteGridDemo() {
+/** the note grid floats on the page background with its own shadow, so every demo sits in a dotted box. */
+export function NoteGridPage() {
   const [count, setCount] = useState(50)
   const notes = useMemo(() => makeNotes(count), [count])
 
   return (
-    <section className="space-y-8">
-      <Card>
-        <CardHeader>
-          <h2 className="text-xl font-bold">note grid</h2>
-          <CardDescription>
-            a grid of notes, each a square. squares shrink as the set grows so every note stays
-            visible. the grid always floats on the page with its own shadow, never on a card; an
-            empty set shows an empty block, and a label hangs above it as wide as the grid.
-          </CardDescription>
-        </CardHeader>
-        <div className="flex flex-wrap items-center gap-3 px-6">
+    <>
+      <PageHeading
+        title="note grid"
+        description="a grid of notes, each a square. squares shrink as the set grows so every note stays visible. the grid always floats on the page with its own shadow, never on a card; an empty set shows an empty block, and a label hangs above it as wide as the grid. each note draws its first three tag colors as stripes, and hovering shows the title and tags."
+      />
+      <DemoGroup title="size">
+        <div className="flex flex-wrap items-center gap-3">
           {presets.map((preset) => (
             <Button
               key={preset}
@@ -81,15 +69,19 @@ export function NoteGridDemo() {
             />
           </label>
         </div>
-      </Card>
-      <NoteGrid notes={notes} label="notes" height={320} />
-      <div className="flex flex-wrap items-start gap-x-8 gap-y-8">
-        {states.map(({ label, count: stateCount }) => (
-          <div key={label} className="w-52 shrink-0">
-            <NoteGrid notes={makeNotes(stateCount)} label={label} height={160} align="start" />
-          </div>
-        ))}
-      </div>
-    </section>
+        <DemoBox>
+          <NoteGrid notes={notes} label="notes" height={320} />
+        </DemoBox>
+      </DemoGroup>
+      <DemoGroup title="states">
+        <DemoBox className="flex flex-wrap items-start gap-x-8 gap-y-8">
+          {states.map(({ label, count: stateCount }) => (
+            <div key={label} className="w-52 shrink-0">
+              <NoteGrid notes={makeNotes(stateCount)} label={label} height={160} align="start" />
+            </div>
+          ))}
+        </DemoBox>
+      </DemoGroup>
+    </>
   )
 }

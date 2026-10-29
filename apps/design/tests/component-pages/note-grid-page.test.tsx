@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { NoteGrid } from '@md-viz/ui'
-import { NoteGridDemo } from '../../src/sections/note-grid-demo'
+import { NoteGridPage } from '../../src/component-pages/note-grid-page'
 
 vi.mock('@md-viz/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@md-viz/ui')>()),
@@ -14,13 +14,13 @@ const mainGrid = () =>
     .filter((props) => props.label === 'notes')
     .at(-1)!
 
-describe('NoteGridDemo', () => {
+describe('NoteGridPage', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
 
   it('shows the main grid with 50 notes and the four states', () => {
-    render(<NoteGridDemo />)
+    render(<NoteGridPage />)
 
     expect(mainGrid().notes).toHaveLength(50)
     const states: Record<string, number> = {}
@@ -31,16 +31,16 @@ describe('NoteGridDemo', () => {
   })
 
   it('gives the notes deterministic colors', () => {
-    render(<NoteGridDemo />)
+    render(<NoteGridPage />)
     const first = mainGrid().notes
     vi.clearAllMocks()
-    render(<NoteGridDemo />)
+    render(<NoteGridPage />)
 
     expect(mainGrid().notes).toEqual(first)
   })
 
   it('switches the main grid to a preset', async () => {
-    render(<NoteGridDemo />)
+    render(<NoteGridPage />)
 
     await userEvent.click(screen.getByRole('button', { name: '500' }))
 
@@ -48,7 +48,7 @@ describe('NoteGridDemo', () => {
   })
 
   it('sets the count from the slider', () => {
-    render(<NoteGridDemo />)
+    render(<NoteGridPage />)
 
     fireEvent.change(screen.getByRole('slider'), { target: { value: '1200' } })
 

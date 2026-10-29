@@ -58,3 +58,12 @@ Committed discussion and opened draft PR https://github.com/dannywieser/md-viz/p
 
 ### [2026-10-29 07:01:15] Decision
 Implement everything (plan steps 1-8), committing and pushing after each step; user reviews afterwards.
+
+### [2026-10-29 07:05:10] User
+take out the "cards" design guideline - it doesn't fit with the theming now
+
+### [2026-10-29 07:05:10] Claude
+Removed the "cards" entry from apps/design/src/sections/guidelines.tsx and the "cards with a hard shadow" mention from CLAUDE.md's design-decisions line.
+
+### [2026-10-29 07:05:28] Claude
+Implemented plan steps 1-6 together (the app needs the router, pages and component registry at once to compile): react-router 8.5.1 pinned; nav.tsx (top nav + ThemeSelect); app.tsx routes; page-layout, not-found, colors page; explorations on router (exploration-route.tsx); component-pages/ (registry, layout with side nav, route, 11 pages, demo-box, demo-group, page-heading); plain page background in index.css; removed route.ts, theme.ts, board.tsx, sections/components.tsx; note-grid-demo became component-pages/note-grid-page.tsx; tests for every new file. Deviation: /components redirect is an inline Navigate in app.tsx (no components-redirect.tsx). Verified in the browser on :5174.

@@ -2,3 +2,8 @@
 
 /* Tailwind must scan the shared UI package for class names. */
 @source '../../../packages/ui/src';
+
+/* the viewer's pages have a plain background; demos that need the dots sit on a box (DemoBox). */
+body {
+  background-image: none;
+}

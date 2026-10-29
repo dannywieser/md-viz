@@ -12,11 +12,6 @@ const guidelines = [
     example: 'buttons, cards, inputs, badges: all square',
   },
   {
-    name: 'cards',
-    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px shadow (black unless the page is too dark for it, set by --shadow-color) in both and no other decoration.',
-    example: 'white card · 4px black shadow',
-  },
-  {
     name: 'dot grid',
     rule: 'the page background is a subdued dot grid, a dot at every cell corner, so the note grid stays the focus. with several cards the one with the most notes sets the cell and the others use whole multiples of it, so cards and spacing sit on the dots. cells over 32px are divided evenly so the dots stay close.',
     example: '16px dot spacing · densest card sets the cell · set by --grid-size',
