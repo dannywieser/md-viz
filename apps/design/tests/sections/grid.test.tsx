@@ -13,6 +13,14 @@ describe('Grid', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'grid' })).toBeInTheDocument()
     expect(screen.getByText('--grid-size')).toBeInTheDocument()
     expect(screen.getByText('--grid-dot')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'snapping to the dots' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: 'demo' })).toBeInTheDocument()
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(5)
+    expect(screen.getByText(/^under 16px/)).toBeInTheDocument()
+    expect(screen.getByText(/^from 16px to 32px/)).toBeInTheDocument()
+    expect(screen.getByText(/^over 32px/)).toBeInTheDocument()
     expectLowercase(container)
   })
 

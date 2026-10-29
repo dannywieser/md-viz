@@ -146,3 +146,15 @@ make each sentence on it's own line, centered in the card
 
 ### [2026-10-29 07:30:15] Claude
 The grid page explanation is now an array of five sentences, one centered line each (text-center). Wording is still the old text after the user's first line; the walk-through continues. Checked in the browser.
+
+### [2026-10-29 07:33:25] User
+"the dots follow the cell: ..." -> draft: the background grid spacing is adjusted based on the grid being displayed on the page. for grid cells under 16px, a multiple is chosen (is this correct? give example). between 16 and 32px, ... above 32px, ...
+
+### [2026-10-29 07:33:25] Claude
+Confirmed from latticeSpacing: under 16px the spacing is the smallest whole multiple of the cell that reaches 16px (7px -> 21px, every 3rd corner); 16-32px the cell itself; over 32px the cell is divided into the fewest equal parts that keep spacing at most 32px (98px -> 24.5px, 4 per cell; 35px -> 17.5px, 2 per cell). Proposed one line per case; awaiting the user's wording choice. (Earlier example 70 -> 35 was wrong: 70 gives 23.33, three parts.)
+
+### [2026-10-29 07:35:46] User
+ok, that wording makes sense. But let's do this: move this into a bulleted list, and then add a new heading for the demo section of the page to split things more cleanly
+
+### [2026-10-29 07:35:46] Claude
+Grid page now: "snapping to the dots" heading with three centered intro lines, a bulleted list of the three cell-size rules (with the examples), the closing line, then a new "demo" heading with the hook note, presets and the lattice demo. Test updated. Checked in the browser.
