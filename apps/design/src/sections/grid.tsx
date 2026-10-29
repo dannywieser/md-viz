@@ -26,8 +26,6 @@ const rules = [
 const closing =
   "either way a dot sits on a square corner, and the first square's corner is where the dots start."
 
-const demoNote = "this box lines up its own dots with the real hook, rather than the page's."
-
 export function Grid() {
   const [count, setCount] = useState(presets[2])
   const [cell, setCell] = useState<number | null>(null)
@@ -58,7 +56,6 @@ export function Grid() {
       </ul>
       <p className="text-center text-sm text-muted-foreground">{closing}</p>
       <h3 className="text-sm font-bold">demo</h3>
-      <p className="text-center text-sm text-muted-foreground">{demoNote}</p>
       <div className="flex flex-wrap items-center gap-2">
         {presets.map((preset) => (
           <Button

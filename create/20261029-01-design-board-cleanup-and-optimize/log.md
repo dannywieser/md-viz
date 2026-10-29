@@ -170,3 +170,9 @@ make the demo full width and move the code to it's own section
 
 ### [2026-10-29 07:36:57] Claude
 The demo box spans the card with the grid centered in it and the readout centered below. The code is a new "code" section under the demo; the cell moved up into Grid (LatticeDemo takes cell and onCellChange) so the highlighted line still follows the preset. Tests updated; checked in the browser.
+
+### [2026-10-29 07:37:33] User
+take out this line "this box lines up its own dots with the real hook, rather than the page's."
+
+### [2026-10-29 07:37:33] Claude
+Removed the line from the grid page (the demoNote constant and its paragraph).
