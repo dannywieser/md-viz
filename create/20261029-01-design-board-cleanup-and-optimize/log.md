@@ -88,3 +88,9 @@ let's switch this component to always just use the compact mode. Update the 3 ap
 
 ### [2026-10-29 07:12:47] Claude
 ThemeSelect is always compact now (no compact prop; swatch when closed with the name as title, swatch + name in the list). Dropped the fixed widths in the Electron and design headers (web had none); the web, Electron and design tests check the title instead of the text; the theme-select page has one picker; CLAUDE.md updated. format, lint, typecheck and coverage pass.
+
+### [2026-10-29 07:14:28] User
+the select is now a bit too narrow and causing some theme names to wrap. I don't see why the select shouldn't be wide enough to support all names
+
+### [2026-10-29 07:14:28] Claude
+The open list was wrapping long names (catppuccin mocha/latte) at the trigger's width. Theme items are now whitespace-nowrap, so the popup grows to the longest name. Checked in the browser.

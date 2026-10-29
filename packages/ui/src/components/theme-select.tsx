@@ -23,7 +23,7 @@ export function ThemeSelect({ value, themes, onChange, className }: ThemeSelectP
       </SelectTrigger>
       <SelectContent>
         {themes.map((theme) => (
-          <SelectItem key={theme.id} value={theme.id}>
+          <SelectItem key={theme.id} value={theme.id} className="whitespace-nowrap">
             <ThemeSwatch theme={theme} cell={4} />
             {theme.name}
           </SelectItem>
