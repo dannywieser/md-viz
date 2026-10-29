@@ -5,7 +5,12 @@ import {
   stripeHeights,
 } from '../../../src/explorations/note-grid-sets/note-colors'
 
-const note = { id: 'n', title: 'n', sets: ['set-a', 'set-b'], tags: ['alpha', 'beta', 'gamma', 'delta'] }
+const note = {
+  id: 'n',
+  title: 'n',
+  sets: ['set-a', 'set-b'],
+  tags: ['alpha', 'beta', 'gamma', 'delta'],
+}
 
 describe('noteColorIndexes', () => {
   it('uses the colours of the sets', () => {

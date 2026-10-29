@@ -8,7 +8,12 @@ type ModeSwitchProps<T extends string> = {
 }
 
 /** a row of buttons to pick one mode, the active one filled. */
-export function ModeSwitch<T extends string>({ label, options, value, onChange }: ModeSwitchProps<T>) {
+export function ModeSwitch<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: ModeSwitchProps<T>) {
   return (
     <div role="group" aria-label={label} className="flex items-center gap-2 text-xs">
       <span className="text-muted-foreground">{label}</span>

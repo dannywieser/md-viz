@@ -19,7 +19,8 @@ const TAB_HEIGHT = LINE_PX + LABEL_PAD
  */
 export function BlockLabel({ mode, x, y, width, height, text }: BlockLabelProps) {
   if (mode === 'none') return null
-  const shown = mode === 'threshold' ? (labelFits(text, width, height) ? text : '') : truncateLabel(text, width)
+  const shown =
+    mode === 'threshold' ? (labelFits(text, width, height) ? text : '') : truncateLabel(text, width)
   if (shown === '' || (mode === 'tab' && height < TAB_HEIGHT)) return null
   const flush = mode === 'tab'
   const left = flush ? x : x + LABEL_PAD / 2

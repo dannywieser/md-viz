@@ -70,7 +70,10 @@ export function StripedSetGrid({ notes, mode, width, height }: StripedSetGridPro
         )}
       </svg>
       {note && hovered !== null && (
-        <GridTooltip x={((hovered % columns) + 0.5) * cell} y={Math.floor(hovered / columns) * cell}>
+        <GridTooltip
+          x={((hovered % columns) + 0.5) * cell}
+          y={Math.floor(hovered / columns) * cell}
+        >
           {note.title}: {mode === 'set' ? note.sets.join(', ') : note.tags.join(', ') || 'no tags'}
         </GridTooltip>
       )}

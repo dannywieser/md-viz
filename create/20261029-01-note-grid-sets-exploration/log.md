@@ -85,3 +85,6 @@ Step 7 done: labels-section.tsx with test (chip inside, tab, threshold, legend b
 
 ### [2026.10.29 08:15:36] Claude
 Step 8 done: iteration-section, iteration-1, iterations.ts (newest first), note-grid-sets-page, index.ts and the registry line, with tests. Whole design suite passes (97 files).
+
+### [2026.10.29 08:16:55] Claude
+Steps 9 and 10 done. Step 9: checked /explorations/note-grid-sets in the running design viewer: no console errors, dots align with block edges (measured offset 0), colour/group views look right. Step 10: pnpm format, lint, typecheck clean; pnpm coverage passes in every workspace (design 99.65 / 98.95 / 98.82 / 99.61). plan.md got an "As built" section for the deviations.

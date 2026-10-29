@@ -23,7 +23,9 @@ describe('GroupedGrid', () => {
   it('colours the squares by set', () => {
     renderGrid(false)
 
-    const fills = [...document.querySelectorAll('svg rect')].map((rect) => (rect as SVGElement).style.fill)
+    const fills = [...document.querySelectorAll('svg rect')].map(
+      (rect) => (rect as SVGElement).style.fill,
+    )
     expect(fills.filter((fill) => fill === 'var(--note-0)')).toHaveLength(7)
     expect(fills.filter((fill) => fill === 'var(--note-1)')).toHaveLength(1)
   })

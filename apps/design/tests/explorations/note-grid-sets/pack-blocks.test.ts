@@ -67,9 +67,7 @@ describe('largestCell', () => {
 
     expect(Number.isInteger(cell)).toBe(true)
     expect(packBlocks(shapes, Math.floor(100 / cell)).rows * cell).toBeLessThanOrEqual(60)
-    expect(
-      packBlocks(shapes, Math.floor(100 / (cell + 1))).rows * (cell + 1),
-    ).toBeGreaterThan(60)
+    expect(packBlocks(shapes, Math.floor(100 / (cell + 1))).rows * (cell + 1)).toBeGreaterThan(60)
   })
 
   it('falls back to 1px when nothing fits', () => {

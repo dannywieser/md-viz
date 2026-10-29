@@ -18,12 +18,9 @@ describe('Iteration1', () => {
   it('shows the four sections in order', () => {
     const { container } = render(<Iteration1 />)
 
-    expect(screen.getAllByText(/^(sizing|grouping|colour|labels)$/).map((e) => e.textContent)).toEqual([
-      'sizing',
-      'grouping',
-      'colour',
-      'labels',
-    ])
+    expect(
+      screen.getAllByText(/^(sizing|grouping|colour|labels)$/).map((e) => e.textContent),
+    ).toEqual(['sizing', 'grouping', 'colour', 'labels'])
     expect(container.children).toHaveLength(4)
   })
 })

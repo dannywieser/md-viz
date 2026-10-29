@@ -31,9 +31,9 @@ export function ColourSection() {
       <h3 className="text-lg font-bold">colour modes: by set or by tag</h3>
       <p className="text-sm text-muted-foreground">
         the same grid of every note, switched between two colourings. a square shows up to three
-        stripes, one per set (some sample notes are in two or three sets) or per tag; a note
-        without tags is the neutral grey. the legend follows the mode. switch the theme in the nav
-        to see the colours follow it.
+        stripes, one per set (some sample notes are in two or three sets) or per tag; a note without
+        tags is the neutral grey. the legend follows the mode. switch the theme in the nav to see
+        the colours follow it.
       </p>
       <ModeSwitch label="colour" options={MODES} value={mode} onChange={setMode} />
       <StripedSetGrid notes={SAMPLE_NOTES} mode={mode} width={720} height={300} />

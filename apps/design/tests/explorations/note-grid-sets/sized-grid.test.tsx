@@ -7,7 +7,10 @@ const sets = [
   { id: 'c', name: 'set c', count: 1, color: 2 },
 ]
 
-function renderGrid(rule: 'round' | 'ceil' | 'rectangle' = 'rectangle', labels: 'none' | 'inside' = 'none') {
+function renderGrid(
+  rule: 'round' | 'ceil' | 'rectangle' = 'rectangle',
+  labels: 'none' | 'inside' = 'none',
+) {
   render(<SizedGrid sets={sets} rule={rule} labels={labels} width={200} height={100} />)
   const svg = screen.getByRole('img')
   svg.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect

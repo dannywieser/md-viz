@@ -56,6 +56,7 @@ apps/design/src/explorations/note-grid-sets/
   legend-strip.tsx              legend strip beside or below the grid
   grid-tooltip.tsx              the one shared tooltip
   sample-sets.ts                generic sample sets and notes (fixed)
+  note-colors.ts                colour indexes by set / tag, stripe heights (added during implementation)
   block-shapes.ts               size rules: round, ceil, rectangle
   pack-blocks.ts                shelf packing and the largest fitting cell
   label-fit.ts                  whether a label fits a block (threshold for always-visible)
@@ -90,3 +91,9 @@ Create everything in the tree above. Modify:
 - One component per file means many small files; the section components stay presentational and the logic sits in the `.ts` files.
 - The exploration's grid is separate from `NoteGrid` on purpose; conclusions would become a later change to the real component.
 - The tooltip and pointer handling follow the convention (one handler deriving the item from the layout, one shared tooltip), even though sample data is small.
+
+## As built (deviations)
+
+- Added `note-colors.ts` (colour by set or tag, `stripeHeights`, theme colours through the `--note-N` variables so the grids follow the theme switcher) and extra helpers `groupOutline` (block-shapes), `blockAt` and `uniformLayout` (pack-blocks).
+- Label modes: `inside` = chip inset in the corner cut to the width, `tab` = chip flush on the top-left corner, `threshold` = chip only where the whole text fits; the legend strip sits beside an unlabelled grid.
+- Checked in the design viewer: dots align with the block edges (offset 0) in the sized and grouped grids; stripes are deliberately inside the cell.

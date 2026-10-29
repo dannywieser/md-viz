@@ -33,7 +33,10 @@ export function GroupedGrid({ sets, outlined, width, height }: GroupedGridProps)
     const column = Math.floor((event.clientX - box.left) / cell)
     const row = Math.floor((event.clientY - box.top) / cell)
     const set = blockAt(placements, column, row)
-    const note = set === -1 ? -1 : (row - placements[set].y) * placements[set].columns + column - placements[set].x
+    const note =
+      set === -1
+        ? -1
+        : (row - placements[set].y) * placements[set].columns + column - placements[set].x
     setHovered(set === -1 || note >= sorted[set].count ? null : { set, note })
   }
 
@@ -41,8 +44,11 @@ export function GroupedGrid({ sets, outlined, width, height }: GroupedGridProps)
     at: placements[hovered.set],
     title: `${sorted[hovered.set].name} note ${hovered.note + 1}`,
   }
-  const overX = hovered && placements[hovered.set].x + (hovered.note % placements[hovered.set].columns)
-  const overY = hovered && placements[hovered.set].y + Math.floor(hovered.note / placements[hovered.set].columns)
+  const overX =
+    hovered && placements[hovered.set].x + (hovered.note % placements[hovered.set].columns)
+  const overY =
+    hovered &&
+    placements[hovered.set].y + Math.floor(hovered.note / placements[hovered.set].columns)
   return (
     <LatticeStage cell={cell} width={width} height={height}>
       <svg
@@ -82,7 +88,13 @@ export function GroupedGrid({ sets, outlined, width, height }: GroupedGridProps)
           )
         })}
         {over && overX !== null && overY !== null && (
-          <rect className="note-hover" x={overX * cell} y={overY * cell} width={cell} height={cell} />
+          <rect
+            className="note-hover"
+            x={overX * cell}
+            y={overY * cell}
+            width={cell}
+            height={cell}
+          />
         )}
       </svg>
       {over && overX !== null && overY !== null && (

@@ -11,7 +11,10 @@ type IterationSectionProps = {
 /** one iteration of the exploration: a heading with its number and date, then its sections. */
 export function IterationSection({ number, title, date, children }: IterationSectionProps) {
   return (
-    <section aria-label={`iteration ${number}`} className="space-y-8 border-t pt-8 first:border-t-0 first:pt-0">
+    <section
+      aria-label={`iteration ${number}`}
+      className="space-y-8 border-t pt-8 first:border-t-0 first:pt-0"
+    >
       <header className="space-y-1">
         <h2 className="text-xl font-bold">
           iteration {number}: {title}

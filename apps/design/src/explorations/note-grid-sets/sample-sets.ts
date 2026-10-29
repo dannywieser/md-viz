@@ -44,7 +44,8 @@ function makeNotes(): SampleNote[] {
       // some notes also belong to the next sets (cyclic), to show striping by set
       if (k % 5 === 4) sets.push(SAMPLE_SETS[(setIndex + 1) % SAMPLE_SETS.length].id)
       if (k % 15 === 14) sets.push(SAMPLE_SETS[(setIndex + 2) % SAMPLE_SETS.length].id)
-      const tagCount = k % UNTAGGED_EVERY === UNTAGGED_EVERY - 1 ? 0 : TAG_COUNTS[k % TAG_COUNTS.length]
+      const tagCount =
+        k % UNTAGGED_EVERY === UNTAGGED_EVERY - 1 ? 0 : TAG_COUNTS[k % TAG_COUNTS.length]
       const tags = Array.from(
         { length: tagCount },
         (_, j) => SAMPLE_TAGS[(k * 3 + j * 5 + setIndex) % SAMPLE_TAGS.length],

@@ -53,10 +53,9 @@ export function LabelsSection() {
     <section className="space-y-4">
       <h3 className="text-lg font-bold">labels without the header card</h3>
       <p className="text-sm text-muted-foreground">
-        no card above the grid: the labels live in or on the blocks, or in a legend beside the
-        grid. the bigger the squares get, the more of them can show their label all the time, so
-        switch the size to see which blocks cross the threshold. every block still has the hover
-        tooltip.
+        no card above the grid: the labels live in or on the blocks, or in a legend beside the grid.
+        the bigger the squares get, the more of them can show their label all the time, so switch
+        the size to see which blocks cross the threshold. every block still has the hover tooltip.
       </p>
       <ModeSwitch label="grid size" options={SIZES} value={size} onChange={setSize} />
       <div className="flex flex-wrap gap-8">
@@ -64,14 +63,20 @@ export function LabelsSection() {
           <div key={treatment.mode} className="space-y-2">
             <h4 className="font-bold">{treatment.title}</h4>
             <p className="max-w-[360px] text-xs text-muted-foreground">{treatment.text}</p>
-            <SizedGrid sets={sets} rule="rectangle" labels={treatment.mode} width={width} height={height} />
+            <SizedGrid
+              sets={sets}
+              rule="rectangle"
+              labels={treatment.mode}
+              width={width}
+              height={height}
+            />
           </div>
         ))}
         <div className="space-y-2">
           <h4 className="font-bold">legend beside the grid</h4>
           <p className="max-w-[360px] text-xs text-muted-foreground">
-            the grid carries no text at all, a legend lists the sets with their counts and
-            colours. it works at any size, but the eye has to travel between the two.
+            the grid carries no text at all, a legend lists the sets with their counts and colours.
+            it works at any size, but the eye has to travel between the two.
           </p>
           <div className="flex gap-6">
             <SizedGrid sets={sets} rule="rectangle" labels="none" width={width} height={height} />
