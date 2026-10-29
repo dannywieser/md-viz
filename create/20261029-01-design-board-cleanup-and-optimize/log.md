@@ -158,3 +158,15 @@ ok, that wording makes sense. But let's do this: move this into a bulleted list,
 
 ### [2026-10-29 07:35:46] Claude
 Grid page now: "snapping to the dots" heading with three centered intro lines, a bulleted list of the three cell-size rules (with the examples), the closing line, then a new "demo" heading with the hook note, presets and the lattice demo. Test updated. Checked in the browser.
+
+### [2026-10-29 07:36:57] User
+bullet list left aligned not centered
+
+### [2026-10-29 07:36:57] Claude
+Read as: the list should be centered like the lines around it. It is now list-inside with centered text.
+
+### [2026-10-29 07:36:57] User
+make the demo full width and move the code to it's own section
+
+### [2026-10-29 07:36:57] Claude
+The demo box spans the card with the grid centered in it and the readout centered below. The code is a new "code" section under the demo; the cell moved up into Grid (LatticeDemo takes cell and onCellChange) so the highlighted line still follows the preset. Tests updated; checked in the browser.

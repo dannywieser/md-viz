@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button } from '@md-viz/ui'
+import { Button, latticeSpacing } from '@md-viz/ui'
+import { LatticeCode } from './lattice-code'
 import { LatticeDemo } from './lattice-demo'
 import { Section } from './section'
 
@@ -29,6 +30,7 @@ const demoNote = "this box lines up its own dots with the real hook, rather than
 
 export function Grid() {
   const [count, setCount] = useState(presets[2])
+  const [cell, setCell] = useState<number | null>(null)
 
   return (
     <Section
@@ -49,7 +51,7 @@ export function Grid() {
           <p key={sentence}>{sentence}</p>
         ))}
       </div>
-      <ul className="mx-auto w-fit list-disc space-y-1 pl-5 text-left text-sm text-muted-foreground">
+      <ul className="list-inside list-disc space-y-1 text-center text-sm text-muted-foreground">
         {rules.map((rule) => (
           <li key={rule}>{rule}</li>
         ))}
@@ -69,7 +71,9 @@ export function Grid() {
           </Button>
         ))}
       </div>
-      <LatticeDemo count={count} />
+      <LatticeDemo count={count} cell={cell} onCellChange={setCell} />
+      <h3 className="text-sm font-bold">code</h3>
+      <LatticeCode divided={cell !== null && latticeSpacing(cell) < cell} />
     </Section>
   )
 }
