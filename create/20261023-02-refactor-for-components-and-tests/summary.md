@@ -1,7 +1,7 @@
 # Summary: refactor for components and tests
 
 - **Slug:** 20261023-02-refactor-for-components-and-tests
-- **Started:** 2026-10-23 08:01 · **Completed:** 2026-10-23 08:59:43
+- **Started:** 2026.10.23 08:01 · **Completed:** 2026.10.23 08:59:43
 
 ## Overview
 

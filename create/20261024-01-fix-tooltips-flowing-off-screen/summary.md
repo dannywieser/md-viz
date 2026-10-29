@@ -1,7 +1,7 @@
 # Fix summary: tooltips flowing off screen
 
 - **Slug:** 20261024-01-fix-tooltips-flowing-off-screen
-- **Started:** 2026-10-24 16:37 · **Completed:** 2026-10-24
+- **Started:** 2026.10.24 16:37 · **Completed:** 2026.10.24
 
 ## Symptom
 The `NoteGrid` tooltip is centred on the hovered cell, so for cells in the first or last column (web and Electron) part of it was cut off by the left or right window edge.

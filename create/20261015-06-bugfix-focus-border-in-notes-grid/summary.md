@@ -1,7 +1,7 @@
 # bugfix: focus border in notes grid
 
 - **Slug:** 20261015-06-bugfix-focus-border-in-notes-grid
-- **Started:** 2026-10-15 · **Completed:** 2026-10-15
+- **Started:** 2026.10.15 · **Completed:** 2026.10.15
 
 ## Overview
 On an edge cell of the notes grid, the black hover outline merged with the black grid border into one thick line. The grid border is now gone and the hover outline is thicker (4px, black) and can extend past the grid edge, so it always reads as a distinct highlight.

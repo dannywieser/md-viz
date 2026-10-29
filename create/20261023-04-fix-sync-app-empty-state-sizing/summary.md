@@ -1,8 +1,8 @@
 # Fix summary: sync app empty state sizing
 
 - **Slug:** 20261023-04-fix-sync-app-empty-state-sizing
-- **Started:** 2026-10-23 16:47:30
-- **Completed:** 2026-10-23 17:04:17
+- **Started:** 2026.10.23 16:47:30
+- **Completed:** 2026.10.23 17:04:17
 
 ## Symptom
 In the Electron sync app an empty status grid's block was bigger than a populated one (e.g. the 18-note grid), and two empty grids both repeated "the notes went out for coffee". Later review also found the folder card and the app header wider than the three status blocks.

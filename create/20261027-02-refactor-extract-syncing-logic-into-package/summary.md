@@ -1,8 +1,8 @@
 # Summary: refactor: extract syncing logic into package
 
 - **Slug:** 20261027-02-refactor-extract-syncing-logic-into-package
-- **Started:** 2026-10-27 08:04
-- **Completed:** 2026-10-27
+- **Started:** 2026.10.27 08:04
+- **Completed:** 2026.10.27
 - **PR:** https://github.com/dannywieser/md-viz/pull/13
 
 ## Overview

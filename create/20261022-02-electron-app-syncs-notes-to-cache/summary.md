@@ -1,8 +1,8 @@
 # electron app syncs notes to cache
 
 - **Slug:** 20261022-02-electron-app-syncs-notes-to-cache
-- **Started:** 2026-10-22
-- **Completed:** 2026-10-22
+- **Started:** 2026.10.22
+- **Completed:** 2026.10.22
 
 ## Overview
 

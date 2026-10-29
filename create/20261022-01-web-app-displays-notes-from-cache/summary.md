@@ -1,8 +1,8 @@
 # Summary: web app displays notes from cache
 
 - **Slug:** 20261022-01-web-app-displays-notes-from-cache
-- **Started:** 2026-10-22
-- **Completed:** 2026-10-22
+- **Started:** 2026.10.22
+- **Completed:** 2026.10.22
 
 ## Overview
 

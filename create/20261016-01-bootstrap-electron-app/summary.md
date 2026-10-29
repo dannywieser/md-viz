@@ -1,8 +1,8 @@
 # Summary: bootstrap electron app
 
 - **Slug:** 20261016-01-bootstrap-electron-app
-- **Started:** 2026-10-16
-- **Completed:** 2026-10-16
+- **Started:** 2026.10.16
+- **Completed:** 2026.10.16
 
 ## Overview
 

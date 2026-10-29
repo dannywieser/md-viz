@@ -44,28 +44,28 @@ New sessions are appended to the bottom of this table.
 
 | Session | Title | Status | Started |
 | --- | --- | --- | --- |
-| [20261015-01-repo-bootstrap](20261015-01-repo-bootstrap/) | repo bootstrap | complete | 2026-10-15 |
-| [20261015-02-design-system-and-viewer-application](20261015-02-design-system-and-viewer-application/) | design system and viewer application | complete | 2026-10-15 |
-| [20261015-03-note-visualization-grid](20261015-03-note-visualization-grid/) | note visualization grid | complete | 2026-10-15 |
-| [20261015-04-app-logo-and-icon](20261015-04-app-logo-and-icon/) | app logo and icon | complete | 2026-10-15 |
-| [20261015-05-notes-grid-into-web-app](20261015-05-notes-grid-into-web-app/) | notes grid into web app | complete | 2026-10-15 |
-| [20261015-06-bugfix-focus-border-in-notes-grid](20261015-06-bugfix-focus-border-in-notes-grid/) | bugfix: focus border in notes grid | complete | 2026-10-15 |
-| [20261016-01-bootstrap-electron-app](20261016-01-bootstrap-electron-app/) | bootstrap electron app | complete | 2026-10-16 |
-| [20261016-02-note-cache-service](20261016-02-note-cache-service/) | note cache service | complete | 2026-10-16 |
-| [20261016-03-generated-api-client](20261016-03-generated-api-client/) | generated api client | complete | 2026-10-16 |
-| [20261016-04-rebrand-to-md-viz](20261016-04-rebrand-to-md-viz/) | rebrand to md-viz | complete | 2026-10-16 |
-| [20261022-01-web-app-displays-notes-from-cache](20261022-01-web-app-displays-notes-from-cache/) | web app displays notes from cache | complete | 2026-10-22 |
-| [20261022-02-electron-app-syncs-notes-to-cache](20261022-02-electron-app-syncs-notes-to-cache/) | electron app syncs notes to cache | complete | 2026-10-22 |
-| [20261022-03-design-exploration-for-background](20261022-03-design-exploration-for-background/) | design exploration for background | complete | 2026-10-22 |
-| [20261023-01-electron-app-ux-improvements](20261023-01-electron-app-ux-improvements/) | electron app UX improvements | complete | 2026-10-23 |
-| [20261023-02-refactor-for-components-and-tests](20261023-02-refactor-for-components-and-tests/) | refactor for components and tests | complete | 2026-10-23 |
-| [20261023-03-brand-aligned-loader-and-error-states](20261023-03-brand-aligned-loader-and-error-states/) | brand-aligned loader and error states | complete | 2026-10-23 |
-| [20261023-04-fix-sync-app-empty-state-sizing](20261023-04-fix-sync-app-empty-state-sizing/) | fix: sync app empty state sizing | complete | 2026-10-23 |
-| [20261023-05-support-syncing-notes-from-bear](20261023-05-support-syncing-notes-from-bear/) | support syncing notes from Bear | complete | 2026-10-23 |
-| [20261024-01-fix-tooltips-flowing-off-screen](20261024-01-fix-tooltips-flowing-off-screen/) | fix: tooltips flowing off screen | complete | 2026-10-24 |
-| [20261026-01-docker-deployment](20261026-01-docker-deployment/) | docker deployment | complete | 2026-10-26 |
-| [20261027-01-automatic-note-cache-sets](20261027-01-automatic-note-cache-sets/) | automatic note cache sets | complete | 2026-10-27 |
-| [20261027-02-refactor-extract-syncing-logic-into-package](20261027-02-refactor-extract-syncing-logic-into-package/) | refactor: extract syncing logic into package | complete | 2026-10-27 |
-| [20261027-03-syncing-ui-improvements](20261027-03-syncing-ui-improvements/) | syncing UI improvements | complete | 2026-10-27 |
-| [20261028-01-web-dashboard](20261028-01-web-dashboard/) | web dashboard | complete | 2026-10-28 |
-| [20261028-01-colorize-grid-blocks-by-tags](20261028-01-colorize-grid-blocks-by-tags/) | colorize grid blocks by tags | complete | 2026-10-28 |
+| [20261015-01-repo-bootstrap](20261015-01-repo-bootstrap/) | repo bootstrap | complete | 2026.10.15 |
+| [20261015-02-design-system-and-viewer-application](20261015-02-design-system-and-viewer-application/) | design system and viewer application | complete | 2026.10.15 |
+| [20261015-03-note-visualization-grid](20261015-03-note-visualization-grid/) | note visualization grid | complete | 2026.10.15 |
+| [20261015-04-app-logo-and-icon](20261015-04-app-logo-and-icon/) | app logo and icon | complete | 2026.10.15 |
+| [20261015-05-notes-grid-into-web-app](20261015-05-notes-grid-into-web-app/) | notes grid into web app | complete | 2026.10.15 |
+| [20261015-06-bugfix-focus-border-in-notes-grid](20261015-06-bugfix-focus-border-in-notes-grid/) | bugfix: focus border in notes grid | complete | 2026.10.15 |
+| [20261016-01-bootstrap-electron-app](20261016-01-bootstrap-electron-app/) | bootstrap electron app | complete | 2026.10.16 |
+| [20261016-02-note-cache-service](20261016-02-note-cache-service/) | note cache service | complete | 2026.10.16 |
+| [20261016-03-generated-api-client](20261016-03-generated-api-client/) | generated api client | complete | 2026.10.16 |
+| [20261016-04-rebrand-to-md-viz](20261016-04-rebrand-to-md-viz/) | rebrand to md-viz | complete | 2026.10.16 |
+| [20261022-01-web-app-displays-notes-from-cache](20261022-01-web-app-displays-notes-from-cache/) | web app displays notes from cache | complete | 2026.10.22 |
+| [20261022-02-electron-app-syncs-notes-to-cache](20261022-02-electron-app-syncs-notes-to-cache/) | electron app syncs notes to cache | complete | 2026.10.22 |
+| [20261022-03-design-exploration-for-background](20261022-03-design-exploration-for-background/) | design exploration for background | complete | 2026.10.22 |
+| [20261023-01-electron-app-ux-improvements](20261023-01-electron-app-ux-improvements/) | electron app UX improvements | complete | 2026.10.23 |
+| [20261023-02-refactor-for-components-and-tests](20261023-02-refactor-for-components-and-tests/) | refactor for components and tests | complete | 2026.10.23 |
+| [20261023-03-brand-aligned-loader-and-error-states](20261023-03-brand-aligned-loader-and-error-states/) | brand-aligned loader and error states | complete | 2026.10.23 |
+| [20261023-04-fix-sync-app-empty-state-sizing](20261023-04-fix-sync-app-empty-state-sizing/) | fix: sync app empty state sizing | complete | 2026.10.23 |
+| [20261023-05-support-syncing-notes-from-bear](20261023-05-support-syncing-notes-from-bear/) | support syncing notes from Bear | complete | 2026.10.23 |
+| [20261024-01-fix-tooltips-flowing-off-screen](20261024-01-fix-tooltips-flowing-off-screen/) | fix: tooltips flowing off screen | complete | 2026.10.24 |
+| [20261026-01-docker-deployment](20261026-01-docker-deployment/) | docker deployment | complete | 2026.10.26 |
+| [20261027-01-automatic-note-cache-sets](20261027-01-automatic-note-cache-sets/) | automatic note cache sets | complete | 2026.10.27 |
+| [20261027-02-refactor-extract-syncing-logic-into-package](20261027-02-refactor-extract-syncing-logic-into-package/) | refactor: extract syncing logic into package | complete | 2026.10.27 |
+| [20261027-03-syncing-ui-improvements](20261027-03-syncing-ui-improvements/) | syncing UI improvements | complete | 2026.10.27 |
+| [20261028-01-web-dashboard](20261028-01-web-dashboard/) | web dashboard | complete | 2026.10.28 |
+| [20261028-01-colorize-grid-blocks-by-tags](20261028-01-colorize-grid-blocks-by-tags/) | colorize grid blocks by tags | complete | 2026.10.28 |

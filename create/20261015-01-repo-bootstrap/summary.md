@@ -1,8 +1,8 @@
 # Summary: repo bootstrap
 
 - **Slug:** 20261015-01-repo-bootstrap
-- **Started:** 2026-10-15
-- **Completed:** 2026-10-15
+- **Started:** 2026.10.15
+- **Completed:** 2026.10.15
 
 ## Overview
 

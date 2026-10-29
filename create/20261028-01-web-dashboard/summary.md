@@ -1,8 +1,8 @@
 # Summary: web dashboard
 
 - **Slug:** 20261028-01-web-dashboard
-- **Started:** 2026-10-28
-- **Completed:** 2026-10-28
+- **Started:** 2026.10.28
+- **Completed:** 2026.10.28
 
 ## Overview
 

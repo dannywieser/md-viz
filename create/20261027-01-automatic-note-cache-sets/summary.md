@@ -1,8 +1,8 @@
 # Summary: automatic note cache sets
 
 - **Slug:** 20261027-01-automatic-note-cache-sets
-- **Started:** 2026-10-27 07:33:35 MDT
-- **Completed:** 2026-10-27 07:56:20 MDT (PR: https://github.com/dannywieser/md-viz/pull/11)
+- **Started:** 2026.10.27 07:33:35 MDT
+- **Completed:** 2026.10.27 07:56:20 MDT (PR: https://github.com/dannywieser/md-viz/pull/11)
 
 ## Overview
 

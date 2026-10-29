@@ -1,8 +1,8 @@
 # Summary: colorize grid blocks by tags
 
 - **Slug:** 20261028-01-colorize-grid-blocks-by-tags
-- **Started:** 2026-10-28 07:20
-- **Completed:** 2026-10-29
+- **Started:** 2026.10.28 07:20
+- **Completed:** 2026.10.29
 
 ## Overview
 
