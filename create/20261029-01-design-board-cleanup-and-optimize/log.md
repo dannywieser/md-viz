@@ -76,3 +76,9 @@ The narrow theme picker cuts of several of the theme names. I'm wondering if we 
 
 ### [2026-10-29 07:10:06] Claude
 Added a `compact` prop to ThemeSelect (packages/ui) and a new ThemeSwatch component (3x3 pixel square: eight hues around the background); closed trigger shows only the swatch (title has the name), the open list shows swatch + name. Replaced the "narrow" demo on the theme-select page with "compact". Tests added; CLAUDE.md themes line updated. Note: this touches packages/ui, which the plan had out of scope, at the user's request.
+
+### [2026-10-29 07:11:33] User
+several of the 3x3 grids have ended up with what looks like a black in the center?
+
+### [2026-10-29 07:11:33] Claude
+Cause: the center was the theme's page background, near-black on the dark themes. It is now the theme's neutral grey (ui.muted, the untagged-note colour). Updated ThemeSwatch, its test, CLAUDE.md and the theme-select page text.
