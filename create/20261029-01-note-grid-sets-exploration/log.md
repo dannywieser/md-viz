@@ -79,3 +79,6 @@ Step 5 done: grouped-grid.tsx and grouping-section.tsx with tests. Groups use th
 
 ### [2026.10.29 08:14:31] Claude
 Step 6 done: mode-switch, striped-set-grid, colour-section with tests (colour by set / by tag, up to three stripes, legend follows the mode).
+
+### [2026.10.29 08:15:00] Claude
+Step 7 done: labels-section.tsx with test (chip inside, tab, threshold, legend beside; small/large grid size switch).
