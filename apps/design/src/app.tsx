@@ -19,7 +19,7 @@ export function App() {
   const { theme, themes, setTheme } = useTheme()
 
   return (
-    <div className="min-h-screen">
+    <div className="flow-root min-h-screen">
       <Nav themeId={theme.id} themes={themes} onThemeChange={setTheme} />
       <Routes>
         <Route element={<PageLayout />}>

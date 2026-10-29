@@ -94,3 +94,9 @@ the select is now a bit too narrow and causing some theme names to wrap. I don't
 
 ### [2026-10-29 07:14:28] Claude
 The open list was wrapping long names (catppuccin mocha/latte) at the trigger's width. Theme items are now whitespace-nowrap, so the popup grows to the longest name. Checked in the browser.
+
+### [2026-10-29 07:15:44] User
+something is up on the components page. There is a scrollbar when one is not needed
+
+### [2026-10-29 07:15:44] Claude
+Cause: the floating header's mt-4 collapsed through the min-h-screen wrapper in app.tsx, pushing the page 16px past the viewport. The wrapper is now flow-root, so scroll height equals the viewport on short pages (checked in the browser).
