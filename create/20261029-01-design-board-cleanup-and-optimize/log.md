@@ -67,3 +67,6 @@ Removed the "cards" entry from apps/design/src/sections/guidelines.tsx and the "
 
 ### [2026-10-29 07:05:28] Claude
 Implemented plan steps 1-6 together (the app needs the router, pages and component registry at once to compile): react-router 8.5.1 pinned; nav.tsx (top nav + ThemeSelect); app.tsx routes; page-layout, not-found, colors page; explorations on router (exploration-route.tsx); component-pages/ (registry, layout with side nav, route, 11 pages, demo-box, demo-group, page-heading); plain page background in index.css; removed route.ts, theme.ts, board.tsx, sections/components.tsx; note-grid-demo became component-pages/note-grid-page.tsx; tests for every new file. Deviation: /components redirect is an inline Navigate in app.tsx (no components-redirect.tsx). Verified in the browser on :5174.
+
+### [2026-10-29 07:06:20] Claude
+Steps 7-8 done: CLAUDE.md updated (apps/design entry, themes line, source layout); pnpm format, lint, typecheck and coverage all pass (design 99.39% lines, all workspaces >= 95%). Implementation complete; told the user to type /create-complete.
