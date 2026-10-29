@@ -100,3 +100,15 @@ something is up on the components page. There is a scrollbar when one is not nee
 
 ### [2026-10-29 07:15:44] Claude
 Cause: the floating header's mt-4 collapsed through the min-h-screen wrapper in app.tsx, pushing the page 16px past the viewport. The wrapper is now flow-root, so scroll height equals the viewport on short pages (checked in the browser).
+
+### [2026-10-29 07:17:52] User
+where is the compact empty state currently used?
+
+### [2026-10-29 07:17:52] Claude
+Answered: Electron status grids via NoteGrid compactEmpty (status-grid.tsx); design viewer demos and explorations only; the web dashboard uses the full empty state.
+
+### [2026-10-29 07:17:52] User
+ok, so the weirdness I'm asking about it why it's left aligned inside a wide box. A better representation is probably centered h/v in a smaller centered box
+
+### [2026-10-29 07:17:52] Claude
+The compact demo on the empty-state page is now a 208x160 card-style box centered in the dotted box, with the ghost centered in it (like an empty note grid in the Electron app). Checked in the browser.

@@ -8,7 +8,7 @@ export function EmptyStatePage() {
     <>
       <PageHeading
         title="empty state"
-        description="nothing to show yet: the palette ghost and a line of text. the compact one is a small muted ghost with no text, for blocks too small for the full state."
+        description="nothing to show yet: the palette ghost and a line of text. the compact one is a small muted ghost with no text, for blocks too small for the full state, centered in the block it fills like an empty note grid."
       />
       <DemoGroup title="default text">
         <DemoBox>
@@ -25,10 +25,10 @@ export function EmptyStatePage() {
         </DemoBox>
       </DemoGroup>
       <DemoGroup title="compact">
-        <DemoBox>
-          <StateBlock>
+        <DemoBox className="flex justify-center">
+          <div className="flex h-40 w-52 items-center justify-center bg-card shadow-hard">
             <EmptyState compact />
-          </StateBlock>
+          </div>
         </DemoBox>
       </DemoGroup>
     </>
