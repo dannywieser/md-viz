@@ -1,8 +1,8 @@
 # Summary: rebrand to md-viz
 
 - **Slug:** 20261016-04-rebrand-to-md-viz
-- **Started:** 2026-10-16
-- **Completed:** 2026-10-16
+- **Started:** 2026.10.16
+- **Completed:** 2026.10.16
 
 ## Overview
 

@@ -1,8 +1,8 @@
 # Summary: support syncing notes from Bear
 
 - **Slug:** 20261023-05-support-syncing-notes-from-bear
-- **Started:** 2026-10-23 19:01
-- **Completed:** 2026-10-23 19:59
+- **Started:** 2026.10.23 19:01
+- **Completed:** 2026.10.23 19:59
 - **PR:** [dannywieser/md-viz#7](https://github.com/dannywieser/md-viz/pull/7)
 
 ## Overview

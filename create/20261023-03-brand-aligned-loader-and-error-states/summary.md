@@ -1,7 +1,7 @@
 # brand-aligned loader and error states
 
 - **Slug:** 20261023-03-brand-aligned-loader-and-error-states
-- **Started:** 2026-10-23 15:48:07 · **Completed:** 2026-10-23 16:13:58
+- **Started:** 2026.10.23 15:48:07 · **Completed:** 2026.10.23 16:13:58
 
 ## Overview
 

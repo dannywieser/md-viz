@@ -1,8 +1,8 @@
 # design system and viewer application
 
 - **Slug:** 20261015-02-design-system-and-viewer-application
-- **Started:** 2026-10-15 07:35
-- **Completed:** 2026-10-15 08:25
+- **Started:** 2026.10.15 07:35
+- **Completed:** 2026.10.15 08:25
 
 ## Overview
 

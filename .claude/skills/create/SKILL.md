@@ -42,13 +42,13 @@ No commits happen during the first phase, only the log grows.
 
 The full conversation is preserved in `create/<slug>/log.md`. The active slug is in `create/.current`.
 
-After **every** turn of the session, append to `log.md` (use `date '+%Y-%m-%d %H:%M:%S'` for the timestamp):
+After **every** turn of the session, append to `log.md` (use `date '+%Y.%m.%d %H:%M:%S'` for the timestamp):
 
 ```markdown
-### [2026-10-15 14:03:22] User
+### [2026.10.15 14:03:22] User
 <the user's message, verbatim>
 
-### [2026-10-15 14:03:41] Claude
+### [2026.10.15 14:03:41] Claude
 <your reply, verbatim or faithfully condensed if very long>
 ```
 

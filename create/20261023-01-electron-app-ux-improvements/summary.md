@@ -1,8 +1,8 @@
 # electron app UX improvements
 
 - **Slug:** 20261023-01-electron-app-ux-improvements
-- **Started:** 2026-10-23
-- **Completed:** 2026-10-23
+- **Started:** 2026.10.23
+- **Completed:** 2026.10.23
 - **PR:** https://github.com/dannywieser/md-viz/pull/1 (branch `electron-ux-improvements`)
 
 ## Overview

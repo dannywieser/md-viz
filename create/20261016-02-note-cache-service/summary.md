@@ -1,8 +1,8 @@
 # Summary: note cache service
 
 - **Slug:** 20261016-02-note-cache-service
-- **Started:** 2026-10-16
-- **Completed:** 2026-10-16
+- **Started:** 2026.10.16
+- **Completed:** 2026.10.16
 
 ## Overview
 

@@ -15,14 +15,14 @@ Finishes the active create session.
 3. Append this `/create-complete` invocation to `log.md` (format in the `create` skill, including keeping the numbering of any questions or options).
 4. **Coverage check.** Run `pnpm coverage` fresh (never reuse an earlier run) and read the per-workspace figures (statements, branches, functions, lines). Double-check them: confirm every workspace ran (apps/cache, apps/design, apps/electron, apps/web, packages/api-client, packages/ui), that the command exited 0, and that the 95% thresholds in the vitest configs are still in place. If any figure is under 95%, or a threshold was lowered or an exclusion added to dodge it, fix it (add tests) and re-run, or tell the user plainly why not and stop for their decision. Keep the table for `summary.md` and the final message. Sessions that changed no code still run it and report the numbers.
 5. Write `create/<slug>/summary.md`, clear and concise. For a **fix** session use the fix list below instead; otherwise it has:
-   - **Title and slug**, start and completion dates
+   - **Title and slug**, start and completion date and time, both as `YYYY.MM.DD HH:MM` (e.g. `- **Started:** 2026.10.27 08:04`, `- **Completed:** 2026.10.27 09:30`); take the start from the log header and run `date '+%Y.%m.%d %H:%M'` for the completion
    - **Overview** - what was created and why, in a short paragraph
    - **What was done** - files and structures created or changed (grouped, not exhaustive prose)
    - **Highlights** - key decisions, trade-offs, notable discussion points from the session
    - **Coverage** - the table of per-workspace statements / branches / functions / lines from step 4, and the 95% threshold
    - **Deviations from the plan** - if any
    - **Not done / follow-ups** - anything left open
-     **Fix summary** (a fix session): title and slug, start and completion dates, then
+     **Fix summary** (a fix session): title and slug, start and completion date and time (same `YYYY.MM.DD HH:MM` format), then
    - **Symptom** - what was wrong, in a short paragraph
    - **Root cause** - what actually caused it (as confirmed, not as first guessed)
    - **Fix** - what changed, grouped by file

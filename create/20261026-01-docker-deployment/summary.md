@@ -1,8 +1,8 @@
 # Summary: docker deployment
 
 - **Slug:** 20261026-01-docker-deployment
-- **Started:** 2026-10-26
-- **Completed:** 2026-10-26
+- **Started:** 2026.10.26
+- **Completed:** 2026.10.26
 
 ## Overview
 

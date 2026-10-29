@@ -1,8 +1,8 @@
 # syncing UI improvements
 
 - **Slug:** 20261027-03-syncing-ui-improvements
-- **Started:** 2026-10-27
-- **Completed:** 2026-10-27
+- **Started:** 2026.10.27
+- **Completed:** 2026.10.27
 
 ## Overview
 

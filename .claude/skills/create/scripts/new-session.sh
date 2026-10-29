@@ -62,7 +62,7 @@ cat > "$base/$slug/log.md" <<EOF
 
 - **Slug:** $slug
 ${kind_line:+$kind_line
-}- **Started:** $(date '+%Y-%m-%d %H:%M:%S %Z')
+}- **Started:** $(date '+%Y.%m.%d %H:%M:%S %Z')
 
 ---
 EOF
@@ -72,7 +72,7 @@ readme="$base/README.md"
 if [ -f "$readme" ]; then
   index_title="$title"
   [ "$kind" = fix ] && index_title="fix: $title"
-  printf '| [%s](%s/) | %s | review | %s |\n' "$slug" "$slug" "$index_title" "$(date +%Y-%m-%d)" >> "$readme"
+  printf '| [%s](%s/) | %s | review | %s |\n' "$slug" "$slug" "$index_title" "$(date +%Y.%m.%d)" >> "$readme"
 fi
 
 printf '%s\n' "$slug"

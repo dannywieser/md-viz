@@ -1,8 +1,8 @@
 # notes grid into web app
 
 - **Slug:** 20261015-05-notes-grid-into-web-app
-- **Started:** 2026-10-15 19:39
-- **Completed:** 2026-10-15
+- **Started:** 2026.10.15 19:39
+- **Completed:** 2026.10.15
 
 ## Overview
 

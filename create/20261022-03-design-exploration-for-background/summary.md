@@ -1,8 +1,8 @@
 # Design exploration for background
 
 - **Slug:** 20261022-03-design-exploration-for-background
-- **Started:** 2026-10-22 19:11
-- **Completed:** 2026-10-22 19:37:00
+- **Started:** 2026.10.22 19:11
+- **Completed:** 2026.10.22 19:37:00
 
 ## Overview
 The grid-paper page background competed with the note grid, which is now the focus of the app. We explored quieter backgrounds on a new `/background` route of the design app, chose dots that scale with the notes, applied the choice to the design system and made the web app's note grid sit on the dot lattice. Card corner marks were dropped everywhere.
