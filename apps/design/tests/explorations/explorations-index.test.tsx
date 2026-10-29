@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import { ExplorationsIndex } from '../../src/explorations/explorations-index'
 
 vi.mock('../../src/explorations/registry', () => ({
@@ -10,7 +11,11 @@ vi.mock('../../src/explorations/registry', () => ({
 
 describe('ExplorationsIndex', () => {
   it('links to every exploration with its title and description', () => {
-    render(<ExplorationsIndex />)
+    render(
+      <MemoryRouter>
+        <ExplorationsIndex />
+      </MemoryRouter>,
+    )
 
     const first = screen.getByRole('link', { name: /first/ })
     expect(first).toHaveAttribute('href', '/explorations/one')
@@ -22,7 +27,11 @@ describe('ExplorationsIndex', () => {
   })
 
   it('has a heading', () => {
-    render(<ExplorationsIndex />)
+    render(
+      <MemoryRouter>
+        <ExplorationsIndex />
+      </MemoryRouter>,
+    )
 
     expect(screen.getByRole('heading', { level: 1, name: 'explorations' })).toBeInTheDocument()
   })

@@ -12,10 +12,13 @@ beforeAll(() => {
 })
 
 describe('ThemeSelect', () => {
-  it('shows the current theme', () => {
+  it('shows the current theme as a swatch, named by its title', () => {
     render(<ThemeSelect value="gotham" themes={themes} onChange={vi.fn()} />)
 
-    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveTextContent('gotham')
+    const trigger = screen.getByRole('combobox', { name: 'theme' })
+    expect(trigger).toHaveTextContent('')
+    expect(trigger).toHaveAttribute('title', 'gotham')
+    expect(trigger.querySelector('[data-slot="theme-swatch"]')).toBeInTheDocument()
   })
 
   it('offers every theme and reports the one picked', async () => {

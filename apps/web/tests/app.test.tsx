@@ -38,7 +38,7 @@ describe('App', () => {
 
     expect(
       within(screen.getByRole('banner')).getByRole('combobox', { name: 'theme' }),
-    ).toHaveTextContent('solarized')
+    ).toHaveAttribute('title', 'solarized')
     expect(document.documentElement.dataset.theme).toBe('solarized')
   })
 
@@ -49,6 +49,6 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('option', { name: 'gotham' }))
 
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('gotham'))
-    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveTextContent('gotham')
+    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveAttribute('title', 'gotham')
   })
 })

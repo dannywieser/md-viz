@@ -13,6 +13,21 @@ function Host({ cell, square = true }: { cell: number | null; square?: boolean }
   )
 }
 
+function LocalHost({ cell }: { cell: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const target = useRef<HTMLDivElement>(null)
+  useDotLattice(ref, cell, target)
+  return (
+    <div ref={target} data-testid="target">
+      <div ref={ref}>
+        <svg>
+          <rect className="note-square" />
+        </svg>
+      </div>
+    </div>
+  )
+}
+
 describe('useDotLattice', () => {
   const root = document.documentElement
 
@@ -71,5 +86,26 @@ describe('useDotLattice', () => {
     expect(disconnect).toHaveBeenCalledOnce()
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
+  })
+
+  it('sets the lattice on the target instead of the page, from its padding edge', () => {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      return this.getAttribute('data-testid') === 'target'
+        ? new DOMRect(100, 50, 400, 300)
+        : new DOMRect(130, 80, 8, 8)
+    })
+    const { getByTestId, unmount } = render(<LocalHost cell={8} />)
+    const target = getByTestId('target')
+
+    expect(target.style.getPropertyValue('--grid-size')).toBe(`${latticeSpacing(8)}px`)
+    expect(target.style.getPropertyValue('--grid-origin-x')).toBe('30px')
+    expect(target.style.getPropertyValue('--grid-origin-y')).toBe('30px')
+    expect(root.style.getPropertyValue('--grid-size')).toBe('')
+
+    unmount()
+    expect(target.style.getPropertyValue('--grid-size')).toBe('')
+    vi.restoreAllMocks()
   })
 })

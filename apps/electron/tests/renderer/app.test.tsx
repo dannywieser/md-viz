@@ -77,13 +77,13 @@ describe('App', () => {
   it('has a theme switcher in the header, on solarized, that applies the theme picked', async () => {
     render(<App />)
     const picker = within(screen.getByRole('banner')).getByRole('combobox', { name: 'theme' })
-    expect(picker).toHaveTextContent('solarized')
+    expect(picker).toHaveAttribute('title', 'solarized')
 
     await userEvent.click(picker)
     await userEvent.click(screen.getByRole('option', { name: 'dracula' }))
 
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dracula'))
-    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveTextContent('dracula')
+    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveAttribute('title', 'dracula')
   })
 
   it('clears the last sync and scans the picked folder', async () => {

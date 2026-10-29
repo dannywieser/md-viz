@@ -1,15 +1,16 @@
+import { Link } from 'react-router'
 import { ErrorState, StateBlock } from '@md-viz/ui'
 
 export function ExplorationNotFound() {
   return (
-    <main className="mx-auto max-w-5xl p-8">
+    <main className="p-4">
       <StateBlock>
         <ErrorState
           detail="no such exploration"
           action={
-            <a href="/explorations" className="text-sm underline">
+            <Link to="/explorations" className="text-sm underline">
               all explorations
-            </a>
+            </Link>
           }
         />
       </StateBlock>

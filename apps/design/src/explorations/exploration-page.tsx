@@ -7,7 +7,7 @@ export function ExplorationPage({ exploration }: { exploration: Exploration }) {
   return (
     <Suspense
       fallback={
-        <div className="p-8">
+        <div className="p-4">
           <StateBlock>
             <Loader />
           </StateBlock>

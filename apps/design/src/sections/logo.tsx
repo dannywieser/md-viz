@@ -19,7 +19,7 @@ export function LogoSection() {
           <div className="bg-dots bg-background p-4">
             <Wordmark cell={3} />
           </div>
-          <div className="dark bg-card p-4">
+          <div className="bg-muted p-4">
             <Wordmark cell={3} />
           </div>
         </div>
