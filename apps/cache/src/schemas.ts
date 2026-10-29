@@ -75,3 +75,23 @@ export const SetSchema = z
     noteIds: z.array(IdSchema),
   })
   .meta({ id: 'Set' })
+
+export const TagColorSchema = z
+  .object({
+    tag: z
+      .string()
+      .min(1)
+      .meta({ description: 'a note tag, as written in the notes', example: 'work/q4' }),
+    color: z
+      .number()
+      .int()
+      .nonnegative()
+      .meta({ description: 'index into the note palette', example: 3 }),
+  })
+  .meta({ id: 'TagColor' })
+
+export const TagColorsSchema = z.object({ tags: z.array(TagColorSchema) }).meta({ id: 'TagColors' })
+
+export const AddTagColorsResultSchema = z
+  .object({ added: z.number().int().nonnegative() })
+  .meta({ id: 'AddTagColorsResult' })

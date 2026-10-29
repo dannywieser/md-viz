@@ -42,31 +42,47 @@
   --border: color-mix(in srgb, var(--sol-base1) 40%, transparent);
   --input: color-mix(in srgb, var(--sol-base1) 40%, transparent);
   --ring: var(--sol-blue);
+  /* the keyboard focus ring and border of buttons and inputs. */
+  --focus: #000000;
+  /* the colour of the hard shadow of cards and grid blocks. */
+  --shadow-color: #000000;
   --radius: 0;
 
   --grid-size: 16px;
 
-  --note-mute: var(--sol-base1);
-  --note-0: color-mix(in srgb, var(--sol-red) 55%, var(--note-mute));
-  --note-1: color-mix(in srgb, var(--sol-orange) 55%, var(--note-mute));
-  --note-2: color-mix(in srgb, var(--sol-yellow) 55%, var(--note-mute));
-  --note-3: color-mix(in srgb, var(--sol-green) 55%, var(--note-mute));
-  --note-4: color-mix(
-    in srgb,
-    color-mix(in srgb, var(--sol-green) 50%, var(--sol-cyan)) 55%,
-    var(--note-mute)
-  );
-  --note-5: color-mix(in srgb, var(--sol-cyan) 55%, var(--note-mute));
-  --note-6: color-mix(in srgb, var(--sol-blue) 55%, var(--note-mute));
-  --note-7: color-mix(in srgb, var(--sol-violet) 55%, var(--note-mute));
-  --note-8: color-mix(in srgb, var(--sol-magenta) 55%, var(--note-mute));
-  --note-9: var(--sol-base00);
+  /* the note colours (solarized light; a theme sets its own): hues in three tiers, then the neutral grey. */
+  --note-0: #dc322f;
+  --note-1: #2aa198;
+  --note-2: #b58900;
+  --note-3: #6c71c4;
+  --note-4: #859900;
+  --note-5: #d33682;
+  --note-6: #268bd2;
+  --note-7: #cb4b16;
+  --note-8: color-mix(in srgb, #6c71c4 55%, #657b83);
+  --note-9: color-mix(in srgb, #859900 55%, #657b83);
+  --note-10: color-mix(in srgb, #d33682 55%, #657b83);
+  --note-11: color-mix(in srgb, #268bd2 55%, #657b83);
+  --note-12: color-mix(in srgb, #cb4b16 55%, #657b83);
+  --note-13: color-mix(in srgb, #dc322f 55%, #657b83);
+  --note-14: color-mix(in srgb, #2aa198 55%, #657b83);
+  --note-15: color-mix(in srgb, #b58900 55%, #657b83);
+  --note-16: color-mix(in srgb, #268bd2 65%, black);
+  --note-17: color-mix(in srgb, #cb4b16 65%, black);
+  --note-18: color-mix(in srgb, #dc322f 65%, black);
+  --note-19: color-mix(in srgb, #2aa198 65%, black);
+  --note-20: color-mix(in srgb, #b58900 65%, black);
+  --note-21: color-mix(in srgb, #6c71c4 65%, black);
+  --note-22: color-mix(in srgb, #859900 65%, black);
+  --note-23: color-mix(in srgb, #d33682 65%, black);
+  --note-24: #657b83;
+  /* the lines between note squares: opaque so they read on any fill. */
+  --note-stroke: color-mix(in srgb, var(--sol-base1) 60%, var(--card));
 
   --grid-dot: color-mix(in srgb, var(--sol-base1) 55%, transparent);
 }
 
 .dark {
-  --note-mute: var(--sol-base01);
   --background: var(--sol-base03);
   --foreground: var(--sol-base0);
   --card: var(--sol-base02);
@@ -85,12 +101,13 @@
   --border: color-mix(in srgb, var(--sol-base01) 60%, transparent);
   --input: color-mix(in srgb, var(--sol-base01) 60%, transparent);
   --ring: var(--sol-blue);
+  --focus: var(--sol-base3);
 
   --grid-dot: color-mix(in srgb, var(--sol-base01) 55%, transparent);
 }
 
 @theme inline {
-  --shadow-hard: 4px 4px 0 0 #000;
+  --shadow-hard: 4px 4px 0 0 var(--shadow-color);
 
   --font-sans: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -130,6 +147,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-focus: var(--focus);
   --radius-sm: var(--radius);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);
@@ -156,51 +174,127 @@
 /* note squares: --c is the note colour; lines between squares are opaque so they read on any fill. */
 .note-square {
   fill: var(--c);
-  stroke: color-mix(in srgb, var(--sol-base1) 60%, var(--card));
+  stroke: var(--note-stroke);
   stroke-width: 1;
 }
-.note-square[data-color='0'] {
+.note-square[data-color='0'],
+.note-stripe[data-color='0'] {
   --c: var(--note-0);
 }
-.note-square[data-color='1'] {
+.note-square[data-color='1'],
+.note-stripe[data-color='1'] {
   --c: var(--note-1);
 }
-.note-square[data-color='2'] {
+.note-square[data-color='2'],
+.note-stripe[data-color='2'] {
   --c: var(--note-2);
 }
-.note-square[data-color='3'] {
+.note-square[data-color='3'],
+.note-stripe[data-color='3'] {
   --c: var(--note-3);
 }
-.note-square[data-color='4'] {
+.note-square[data-color='4'],
+.note-stripe[data-color='4'] {
   --c: var(--note-4);
 }
-.note-square[data-color='5'] {
+.note-square[data-color='5'],
+.note-stripe[data-color='5'] {
   --c: var(--note-5);
 }
-.note-square[data-color='6'] {
+.note-square[data-color='6'],
+.note-stripe[data-color='6'] {
   --c: var(--note-6);
 }
-.note-square[data-color='7'] {
+.note-square[data-color='7'],
+.note-stripe[data-color='7'] {
   --c: var(--note-7);
 }
-.note-square[data-color='8'] {
+.note-square[data-color='8'],
+.note-stripe[data-color='8'] {
   --c: var(--note-8);
 }
-.note-square[data-color='9'] {
+.note-square[data-color='9'],
+.note-stripe[data-color='9'] {
   --c: var(--note-9);
+}
+.note-square[data-color='10'],
+.note-stripe[data-color='10'] {
+  --c: var(--note-10);
+}
+.note-square[data-color='11'],
+.note-stripe[data-color='11'] {
+  --c: var(--note-11);
+}
+.note-square[data-color='12'],
+.note-stripe[data-color='12'] {
+  --c: var(--note-12);
+}
+.note-square[data-color='13'],
+.note-stripe[data-color='13'] {
+  --c: var(--note-13);
+}
+.note-square[data-color='14'],
+.note-stripe[data-color='14'] {
+  --c: var(--note-14);
+}
+.note-square[data-color='15'],
+.note-stripe[data-color='15'] {
+  --c: var(--note-15);
+}
+.note-square[data-color='16'],
+.note-stripe[data-color='16'] {
+  --c: var(--note-16);
+}
+.note-square[data-color='17'],
+.note-stripe[data-color='17'] {
+  --c: var(--note-17);
+}
+.note-square[data-color='18'],
+.note-stripe[data-color='18'] {
+  --c: var(--note-18);
+}
+.note-square[data-color='19'],
+.note-stripe[data-color='19'] {
+  --c: var(--note-19);
+}
+.note-square[data-color='20'],
+.note-stripe[data-color='20'] {
+  --c: var(--note-20);
+}
+.note-square[data-color='21'],
+.note-stripe[data-color='21'] {
+  --c: var(--note-21);
+}
+.note-square[data-color='22'],
+.note-stripe[data-color='22'] {
+  --c: var(--note-22);
+}
+.note-square[data-color='23'],
+.note-stripe[data-color='23'] {
+  --c: var(--note-23);
+}
+.note-square[data-color='24'],
+.note-stripe[data-color='24'] {
+  --c: var(--note-24);
+}
+
+/* the stripes of a square with several tags: no lines of their own, they sit inside the square's. */
+.note-stripe {
+  fill: var(--c);
+  stroke: none;
 }
 
 /* empty cells that complete the last row: card colour (white in light mode) with the same gridlines. */
 .note-placeholder {
   fill: var(--card);
-  stroke: color-mix(in srgb, var(--sol-base1) 60%, var(--card));
+  stroke: var(--note-stroke);
   stroke-width: 1;
 }
 
-/* outline on the hovered cell; thicker than the gridlines and centred on the cell edge, so on an edge cell it reaches past the grid. */
+/* outline on the hovered cell, in the focus colour so it shows on every theme; thicker than the gridlines and centred on the cell edge, so on an edge cell it reaches past the grid. */
 .note-hover {
   fill: none;
-  stroke: #000;
+  stroke: var(--focus);
   stroke-width: 4;
   pointer-events: none;
 }

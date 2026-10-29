@@ -23,6 +23,12 @@ export interface SetDetail {
   noteIds: string[]
 }
 
+export interface TagColor {
+  tag: string
+  /** index into the note palette; the cache does not interpret it. */
+  color: number
+}
+
 export interface Store {
   upsertNotes: (notes: NoteInput[]) => void
   deleteNote: (id: string) => void
@@ -32,6 +38,8 @@ export interface Store {
   listSets: () => SetSummary[]
   getSet: (id: string) => SetDetail | null
   deleteSet: (id: string) => void
+  addTagColors: (rows: TagColor[]) => number
+  listTagColors: () => TagColor[]
   close: () => void
 }
 
@@ -67,6 +75,13 @@ export function createStore(path: string): Store {
     ) WITHOUT ROWID
   `)
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tag_colors (
+      tag TEXT PRIMARY KEY,
+      color INTEGER NOT NULL
+    ) WITHOUT ROWID
+  `)
+
   const upsert = db.prepare(
     `INSERT INTO note_fields (note_id, field, value) VALUES (?, ?, ?)
      ON CONFLICT (note_id, field) DO UPDATE SET value = excluded.value`,
@@ -94,6 +109,9 @@ export function createStore(path: string): Store {
     'SELECT note_id FROM set_notes WHERE set_id = ? ORDER BY note_id',
   )
   const removeSet = db.prepare('DELETE FROM sets WHERE set_id = ?')
+
+  const addTagColor = db.prepare('INSERT OR IGNORE INTO tag_colors (tag, color) VALUES (?, ?)')
+  const selectTagColors = db.prepare('SELECT tag, color FROM tag_colors ORDER BY tag')
 
   return {
     upsertNotes(notes) {
@@ -183,6 +201,26 @@ export function createStore(path: string): Store {
         db.exec('ROLLBACK')
         throw error
       }
+    },
+
+    addTagColors(rows) {
+      let added = 0
+      db.exec('BEGIN')
+      try {
+        for (const { tag, color } of rows) added += Number(addTagColor.run(tag, color).changes)
+        db.exec('COMMIT')
+      } catch (error) {
+        db.exec('ROLLBACK')
+        throw error
+      }
+      return added
+    },
+
+    listTagColors() {
+      return (selectTagColors.all() as unknown as TagColor[]).map(({ tag, color }) => ({
+        tag,
+        color: Number(color),
+      }))
     },
 
     close() {

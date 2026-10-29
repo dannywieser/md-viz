@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { loaderFills, type LoaderFill } from '../lib/loader-fills'
-import { NOTE_COLORS } from '../lib/note-colors'
+import { ACCENT_COLORS } from '../lib/note-colors'
 
 const STEP = 0.06
 const HOLD = 0.8
@@ -58,7 +58,7 @@ function Loader({ label = 'loading', fill, cols = 8, rows = 6, cell = 8 }: Loade
           <rect
             key={i}
             className="note-square"
-            data-color={Math.floor(rank / PIECE) % NOTE_COLORS}
+            data-color={Math.floor(rank / PIECE) % ACCENT_COLORS}
             vectorEffect="non-scaling-stroke"
             x={(i % cols) + 1}
             y={landing}

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Api, LastSelection, LastSync, SyncTarget } from '../../src/shared/ipc'
 import { App } from '../../src/renderer/src/app'
@@ -15,7 +15,8 @@ const sync = vi.fn()
 
 const lastSync: LastSync = {
   syncedAt: '2026-10-20T09:30:00.000Z',
-  notes: { updated: [], deleted: [], unchanged: [{ id: 'k1', title: 'same idea' }] },
+  notes: { updated: [], deleted: [], unchanged: [{ id: 'k1', title: 'same idea', tags: [] }] },
+  tagColors: {},
 }
 
 const clear = vi.fn()
@@ -41,6 +42,14 @@ function stubApi(overrides: Partial<Api> = {}) {
   return api
 }
 
+// jsdom lacks the pointer and scroll APIs radix select uses.
+beforeAll(() => {
+  Element.prototype.hasPointerCapture = () => false
+  Element.prototype.setPointerCapture = () => undefined
+  Element.prototype.releasePointerCapture = () => undefined
+  Element.prototype.scrollIntoView = () => undefined
+})
+
 describe('App', () => {
   beforeEach(() => {
     // jsdom has no layout; the note grids only draw once their container has a size.
@@ -53,6 +62,9 @@ describe('App', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.clearAllMocks()
+    localStorage.clear()
+    document.documentElement.removeAttribute('style')
+    document.documentElement.removeAttribute('data-theme')
   })
 
   it('renders the app header with the sync title and a choose-folder button', () => {
@@ -60,6 +72,18 @@ describe('App', () => {
 
     expect(screen.getByRole('banner')).toHaveTextContent('md-viz sync')
     expect(screen.getByRole('button', { name: 'choose folder' })).toBeEnabled()
+  })
+
+  it('has a theme switcher in the header, on solarized, that applies the theme picked', async () => {
+    render(<App />)
+    const picker = within(screen.getByRole('banner')).getByRole('combobox', { name: 'theme' })
+    expect(picker).toHaveTextContent('solarized')
+
+    await userEvent.click(picker)
+    await userEvent.click(screen.getByRole('option', { name: 'dracula' }))
+
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dracula'))
+    expect(screen.getByRole('combobox', { name: 'theme' })).toHaveTextContent('dracula')
   })
 
   it('clears the last sync and scans the picked folder', async () => {

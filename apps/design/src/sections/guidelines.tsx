@@ -13,7 +13,7 @@ const guidelines = [
   },
   {
     name: 'cards',
-    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px black shadow in both and no other decoration.',
+    rule: 'cards are pure white in light mode and base02 in dark mode, with a hard 4px shadow (black unless the page is too dark for it, set by --shadow-color) in both and no other decoration.',
     example: 'white card · 4px black shadow',
   },
   {
@@ -39,8 +39,18 @@ const guidelines = [
   },
   {
     name: 'inputs and focus',
-    rule: 'inputs have a 2px primary border and no shadow, so they sit flat beside the buttons. their popups float with a 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is the same thick black ring as buttons, and the border turns black with it.',
-    example: 'select · 2px orange border · thick black focus ring',
+    rule: 'inputs have a 2px primary border and no shadow, so they sit flat beside the buttons. their popups float with a 2px black border (base3 in dark mode) and the hard shadow. keyboard focus is the same thick ring as buttons, and the border takes its color (black in solarized, the focus color of the theme otherwise, at least 3:1 against the page and the card).',
+    example: 'select · 2px orange border · thick focus ring · set by --focus',
+  },
+  {
+    name: 'themes',
+    rule: 'a theme is one fixed look for the whole ui, with no light or dark mode to match: every theme sets the tokens (background, card, primary, border, focus ring, shadow) and 25 note colors. each theme keeps its focus ring at least 3:1 against the page and the card and clearly apart from the primary color, and its shadow at least 2:1 against the page. solarized light is the default.',
+    example: 'solarized · gruvbox dark · nord · catppuccin · dracula · gotham · ocean',
+  },
+  {
+    name: 'tag colors',
+    rule: 'a note square takes its colors from the top level of its tags (daily/10/28 counts as daily): each top-level tag gets a palette index when it is synced and keeps it, so a tag looks the same in every app and theme. a note with several tags is striped horizontally by its first three, a note without tags is the neutral grey, and the tooltip lists all the full tags.',
+    example: 'one tag · plain square · three tags · three stripes · none · grey',
   },
   {
     name: 'pixel logo',

@@ -1,4 +1,4 @@
-import { NOTE_COLORS } from '@md-viz/ui'
+import { ACCENT_COLORS } from '@md-viz/ui'
 import type { NotePalette } from './icon-options'
 
 /** a bitmap drawn as crisp squares: '#' in the foreground color, '+' in the accent. */
@@ -38,7 +38,7 @@ export function PixelArt({
               {...(notePalette && char === (notePalette === 'fill' ? '#' : '+')
                 ? {
                     className: 'note-square',
-                    'data-color': y % NOTE_COLORS,
+                    'data-color': y % ACCENT_COLORS,
                     vectorEffect: 'non-scaling-stroke' as const,
                   }
                 : { fill: char === '+' ? accent : 'var(--foreground)' })}

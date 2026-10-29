@@ -3,6 +3,7 @@ import { bodyLimit } from 'hono/body-limit'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import {
+  AddTagColorsResultSchema,
   ErrorSchema,
   HealthSchema,
   IdParamSchema,
@@ -14,6 +15,7 @@ import {
   SetIdParamSchema,
   SetSchema,
   SetSummariesSchema,
+  TagColorsSchema,
   UpsertBodySchema,
   UpsertResultSchema,
 } from './schemas.ts'
@@ -152,6 +154,37 @@ const deleteSetRoute = createRoute({
   },
 })
 
+const listTagColorsRoute = createRoute({
+  method: 'get',
+  path: '/tag-colors',
+  operationId: 'listTagColors',
+  summary: 'the color index of every tag, ordered by tag',
+  responses: {
+    200: {
+      description: 'one row per tag',
+      content: { 'application/json': { schema: TagColorsSchema } },
+    },
+  },
+})
+
+const addTagColorsRoute = createRoute({
+  method: 'post',
+  path: '/tag-colors',
+  operationId: 'addTagColors',
+  summary: 'give tags a color index; a tag that has one keeps it',
+  middleware: [bodyLimit({ maxSize: MAX_BODY_BYTES })],
+  request: {
+    body: { required: true, content: { 'application/json': { schema: TagColorsSchema } } },
+  },
+  responses: {
+    200: {
+      description: 'number of tags that had no color yet',
+      content: { 'application/json': { schema: AddTagColorsResultSchema } },
+    },
+    400: badRequest,
+  },
+})
+
 export function createApp(store: Store): OpenAPIHono {
   const app = new OpenAPIHono({
     defaultHook: (result, c) => {
@@ -216,6 +249,13 @@ export function createApp(store: Store): OpenAPIHono {
   app.openapi(deleteSetRoute, (c) => {
     store.deleteSet(c.req.valid('param').id)
     return c.body(null, 204)
+  })
+
+  app.openapi(listTagColorsRoute, (c) => c.json({ tags: store.listTagColors() }, 200))
+
+  app.openapi(addTagColorsRoute, (c) => {
+    const { tags } = c.req.valid('json')
+    return c.json({ added: store.addTagColors(tags) }, 200)
   })
 
   return app

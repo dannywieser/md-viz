@@ -52,7 +52,7 @@ describe('Loader', () => {
       Number(rect.getAttribute('data-color')),
     )
 
-    expect(Math.max(...colors)).toBe(9)
+    expect(Math.max(...colors)).toBe(7)
     expect(colors).toContain(1)
   })
 

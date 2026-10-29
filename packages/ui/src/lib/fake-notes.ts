@@ -43,6 +43,6 @@ export function makeFakeNotes(count: number): Note[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `note-${i}`,
     title: `${pick()} ${pick()}`,
-    color: Math.floor(Math.random() * NOTE_COLORS),
+    colors: [Math.floor(Math.random() * NOTE_COLORS)],
   }))
 }

@@ -22,7 +22,11 @@ export function useSync(target: SyncTarget | null, onError: (message: string | n
     const unsubscribe = window.api.onSyncProgress(setProgress)
     try {
       const result = await window.api.sync(target)
-      setLastSync({ syncedAt: new Date().toISOString(), notes: result.notes })
+      setLastSync({
+        syncedAt: new Date().toISOString(),
+        notes: result.notes,
+        tagColors: result.tagColors,
+      })
     } catch (err) {
       onError(errorMessage(err))
     } finally {

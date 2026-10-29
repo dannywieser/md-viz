@@ -1,5 +1,5 @@
 import { PIXEL_ICONS, type PixelIconName } from '../lib/pixel-icons'
-import { NOTE_COLORS } from '../lib/note-colors'
+import { ACCENT_COLORS } from '../lib/note-colors'
 
 /** a pixel art icon drawn as crisp squares, coloured with the note grid palette. decorative. */
 function PixelIcon({ name, cell = 6 }: { name: PixelIconName; cell?: number }) {
@@ -29,7 +29,7 @@ function PixelIcon({ name, cell = 6 }: { name: PixelIconName; cell?: number }) {
               {...(char === coloured
                 ? {
                     className: 'note-square',
-                    'data-color': y % NOTE_COLORS,
+                    'data-color': y % ACCENT_COLORS,
                     vectorEffect: 'non-scaling-stroke' as const,
                   }
                 : { fill: 'var(--foreground)' })}

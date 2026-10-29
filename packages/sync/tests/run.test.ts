@@ -23,7 +23,8 @@ const syncResult: SyncResult = {
   unchanged: 0,
   deleted: 0,
   failed: 0,
-  notes: { updated: [{ id: 'a', title: 'a' }], deleted: [], unchanged: [] },
+  notes: { updated: [{ id: 'a', title: 'a', tags: ['x'] }], deleted: [], unchanged: [] },
+  tagColors: { x: 3 },
 }
 
 describe('run', () => {

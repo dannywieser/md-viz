@@ -7,7 +7,7 @@ vi.mock('@md-viz/ui', async (importOriginal) => ({
   NoteGrid: vi.fn(() => <div data-testid="note-grid" />),
 }))
 
-const notes = [{ id: 'a', title: 'plan', color: 0 }]
+const notes = [{ id: 'a', title: 'plan', colors: [] }]
 
 describe('AllNotesGrid', () => {
   it('shows every note in a grid labelled all notes', () => {

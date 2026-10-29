@@ -31,11 +31,46 @@ describe('loadBearNotes', () => {
           source: 'bear',
           title: 'plan',
           body: '# plan',
-          tags: ['garden', 'garden/beds'],
+          tags: ['garden/beds'],
           created: '2026-10-01T10:00:00.000Z',
           modified: '2026-10-02T11:30:00.000Z',
         },
       ],
+    })
+  })
+
+  describe('nested tags', () => {
+    const tagsOf = async (tags: string[]) => {
+      vi.mocked(listBearRows).mockResolvedValue([row({ tags })])
+      return (await loadBearNotes()).notes[0]?.tags
+    }
+
+    it('keeps the whole nested tag, not each of its levels', async () => {
+      expect(await tagsOf(['#daily', '#daily/10', '#daily/10/28'])).toEqual(['daily/10/28'])
+    })
+
+    it('keeps the order of the tags that stay', async () => {
+      expect(await tagsOf(['#work', '#daily', '#daily/10', '#ideas'])).toEqual([
+        'work',
+        'daily/10',
+        'ideas',
+      ])
+    })
+
+    it('keeps two nested tags that share a start', async () => {
+      expect(await tagsOf(['#daily', '#daily/10/28', '#daily/11/02'])).toEqual([
+        'daily/10/28',
+        'daily/11/02',
+      ])
+    })
+
+    it('does not take a tag with the same letters for a part of another', async () => {
+      expect(await tagsOf(['#dai', '#daily/10'])).toEqual(['dai', 'daily/10'])
+    })
+
+    it('keeps plain tags and notes without tags', async () => {
+      expect(await tagsOf(['#a', '#b'])).toEqual(['a', 'b'])
+      expect(await tagsOf([])).toEqual([])
     })
   })
 

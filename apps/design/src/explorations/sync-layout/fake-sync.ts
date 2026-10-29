@@ -1,4 +1,4 @@
-import { DEFAULT_NOTE_COLOR, type Note } from '@md-viz/ui'
+import type { Note } from '@md-viz/ui'
 
 /** what the sync app is doing, or has done, in a mock window. */
 export type Phase = 'never' | 'scanning' | 'syncing' | 'done' | 'empty' | 'error'
@@ -24,7 +24,7 @@ export const makeNotes = (count: number, offset = 0): Note[] =>
   Array.from({ length: count }, (_, i) => ({
     id: `note-${offset + i}`,
     title: titleAt(offset + i),
-    color: DEFAULT_NOTE_COLOR,
+    colors: [],
   }))
 
 export interface FakeGroups {

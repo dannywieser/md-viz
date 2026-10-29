@@ -17,7 +17,8 @@ describe('PixelIcon', () => {
 
     expect(squares.every((rect) => rect.classList.contains('note-square'))).toBe(true)
     expect(squares[0]).toHaveAttribute('data-color', '0')
-    expect(squares.at(-1)).toHaveAttribute('data-color', '9')
+    // the ghost has ten rows and the icon cycles through the eight full hues
+    expect(squares.at(-1)).toHaveAttribute('data-color', '1')
     expect(
       squares.some((rect) => rect.getAttribute('x') === '3' && rect.getAttribute('y') === '3'),
     ).toBe(false)

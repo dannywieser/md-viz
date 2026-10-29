@@ -20,8 +20,8 @@ function queryReturns(result: Partial<UseQueryResult>) {
 }
 
 const notes = [
-  { id: 'a', title: 'plan', color: 0 },
-  { id: 'b', title: 'ideas', color: 0 },
+  { id: 'a', title: 'plan', colors: [] },
+  { id: 'b', title: 'ideas', colors: [] },
 ]
 const gridProps = () => vi.mocked(NoteGrid).mock.lastCall![0]
 

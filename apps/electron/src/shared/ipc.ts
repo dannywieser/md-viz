@@ -23,6 +23,7 @@ export type {
   SyncProgress,
   SyncResult,
   SyncTarget,
+  TagColors,
 } from '@md-viz/sync/types'
 
 export const IPC = {

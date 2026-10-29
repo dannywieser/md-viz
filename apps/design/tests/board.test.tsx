@@ -9,6 +9,7 @@ vi.mock('../src/sections/logo', () => ({ LogoSection: () => <p>logo section</p> 
 vi.mock('../src/sections/note-grid-demo', () => ({ NoteGridDemo: () => <p>note grid section</p> }))
 vi.mock('../src/sections/palette', () => ({ Palette: () => <p>palette section</p> }))
 vi.mock('../src/sections/spacing', () => ({ Spacing: () => <p>spacing section</p> }))
+vi.mock('../src/sections/themes', () => ({ Themes: () => <p>themes section</p> }))
 vi.mock('../src/sections/typography', () => ({ Typography: () => <p>typography section</p> }))
 
 describe('Board', () => {
@@ -20,6 +21,7 @@ describe('Board', () => {
       'guidelines section',
       'logo section',
       'palette section',
+      'themes section',
       'typography section',
       'spacing section',
       'grid section',

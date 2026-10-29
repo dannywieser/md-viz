@@ -8,6 +8,9 @@ function fakeCache() {
   const notes = new Map<string, Record<string, string>>()
   const upserts: number[] = []
   const sets = new Map<string, string[]>()
+  const tagColors = new Map<string, number>()
+  /** the writes that reached the cache, in order. */
+  const writes: string[] = []
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 
@@ -25,11 +28,25 @@ function fakeCache() {
         })),
       )
     }
+    if (request.method === 'GET' && url.pathname === '/tag-colors') {
+      return json({ tags: [...tagColors].map(([tag, color]) => ({ tag, color })) })
+    }
+    if (request.method === 'POST' && url.pathname === '/tag-colors') {
+      const body = (await request.json()) as { tags: { tag: string; color: number }[] }
+      writes.push('tag-colors')
+      let added = 0
+      for (const { tag, color } of body.tags) {
+        if (!tagColors.has(tag)) added++
+        if (!tagColors.has(tag)) tagColors.set(tag, color)
+      }
+      return json({ added })
+    }
     if (request.method === 'PUT' && url.pathname === '/notes') {
       const body = (await request.json()) as {
         notes: { id: string; fields: Record<string, string> }[]
       }
       upserts.push(body.notes.length)
+      writes.push('notes')
       for (const note of body.notes) {
         notes.set(note.id, {
           ...notes.get(note.id),
@@ -50,7 +67,7 @@ function fakeCache() {
     }
     return json({ error: 'not found' }, 404)
   }
-  return { notes, upserts, sets, fetch: handler }
+  return { notes, upserts, sets, tagColors, writes, fetch: handler }
 }
 
 const PAST = '2020-01-01T00:00:00.000Z'
@@ -90,12 +107,14 @@ describe('syncNotes', () => {
       failed: 0,
       notes: {
         updated: [
-          { id: 'a', title: 'a' },
-          { id: 'b', title: 'b' },
+          { id: 'a', title: 'a', tags: ['x', 'x/y'] },
+          { id: 'b', title: 'b', tags: [] },
         ],
         deleted: [],
         unchanged: [],
       },
+      // `x/y` is coloured as its top level, `x`
+      tagColors: { x: 0 },
     })
     expect(cache.notes.get('a')).toMatchObject({
       title: 'a',
@@ -118,8 +137,8 @@ describe('syncNotes', () => {
     )
 
     expect(result).toMatchObject({ synced: 1, unchanged: 1, deleted: 0 })
-    expect(result.notes.updated).toEqual([{ id: 'b', title: 'b' }])
-    expect(result.notes.unchanged).toEqual([{ id: 'a', title: 'a' }])
+    expect(result.notes.updated).toEqual([{ id: 'b', title: 'b', tags: [] }])
+    expect(result.notes.unchanged).toEqual([{ id: 'a', title: 'a', tags: [] }])
     expect(cache.notes.get('b')?.['body']).toBe('edited')
   })
 
@@ -130,7 +149,7 @@ describe('syncNotes', () => {
     const result = await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
 
     expect(result).toMatchObject({ synced: 0, unchanged: 1, deleted: 1 })
-    expect(result.notes.deleted).toEqual([{ id: 'b', title: 'b' }])
+    expect(result.notes.deleted).toEqual([{ id: 'b', title: 'b', tags: [] }])
     expect([...cache.notes.keys()]).toEqual(['a'])
   })
 
@@ -140,12 +159,12 @@ describe('syncNotes', () => {
     await syncNotes('bear', loaded(note('b', { source: 'bear' })), { fetch: cache.fetch })
 
     const bearEmpty = await syncNotes('bear', loaded(), { fetch: cache.fetch })
-    expect(bearEmpty.notes.deleted).toEqual([{ id: 'b', title: 'b' }])
+    expect(bearEmpty.notes.deleted).toEqual([{ id: 'b', title: 'b', tags: [] }])
     expect([...cache.notes.keys()]).toEqual(['f'])
 
     await syncNotes('bear', loaded(note('b', { source: 'bear' })), { fetch: cache.fetch })
     const fileEmpty = await syncNotes('file', loaded(), { fetch: cache.fetch })
-    expect(fileEmpty.notes.deleted).toEqual([{ id: 'f', title: 'f' }])
+    expect(fileEmpty.notes.deleted).toEqual([{ id: 'f', title: 'f', tags: [] }])
     expect([...cache.notes.keys()]).toEqual(['b'])
   })
 
@@ -231,7 +250,7 @@ describe('syncNotes', () => {
     const result = await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
 
     expect(result.synced).toBe(1)
-    expect(result.notes.deleted).toEqual([{ id: 'orphan', title: 'orphan' }])
+    expect(result.notes.deleted).toEqual([{ id: 'orphan', title: 'orphan', tags: [] }])
   })
 
   it('syncs to the cache named by baseUrl', async () => {
@@ -239,7 +258,12 @@ describe('syncNotes', () => {
     const spy = ((input: Request | URL | string, init?: RequestInit) => {
       const request = input instanceof Request ? input : new Request(input, init)
       urls.push(request.url)
-      const body = new URL(request.url).pathname.startsWith('/sets/') ? '{"count":0}' : '[]'
+      const { pathname } = new URL(request.url)
+      const body = pathname.startsWith('/sets/')
+        ? '{"count":0}'
+        : pathname === '/tag-colors'
+          ? '{"tags":[]}'
+          : '[]'
       return Promise.resolve(
         new Response(body, { status: 200, headers: { 'content-type': 'application/json' } }),
       )
@@ -249,6 +273,152 @@ describe('syncNotes', () => {
 
     expect(urls[0]).toMatch(/^http:\/\/cache\.test\/notes/)
     expect(urls.at(-1)).toMatch(/^http:\/\/cache\.test\/sets\//)
+  })
+
+  describe('tag colors', () => {
+    it('gives the new tags colours and keeps them in the cache', async () => {
+      const cache = fakeCache()
+
+      const result = await syncNotes(
+        'file',
+        loaded(note('a', { tags: ['work', 'home'] }), note('b', { tags: ['work'] })),
+        { fetch: cache.fetch },
+      )
+
+      expect(Object.fromEntries(cache.tagColors)).toEqual({ home: 0, work: 1 })
+      expect(result.tagColors).toEqual({ home: 0, work: 1 })
+    })
+
+    it('colours only the top level of nested tags', async () => {
+      const cache = fakeCache()
+
+      const result = await syncNotes(
+        'file',
+        loaded(
+          note('a', { tags: ['daily/10/28', 'work'] }),
+          note('b', { tags: ['daily/10/29', 'daily'] }),
+        ),
+        { fetch: cache.fetch },
+      )
+
+      expect(Object.fromEntries(cache.tagColors)).toEqual({ daily: 0, work: 1 })
+      expect(result.tagColors).toEqual({ daily: 0, work: 1 })
+      // the notes keep their full tags
+      expect(result.notes.updated[0]?.tags).toEqual(['daily/10/28', 'work'])
+    })
+
+    it('keeps the colours the cache already has and adds only the new tags', async () => {
+      const cache = fakeCache()
+      cache.tagColors.set('work', 9)
+
+      const result = await syncNotes('file', loaded(note('a', { tags: ['work', 'home'] })), {
+        fetch: cache.fetch,
+      })
+
+      expect(Object.fromEntries(cache.tagColors)).toEqual({ work: 9, home: 0 })
+      expect(result.tagColors).toEqual({ work: 9, home: 0 })
+    })
+
+    it('gives the same colours on the next sync', async () => {
+      const cache = fakeCache()
+      const first = await syncNotes('file', loaded(note('a', { tags: ['b', 'a'] })), {
+        fetch: cache.fetch,
+      })
+
+      const second = await syncNotes(
+        'file',
+        loaded(note('a', { tags: ['b', 'a'] }), note('c', { tags: ['c'] })),
+        { fetch: cache.fetch },
+      )
+
+      expect(second.tagColors).toEqual({ ...first.tagColors, c: 2 })
+    })
+
+    it('counts the tags of notes that did not change', async () => {
+      const cache = fakeCache()
+      await syncNotes('file', loaded(note('a', { tags: ['old'] })), { fetch: cache.fetch })
+      cache.tagColors.clear()
+
+      const result = await syncNotes('file', loaded(note('a', { tags: ['old'] })), {
+        fetch: cache.fetch,
+      })
+
+      expect(result.synced).toBe(0)
+      expect(result.tagColors).toEqual({ old: 0 })
+    })
+
+    it('adds the colours before it pushes any note', async () => {
+      const cache = fakeCache()
+
+      await syncNotes('file', loaded(note('a', { tags: ['x'] })), { fetch: cache.fetch })
+
+      expect(cache.writes).toEqual(['tag-colors', 'notes'])
+    })
+
+    it('does not write colours when every tag has one', async () => {
+      const cache = fakeCache()
+      cache.tagColors.set('x', 4)
+
+      await syncNotes('file', loaded(note('a', { tags: ['x'] })), { fetch: cache.fetch })
+
+      expect(cache.writes).toEqual(['notes'])
+    })
+
+    it('does not write colours for notes without tags', async () => {
+      const cache = fakeCache()
+
+      const result = await syncNotes('file', loaded(note('a')), { fetch: cache.fetch })
+
+      expect(cache.writes).toEqual(['notes'])
+      expect(result.tagColors).toEqual({})
+    })
+
+    it('puts the tags of a deleted note in the result', async () => {
+      const cache = fakeCache()
+      cache.notes.set('gone', { source: 'file', title: 'gone', tags: '["a","b"]' })
+
+      const result = await syncNotes('file', loaded(), { fetch: cache.fetch })
+
+      expect(result.notes.deleted).toEqual([{ id: 'gone', title: 'gone', tags: ['a', 'b'] }])
+    })
+
+    it.each([
+      ['not json', 'oops'],
+      ['not a list', '{"a":1}'],
+    ])('reads the tags of a deleted note as none when they are %s', async (_name, tags) => {
+      const cache = fakeCache()
+      cache.notes.set('gone', { source: 'file', title: 'gone', tags })
+
+      const result = await syncNotes('file', loaded(), { fetch: cache.fetch })
+
+      expect(result.notes.deleted).toEqual([{ id: 'gone', title: 'gone', tags: [] }])
+    })
+
+    it('keeps only the string tags of a deleted note', async () => {
+      const cache = fakeCache()
+      cache.notes.set('gone', { source: 'file', title: 'gone', tags: '["a",1,null]' })
+
+      const result = await syncNotes('file', loaded(), { fetch: cache.fetch })
+
+      expect(result.notes.deleted[0]?.tags).toEqual(['a'])
+    })
+
+    it('changes nothing when the colours cannot be read', async () => {
+      const cache = fakeCache()
+      cache.notes.set('old', { source: 'file', title: 'old' })
+      const failing = ((input: Request | URL | string, init?: RequestInit) => {
+        const request = input instanceof Request ? input : new Request(input, init)
+        return new URL(request.url).pathname === '/tag-colors'
+          ? Promise.resolve(new Response('boom', { status: 500 }))
+          : cache.fetch(request, init)
+      }) as typeof fetch
+
+      await expect(
+        syncNotes('file', loaded(note('a', { tags: ['x'] })), { fetch: failing }),
+      ).rejects.toBeDefined()
+      expect(cache.writes).toEqual([])
+      expect(cache.notes.has('old')).toBe(true)
+    })
   })
 
   describe('automatic sets', () => {
