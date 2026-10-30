@@ -2,6 +2,7 @@
 
 - **Slug:** 20261030-02-implement-note-grid-updates-with-grouping-and-sets
 - **Started:** 2026.10.30 13:24:04 MDT
+- **Completed:** 2026.10.30 15:42:58
 
 ---
 
@@ -187,3 +188,27 @@ Phase 4 steps 14 done. apps/web: lib/grid-sets.ts (was grid-note.ts) toGridSets(
 
 ### [2026.10.30 15:36:55] Claude
 Phase 4 steps 15-16 done. Checked the web app in the browser against a scratch cache (port 8799, in-memory, my own web dev server on 5180; the user's servers on 8787 and 5175 were not touched; all stopped again): 840 tagged notes seeded through syncNotes gave exclusive tag sets (daily 360, home 72, ideas 48, recipes 24, work 156) and the grid showed 6 sets (the notes with no tag as the grey untagged set); the block's edges matched the header (16 to 1008), the toggle grouped them into outlined shapes, the bar named the hovered set and note (ideas, note 480). Observed: in grouped mode the last set's cells can run as a thin one-row strip along the bottom (the strip placeTiles now keeps), and a few empty cells remain at the end; both are the layout, not the data. CLAUDE.md updated for the web app. Gates: format, lint, typecheck, coverage pass in every workspace.
+
+### [2026.10.30 15:38:26] User
+not something we need to fix, I just want to understand why my note set at present is ending up all a single size block. I see that the notes are filling the space quite closely right off the bat
+
+### [2026.10.30 15:38:26] Claude
+Read-only look at the user's running cache (8787): sync sets bear created-today 2, updated-today 4862, the rest 0 (so two sets with data); tag sets 19 (largest daily 104, movies 36, work 35, books 30...). Explained: the web grid has 19 tag sets, above MAX_TILED_SETS (8), so the size search is skipped and every square is one size (uniform fit, which is also why it fills the frame so closely: biggest unit that fits, rows trimmed). Electron with 2 and 4862 gives scales 16 and 1 at 960 wide (checked at heights 250-320). Also: even where the search runs, similar-sized sets get one size (sizes follow the square root of the count ratio, powers of two, and a bigger square for a set costs area). No code changed.
+
+### [2026.10.30 15:40:34] User
+would it be feasible to determine layouts for a range of browser sizes during caching, if the issue is performance?
+
+### [2026.10.30 15:40:34] Claude
+Answered (no code change): the cost is the number of sets, not the size; precomputing per browser size is possible but the wrong lever. Better: require sizes to be non-increasing with the set's note count (a smaller set never gets smaller squares), which turns the search from 4^n (all combinations) into choosing breakpoints among 5 size levels, C(n+4,4) for n sets (about 8855 for 19), tiny; the part that depends on the frame (largest unit, rows, placement) stays cheap and can run on resize. If caching is still wanted, key it by the counts, not by size.
+
+### [2026.10.30 15:41:43] User
+we'll leave that for now
+
+### [2026.10.30 15:41:43] Decision
+The monotone size search (sizes for more than 8 sets, e.g. the 19 tag sets) is left for later; fillTileLayout keeps MAX_TILED_SETS = 8 and one size above it. All four phases are implemented; next is /create-complete.
+
+### [2026.10.30 15:41:53] User
+/create-complete
+
+### [2026.10.30 15:42:58] Decision
+Session complete. Coverage re-run fresh, all workspaces at or above 95% (statements, branches, functions, lines), thresholds unchanged. summary.md written; README.md updated in the harvest.
