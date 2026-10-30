@@ -15,18 +15,22 @@ export interface TimedNote {
   deleted?: string | undefined
 }
 
-type When = 'today' | 'last-30-days'
-
-/** the sync sets in rank order: the narrower period of each kind comes first. */
+/**
+ * the sync sets in rank order, which is also the order a note is tried against them: the first set
+ * it fits is its only one. today comes before the 30 days of the same kind, and creating before
+ * updating.
+ */
 const NAMES = [
   'created-today',
-  'created-last-30-days',
   'updated-today',
+  'created-last-30-days',
   'updated-last-30-days',
   'deleted-today',
   'deleted-last-30-days',
   'unchanged',
 ] as const
+
+type Name = (typeof NAMES)[number]
 
 const isToday = (time: number, now: Date) => {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
@@ -36,44 +40,42 @@ const isToday = (time: number, now: Date) => {
 
 const isRecent = (time: number, now: Date) => time >= now.getTime() - RECENT_DAYS * DAY_MS
 
-const within = (when: When, value: string | undefined, now: Date) => {
+const within = (period: 'today' | 'last-30-days', value: string | undefined, now: Date) => {
   const time = Date.parse(value ?? '')
-  return !Number.isNaN(time) && (when === 'today' ? isToday(time, now) : isRecent(time, now))
+  return !Number.isNaN(time) && (period === 'today' ? isToday(time, now) : isRecent(time, now))
+}
+
+/** the one set a note is in, or none for a deleted note deleted more than 30 days ago (or with no readable time). */
+function setOf(note: TimedNote, now: Date, skipCreated: boolean): Name | undefined {
+  if (note.deleted !== undefined) {
+    if (within('today', note.deleted, now)) return 'deleted-today'
+    return within('last-30-days', note.deleted, now) ? 'deleted-last-30-days' : undefined
+  }
+  if (!skipCreated && within('today', note.created, now)) return 'created-today'
+  if (within('today', note.synced, now)) return 'updated-today'
+  if (!skipCreated && within('last-30-days', note.created, now)) return 'created-last-30-days'
+  if (within('last-30-days', note.synced, now)) return 'updated-last-30-days'
+  return 'unchanged'
 }
 
 /**
  * the sets of the `sync` grouping of one source at `now` (the PC's clock): today is the local
  * calendar day, the last 30 days are a rolling 30 x 24 hours. updated is the cache's `synced`
- * time, created the note's `created`, deleted the cache's `deleted` time; unchanged is every
- * note that exists and was not updated in the last 30 days. a note with a missing or
- * unparseable time is left out of the sets that use it. a deleted note is only in the deleted
- * sets. the file source cannot tell when a note was created, so it gets no created sets. a set
- * with no members is still returned.
+ * time, created the note's `created`, deleted the cache's `deleted` time. a note is in exactly one
+ * set, the first it fits in the rank order (see `NAMES`); unchanged is every other note that
+ * exists. a deleted note is only in a deleted set, and in none when it was deleted more than 30
+ * days ago or its time cannot be read. a live note with an unreadable time is left out of the sets
+ * that use it. the file source cannot tell when a note was created, so it gets no created sets.
+ * a set with no members is still returned.
  */
 export function buildSyncSets(source: Source, notes: TimedNote[], now: Date): GroupSet[] {
-  const live = notes.filter((note) => note.deleted === undefined)
-  const gone = notes.filter((note) => note.deleted !== undefined)
-
-  const members = (name: (typeof NAMES)[number]): string[] => {
-    const when = name.endsWith('today') ? 'today' : 'last-30-days'
-    const pick = (list: TimedNote[], field: 'created' | 'synced' | 'deleted') =>
-      list.filter((note) => within(when, note[field], now))
-    switch (name) {
-      case 'created-today':
-      case 'created-last-30-days':
-        return pick(live, 'created').map((note) => note.id)
-      case 'updated-today':
-      case 'updated-last-30-days':
-        return pick(live, 'synced').map((note) => note.id)
-      case 'deleted-today':
-      case 'deleted-last-30-days':
-        return pick(gone, 'deleted').map((note) => note.id)
-      case 'unchanged':
-        return live.filter((note) => !within('last-30-days', note.synced, now)).map((n) => n.id)
-    }
+  const skipCreated = source === 'file'
+  const members = new Map<Name, string[]>(NAMES.map((name) => [name, []]))
+  for (const note of notes) {
+    const name = setOf(note, now, skipCreated)
+    if (name !== undefined) members.get(name)?.push(note.id)
   }
-
-  return NAMES.map((name, rank) => ({ id: name, rank, noteIds: members(name) })).filter(
-    ({ id }) => source !== 'file' || !id.startsWith('created-'),
+  return NAMES.map((name, rank) => ({ id: name, rank, noteIds: members.get(name) ?? [] })).filter(
+    ({ id }) => !skipCreated || !id.startsWith('created-'),
   )
 }

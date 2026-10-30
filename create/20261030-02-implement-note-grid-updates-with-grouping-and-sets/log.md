@@ -91,3 +91,6 @@ and then proceed with phase 1
 
 ### [2026.10.30 14:47:29] Decision
 Approach: phase by phase, one commit and push per numbered step, pause for review at the end of each phase. Open questions 2-4 accepted as proposed in plan.md (N+1 getSet in web, test and cap the many-sets layout in Phase 2, interim grey-set adapters so every phase stays green). Starting Phase 1.
+
+### [2026.10.30 14:48:30] Claude
+Phase 1 steps 1-2 done. Tests first (sync-sets, tag-sets, sync, failing), then `buildTagSets` (a note is only in the set of its first tag's top level; no tags = no set) and `buildSyncSets` (first match wins in the order created-today, updated-today, created-last-30-days, updated-last-30-days, deleted-today, deleted-last-30-days, unchanged; ranks follow that order; a note deleted more than 30 days ago is in no set; file source still has no created sets). Files: packages/sync/src/pipeline/{sync-sets,tag-sets}.ts and tests/pipeline/{sync-sets,tag-sets,sync}.test.ts. Deviation: steps 1 and 2 share one commit.
