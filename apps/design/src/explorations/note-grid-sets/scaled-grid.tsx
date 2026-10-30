@@ -94,7 +94,7 @@ export function ScaledGrid({ sets, fit }: ScaledGridProps) {
                 <path
                   d={groupOutline(perRow * perRow, perRow, side)}
                   fill="none"
-                  stroke="var(--foreground)"
+                  stroke="var(--focus)"
                   strokeWidth={2}
                 />
               </g>

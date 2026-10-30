@@ -107,7 +107,7 @@ export function ContainerGrid({
                 <path
                   d={groupOutline(set.count, slots[i].columns, cell)}
                   fill="none"
-                  stroke="var(--foreground)"
+                  stroke="var(--focus)"
                   strokeWidth={2}
                 />
               )}

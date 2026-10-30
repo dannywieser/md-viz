@@ -144,3 +144,12 @@ Iteration 5 tweak: every set is a full square block (side = ceil(sqrt(notes)) sq
 
 ### [2026.10.30 06:33:21] Claude
 Done: scaled-slots.ts (blockSide, square blocks, reserved filler), scaled-grid.tsx (filler squares), scaled-section.tsx (list), tests (design note-grid-sets: 144 pass; eslint, tsc clean). Viewer, 100 notes, even share: set a 8 x 8 block with 10 filler (22px), set g 1 x 1 at 6x (132px); 5000 notes: set a 53 x 53 with 69 filler.
+
+### [2026.10.30 06:35:10] User
+for the solarized palette, the border on the sets is a bit too light on contrast compared to other palettes. can you adjust?
+
+### [2026.10.30 06:35:10] Decision
+The set outline used --foreground, which in Solarized is base01 (#586e75), a mid grey-teal. Switched the outline in the iteration 2-5 grids (container-grid, scaled-grid) to --focus, the theme's high-contrast token (black in Solarized, at least 3:1 against page and card in every theme per the palette guideline), instead of changing --foreground for the whole UI. Iteration 1's grouped grid is left as it was.
+
+### [2026.10.30 06:35:10] Claude
+Done: stroke var(--focus) in container-grid.tsx and scaled-grid.tsx. Solarized outline now computes to rgb(0,0,0). Tests pass. Not checked visually in the other themes.
