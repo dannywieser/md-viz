@@ -171,3 +171,12 @@ Cause: in the square container at 5000 notes (softened / even) the grow pass pic
 
 ### [2026.10.30 06:40:32] Claude
 Done in scaled-slots.ts with a test (note-grid-sets 146 pass; eslint, tsc clean). Viewer: square at 5000 notes is now 146 x 146 / 110 x 110 units, the empty area shows a visible 3px mesh; tall and 100/500 unchanged.
+
+### [2026.10.30 06:47:26] User
+next iteration: share by notes but I want to explore how we can always fill all the space by having the shapes of the sets not be square. try without any filler blocks if possible
+
+### [2026.10.30 06:47:26] Decision
+Iteration 6 (on top; 1-5 kept): share by notes (every square the same size), sets as flowing shapes, no filler. The grid is a columns x rows pair whose product is exactly the number of notes (biggest square that fits the box; nearly square with a few empty cells only if no pair gives squares of 3px or more). The notes are laid along a snake path (down one column, up the next, or along rows, switchable), set after set, so each set is one connected band with a ragged end. Outline drawn along the edges between sets (ownerOutline). Rejected: exact rectangles per set (a set of 23 is only 1 x 23) and recursive rectangle cuts (ragged remainders break the recursion).
+
+### [2026.10.30 06:47:26] Claude
+Iteration 6 done: flow-layout.ts, flow-grid.tsx, flow-section.tsx, iteration-6.tsx, iterations.ts, with tests (note-grid-sets 160 pass; eslint, tsc clean). Viewer: wide 100 = 20 x 5 of 36px (720 x 180), 500 = 25 x 20 of 16px (400 x 320), 5000 = 100 x 50 of 6px (600 x 300); every cell is a note. The grid can be smaller than the box because columns x rows must equal the note count.
