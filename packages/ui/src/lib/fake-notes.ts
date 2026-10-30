@@ -1,5 +1,5 @@
-import type { Note } from '../components/note-grid'
-import { NOTE_COLORS } from '../components/note-grid'
+import type { GridSet } from './grid-layout/grid-model'
+import { HUE_COLORS } from './note-colors'
 
 const WORDS = [
   'garden',
@@ -34,15 +34,24 @@ const WORDS = [
   'network',
 ]
 
-function pick(): string {
-  return WORDS[Math.floor(Math.random() * WORDS.length)]
-}
-
-/** random placeholder notes until real ones are loaded; differs on every call. */
-export function makeFakeNotes(count: number): Note[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `note-${i}`,
-    title: `${pick()} ${pick()}`,
-    colors: [Math.floor(Math.random() * NOTE_COLORS)],
+/**
+ * placeholder sets for demos: one set per entry of `counts`, that many notes each, each with a
+ * palette colour of its own (the colours wrap past the palette). always the same for the same counts.
+ */
+export function makeFakeSets(counts: number[]): GridSet[] {
+  let note = 0
+  return counts.map((count, index) => ({
+    id: `set-${index}`,
+    name: `${WORDS[index % WORDS.length]}${index >= WORDS.length ? ` ${Math.floor(index / WORDS.length) + 1}` : ''}`,
+    color: index % HUE_COLORS,
+    notes: Array.from({ length: count }, () => {
+      const n = note++
+      // the ids are scrambled (and still unique), so listed by id the notes of the sets are mixed
+      const scrambled = Math.imul(n + 1, 2654435761) >>> 0
+      return {
+        id: `${scrambled.toString(16).padStart(8, '0')}-${n}`,
+        title: `${WORDS[(n * 7) % WORDS.length]} ${WORDS[(n * 13 + 5) % WORDS.length]}`,
+      }
+    }),
   }))
 }

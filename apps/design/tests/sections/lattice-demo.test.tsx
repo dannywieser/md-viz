@@ -18,12 +18,23 @@ describe('LatticeDemo', () => {
     vi.clearAllMocks()
   })
 
-  it('gives the grid the count of notes and its fixed area', () => {
-    render(<LatticeDemo count={50} cell={null} onCellChange={vi.fn()} />)
+  it('gives the grid the count of notes in three sets, in a box of fixed size', () => {
+    const { container } = render(<LatticeDemo count={50} cell={null} onCellChange={vi.fn()} />)
 
     const props = vi.mocked(NoteGrid).mock.calls[0][0]
-    expect(props.notes).toHaveLength(50)
-    expect(props.height).toBe(200)
+    expect(props.sets).toHaveLength(3)
+    expect(props.sets.reduce((sum, set) => sum + set.notes.length, 0)).toBe(50)
+    expect(props.sets[0].notes.length).toBeGreaterThan(props.sets[2].notes.length)
+    expect(container.querySelector('.bg-dots')?.firstElementChild).toHaveStyle({
+      width: '360px',
+      height: '232px',
+    })
+  })
+
+  it('makes fewer sets for fewer notes', () => {
+    render(<LatticeDemo count={2} cell={null} onCellChange={vi.fn()} />)
+
+    expect(vi.mocked(NoteGrid).mock.calls[0][0].sets).toHaveLength(2)
   })
 
   it('passes the cell the grid reports on', () => {

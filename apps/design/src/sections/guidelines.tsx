@@ -23,8 +23,8 @@ const guidelines = [
   },
   {
     name: 'floating note grid',
-    rule: 'the note grid always floats on the page background with its own hard shadow, never on or inside a card. a label card may hang above it, exactly as wide as the grid, and an empty set shows the same block with the empty state.',
-    example: 'grid block · 4px black shadow · label above · ghost when empty',
+    rule: 'the note grid always floats on the page background with its own hard shadow, never on or inside a card. a bar across its top shows the totals, or the hovered note and its set, and holds the toggle between not grouped and grouped; an empty grid shows the same block with the empty state.',
+    example: 'grid block · 4px black shadow · bar above the squares · ghost when empty',
   },
   {
     name: 'loading, empty and error states',
@@ -43,9 +43,9 @@ const guidelines = [
     example: 'solarized · gruvbox dark · nord · catppuccin · dracula · gotham · ocean',
   },
   {
-    name: 'tag colors',
-    rule: 'a note square takes its colors from the top level of its tags (daily/10/28 counts as daily): each top-level tag gets a palette index when it is synced and keeps it, so a tag looks the same in every app and theme. a note with several tags is striped horizontally by its first three, a note without tags is the neutral grey, and the tooltip lists all the full tags.',
-    example: 'one tag · plain square · three tags · three stripes · none · grey',
+    name: 'set colors',
+    rule: 'a note square takes the colour of its set. a note is in one set of a grouping (the top level of its first tag, or when it was last created, updated or deleted); each set gets a palette index when it is synced and keeps it, so a set looks the same in every app and theme. a note in no set is the neutral grey.',
+    example: 'one set · one colour · no set · grey',
   },
   {
     name: 'pixel logo',

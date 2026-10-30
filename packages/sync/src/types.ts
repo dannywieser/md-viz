@@ -82,3 +82,20 @@ export interface LastSelection {
   folder: string | null
   lastSync: LastSync | null
 }
+
+/** a note of a set as a grid draws it. */
+export interface SetNote {
+  id: string
+  /** the note's title, else its id. */
+  title: string
+}
+
+/** a set of one grouping with its notes, in the shape the note grid takes. */
+export interface NoteSet {
+  id: string
+  /** what the grid calls the set: its id. */
+  name: string
+  /** the set's colour, an index into the note palette. */
+  color: number
+  notes: SetNote[]
+}

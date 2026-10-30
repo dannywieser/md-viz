@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { AppHeader, Button, ErrorState, StateBlock, ThemeSelect, useTheme } from '@md-viz/ui'
-import type { LastSelection, Source, SyncNotes, SyncTarget } from '../../shared/ipc'
+import type { LastSelection, Source, SyncTarget } from '../../shared/ipc'
 import { FolderCard } from './components/folder-card'
 import { SourceSelect } from './components/source-select'
-import { SyncGrids } from './components/sync-grids'
+import { SyncGrid } from './components/sync-grid'
 import { SyncOverlay } from './components/sync-overlay'
 import { useScan } from './hooks/use-scan'
+import { useSets } from './hooks/use-sets'
 import { useSync } from './hooks/use-sync'
 import { errorMessage } from './lib/error-message'
 
@@ -13,15 +14,13 @@ import { errorMessage } from './lib/error-message'
 // the windows and linux buttons on the right.
 const headerClearance = navigator.userAgent.includes('Macintosh') ? 'pl-24' : 'pr-40'
 
-/** the grids before anything has been synced. */
-const NO_NOTES: SyncNotes = { updated: [], deleted: [], unchanged: [] }
-
 export function App() {
   const { theme, themes, setTheme } = useTheme()
   const [error, setError] = useState<string | null>(null)
   const [source, setSource] = useState<Source>('file')
   const scan = useScan(setError)
   const sync = useSync(scan.target, setError)
+  const sets = useSets(source, sync.lastSync?.syncedAt, scan.target !== null, setError)
 
   const choose = async (target: SyncTarget, saved: LastSelection['lastSync'] = null) => {
     sync.reset(saved)
@@ -88,7 +87,7 @@ export function App() {
               <ErrorState detail={error} />
             </StateBlock>
           ) : (
-            scan.target && <SyncGrids notes={sync.lastSync?.notes ?? NO_NOTES} />
+            scan.target && sets && <SyncGrid sets={sets} />
           )}
           <SyncOverlay
             scanning={scan.scanning}

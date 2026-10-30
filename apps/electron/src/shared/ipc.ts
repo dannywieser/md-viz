@@ -3,6 +3,7 @@
 
 import type {
   LastSelection,
+  NoteSet,
   ScanProgress,
   ScanResult,
   Source,
@@ -16,6 +17,7 @@ export type {
   LastSelection,
   LastSync,
   NoteRef,
+  NoteSet,
   ScanProgress,
   ScanResult,
   Source,
@@ -33,6 +35,7 @@ export const IPC = {
   syncProgress: 'source:sync-progress',
   selectSource: 'source:select',
   loadLast: 'source:load-last',
+  sets: 'source:sets',
 } as const
 
 /** what the preload script exposes to the renderer as `window.api`. */
@@ -51,4 +54,6 @@ export interface Api {
   selectSource: (source: Source) => Promise<LastSelection>
   /** the selection from the previous run; a file source's folder is null once it is gone. */
   loadLast: () => Promise<LastSelection>
+  /** the sets of the `sync` grouping of the source as the cache holds them after the last sync, with their notes. */
+  sets: (source: Source) => Promise<NoteSet[]>
 }

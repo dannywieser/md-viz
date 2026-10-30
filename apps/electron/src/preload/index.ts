@@ -3,6 +3,7 @@ import {
   IPC,
   type Api,
   type LastSelection,
+  type NoteSet,
   type ScanProgress,
   type ScanResult,
   type SyncProgress,
@@ -15,6 +16,7 @@ const api: Api = {
   sync: (target) => ipcRenderer.invoke(IPC.sync, target) as Promise<SyncResult>,
   selectSource: (source) => ipcRenderer.invoke(IPC.selectSource, source) as Promise<LastSelection>,
   loadLast: () => ipcRenderer.invoke(IPC.loadLast) as Promise<LastSelection>,
+  sets: (source) => ipcRenderer.invoke(IPC.sets, source) as Promise<NoteSet[]>,
   onSyncProgress: (callback) => {
     const listener = (_event: IpcRendererEvent, progress: SyncProgress) => callback(progress)
     ipcRenderer.on(IPC.syncProgress, listener)

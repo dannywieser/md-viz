@@ -1,13 +1,32 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { createRef } from 'react'
-import { NoteGrid, type Note } from '../../src'
+import { NoteGrid, makeFakeSets, type GridSet } from '../../src'
+import { MOTION_LIMIT } from '../../src/components/note-grid'
 
-function makeNotes(count: number): Note[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `n${i}`,
-    title: `note ${i}`,
-    colors: [i % 10],
-  }))
+const sets: GridSet[] = [
+  {
+    id: 'a',
+    name: 'alpha',
+    color: 2,
+    notes: [
+      { id: 'n1', title: 'first' },
+      { id: 'n3', title: 'third' },
+    ],
+  },
+  { id: 'b', name: 'beta', color: 5, notes: [{ id: 'n2', title: 'second' }] },
+]
+
+/** the grid's drawing: the toggle and the empty state have svgs of their own. */
+const gridSvg = (container: HTMLElement) => container.querySelector('svg[role="img"]')
+
+const squareRects = (container: HTMLElement) => container.querySelectorAll('svg g > rect')
+
+/** the centre of the nth square, as the pointer position over the svg (jsdom boxes sit at 0,0). */
+function centreOf(container: HTMLElement, index: number) {
+  const rect = squareRects(container)[index] as SVGRectElement
+  const [, x, y] = /translate\(([\d.]+)px, ([\d.]+)px\)/.exec(rect.style.transform)!
+  const size = Number(rect.style.width.replace('px', ''))
+  return { clientX: Number(x) + size / 2, clientY: Number(y) + size / 2 }
 }
 
 describe('NoteGrid', () => {
@@ -18,381 +37,257 @@ describe('NoteGrid', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    Reflect.deleteProperty(window, 'matchMedia')
   })
 
-  it('draws one square per note', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(12)} />)
+  it('draws one square per note, coloured by its set, in the order of the note ids', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const rects = [...squareRects(container)] as SVGRectElement[]
 
-    expect(container.querySelectorAll('.note-square')).toHaveLength(12)
+    expect(rects.map((rect) => rect.style.fill)).toEqual([
+      'var(--note-2)',
+      'var(--note-5)',
+      'var(--note-2)',
+    ])
   })
 
-  it.each([
-    ['center', 'justify-center'],
-    ['start', 'justify-start'],
-    ['end', 'justify-end'],
-  ] as const)('sits %s in its container', (align, className) => {
-    const { container } = render(<NoteGrid notes={makeNotes(3)} align={align} />)
+  it('is a shadowed block as big as its squares, which are as big as fit the container', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const svg = gridSvg(container) as SVGSVGElement
+    const block = svg.parentElement as HTMLElement
+    const square = Number(
+      (squareRects(container)[0] as SVGRectElement).style.width.replace('px', ''),
+    )
 
-    expect(container.querySelector('.note-square')?.closest('.flex')).toHaveClass(className)
+    expect(block).toHaveClass('bg-card', 'shadow-hard')
+    expect(block.style.width).toBe(`${svg.getAttribute('width')}px`)
+    expect(Number(svg.getAttribute('width')) % square).toBe(0)
+    expect(Number(svg.getAttribute('width'))).toBeLessThanOrEqual(400)
+    expect(Number(svg.getAttribute('height'))).toBeLessThanOrEqual(288)
+    expect(Number(svg.getAttribute('width')) + square).toBeGreaterThan(400)
+    expect(block.firstElementChild).toHaveAttribute('data-slot', 'note-grid-bar')
   })
 
-  it('fills the height of its container when no height is given', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(2000)} />)
-    const area = container.querySelector('[data-slot="note-grid"]') as HTMLElement
-    const svg = container.querySelector('svg')
+  it('puts the block at the top left of its container', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
 
-    expect(area.style.height).toBe('')
-    expect(area).toHaveClass('h-full')
-    expect(Number(svg?.getAttribute('height'))).toBeLessThanOrEqual(320 + 3)
+    expect(container.querySelector('[data-slot="note-grid"]')).toHaveClass(
+      'items-start',
+      'justify-start',
+    )
   })
 
-  it('uses a fixed height when one is given', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(12)} height={200} />)
-    const area = container.querySelector('[data-slot="note-grid"]') as HTMLElement
+  it('moves the size of the block to the other state with a transition', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const svg = gridSvg(container) as SVGSVGElement
 
-    expect(area.style.height).toBe('200px')
-    expect(area).not.toHaveClass('h-full')
+    expect(svg.style.transition).toContain('width')
+    expect((svg.parentElement as HTMLElement).style.transition).toContain('width')
   })
 
-  it('is a shadowed block floating on the page', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(3)} />)
+  it('starts not grouped and shows the totals, and the label before them', () => {
+    const { rerender } = render(<NoteGrid sets={sets} />)
 
-    expect(container.querySelector('svg')?.parentElement).toHaveClass('bg-card', 'shadow-hard')
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'not grouped: 3 notes in 2 sets')
+    expect(screen.getByText('3 notes in 2 sets')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'group notes by set' })).toBeInTheDocument()
+
+    rerender(<NoteGrid sets={sets} label="all notes" />)
+
+    expect(screen.getByText('all notes: 3 notes in 2 sets')).toBeInTheDocument()
   })
 
-  it('hangs a label with the count above the grid and makes room for it', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(3)} height={200} label="updated" />)
-    const area = container.querySelector('[data-slot="note-grid"]') as HTMLElement
-    const label = container.querySelector('[data-slot="card"]')
+  it('switches between not grouped and grouped with the toggle, fading the outline in and out', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const outline = container.querySelector('[data-outline]') as SVGPathElement
+    expect(outline.style.opacity).toBe('0')
 
-    expect(label).toHaveTextContent('updated 3')
-    expect(label?.parentElement).toBe(container.querySelector('svg')?.parentElement)
-    expect(Number(area.style.height.replace('px', ''))).toBeGreaterThan(200)
-    expect(area.style.paddingTop).not.toBe('')
+    fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
+
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'grouped: 3 notes in 2 sets')
+    expect(outline.style.opacity).toBe('1')
+    expect(screen.getByRole('button', { name: 'ungroup notes' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ungroup notes' }))
+
+    expect(outline.style.opacity).toBe('0')
   })
 
-  it('hands its block to the ref', () => {
+  it('moves each square to its place in the other state', () => {
+    const { container } = render(<NoteGrid sets={makeFakeSets([30, 6, 2])} />)
+    const places = () =>
+      [...squareRects(container)].map((rect) => (rect as SVGRectElement).style.transform)
+    const before = places()
+
+    fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
+
+    expect(places()).toHaveLength(before.length)
+    expect(places()).not.toEqual(before)
+  })
+
+  it('names the hovered note and its set in the bar and outlines the square', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const svg = gridSvg(container) as SVGSVGElement
+
+    fireEvent.pointerMove(svg, centreOf(container, 1))
+
+    expect(screen.getByText('beta')).toBeInTheDocument()
+    expect(screen.getByText('second')).toBeInTheDocument()
+    expect(container.querySelector('.note-hover')).toBeInTheDocument()
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+
+    fireEvent.pointerLeave(svg)
+
+    expect(screen.queryByText('second')).not.toBeInTheDocument()
+    expect(container.querySelector('.note-hover')).not.toBeInTheDocument()
+  })
+
+  it('finds the hovered note in the grouped layout too', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
+
+    fireEvent.pointerMove(gridSvg(container)!, centreOf(container, 1))
+
+    expect(screen.getByText('second')).toBeInTheDocument()
+  })
+
+  it('shows nothing hovered outside the squares', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const svg = gridSvg(container) as SVGSVGElement
+
+    fireEvent.pointerMove(svg, centreOf(container, 0))
+    fireEvent.pointerMove(svg, { clientX: -50, clientY: -50 })
+
+    expect(container.querySelector('.note-hover')).not.toBeInTheDocument()
+  })
+
+  it('shows nothing hovered over an empty cell', () => {
+    const { container } = render(<NoteGrid sets={makeFakeSets([5])} />)
+    const svg = gridSvg(container) as SVGSVGElement
+
+    fireEvent.pointerMove(svg, { clientX: 399, clientY: 287 })
+
+    expect(container.querySelector('.note-hover')).not.toBeInTheDocument()
+  })
+
+  it('reports the cell of the state shown', () => {
+    const onCellChange = vi.fn<(cell: number) => void>()
+    render(<NoteGrid sets={makeFakeSets([30, 6, 2])} onCellChange={onCellChange} />)
+
+    expect(onCellChange).toHaveBeenCalledWith(expect.any(Number))
+    const natural = onCellChange.mock.lastCall?.[0]
+
+    fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
+
+    expect(onCellChange.mock.lastCall?.[0]).not.toBe(natural)
+  })
+
+  it('has an unseen square at the corner of the first cell for the dots to follow', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const marker = container.querySelector('.note-square') as SVGRectElement
+
+    expect(marker.parentElement).toBe(gridSvg(container))
+    expect(marker.style.fill).toBe('none')
+  })
+
+  it('gives the block as its ref', () => {
     const ref = createRef<HTMLDivElement>()
-    const { container } = render(<NoteGrid ref={ref} notes={makeNotes(3)} />)
+    const { container } = render(<NoteGrid sets={sets} ref={ref} />)
 
-    expect(ref.current).toBe(container.querySelector('svg')?.parentElement)
+    expect(ref.current).toBe(gridSvg(container)?.parentElement)
   })
 
-  it('has no per-note title elements', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(3)} />)
+  it('shows the empty state in a block as big as the container when there are no notes', () => {
+    const ref = createRef<HTMLDivElement>()
+    const { container } = render(<NoteGrid sets={[]} ref={ref} />)
 
-    expect(container.querySelectorAll('title')).toHaveLength(0)
+    expect(gridSvg(container)).not.toBeInTheDocument()
+    expect(screen.getByText('the notes went out for coffee')).toBeInTheDocument()
+    expect(ref.current).toHaveClass('shadow-hard')
+    expect(ref.current?.style.width).toBe('400px')
+    expect(ref.current?.style.height).toBe('320px')
   })
 
-  describe('hover', () => {
-    function hover(container: HTMLElement, index: number) {
-      const svg = container.querySelector('svg')!
-      const rect = container.querySelectorAll('.note-square')[index]
-      const x = Number(rect.getAttribute('x')) + 2
-      const y = Number(rect.getAttribute('y')) + 2
-      fireEvent.pointerMove(svg, { clientX: x, clientY: y })
-    }
+  it('has no toggle for a single note, which has nothing to group', () => {
+    render(<NoteGrid sets={makeFakeSets([1])} />)
 
-    it('shows one shared tooltip and outline for the hovered note', () => {
-      const { container } = render(<NoteGrid notes={makeNotes(6)} />)
-
-      hover(container, 4)
-
-      expect(screen.getByRole('tooltip')).toHaveTextContent('note 4')
-      expect(container.querySelectorAll('.note-hover')).toHaveLength(1)
-    })
-
-    it('follows the pointer from cell to cell', () => {
-      const { container } = render(<NoteGrid notes={makeNotes(6)} />)
-
-      hover(container, 1)
-      expect(screen.getByRole('tooltip')).toHaveTextContent('note 1')
-      hover(container, 5)
-      expect(screen.getByRole('tooltip')).toHaveTextContent('note 5')
-    })
-
-    describe('tooltip placement', () => {
-      function stubTooltipRect(left: number, width: number) {
-        vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
-          this: Element,
-        ) {
-          const isTooltip = this.getAttribute('role') === 'tooltip'
-          return { left: isTooltip ? left : 0, width: isTooltip ? width : 0, top: 0 } as DOMRect
-        })
-      }
-
-      it('moves a tooltip that overflows the left edge to the right', () => {
-        stubTooltipRect(-20, 80)
-        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
-
-        hover(container, 0)
-
-        expect(screen.getByRole('tooltip').style.marginLeft).toBe('28px')
-      })
-
-      it('moves a tooltip that overflows the right edge to the left', () => {
-        stubTooltipRect(document.documentElement.clientWidth - 60, 80)
-        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
-
-        hover(container, 5)
-
-        expect(screen.getByRole('tooltip').style.marginLeft).toBe('-28px')
-      })
-
-      it('keeps a tooltip clear of the scrollbar, so it never makes the page scroll sideways', () => {
-        // a classic scrollbar takes room from clientWidth but not from innerWidth
-        vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(
-          document.documentElement.clientWidth + 15,
-        )
-        stubTooltipRect(document.documentElement.clientWidth - 70, 80)
-        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
-
-        hover(container, 5)
-
-        expect(screen.getByRole('tooltip').style.marginLeft).toBe('-18px')
-      })
-
-      it('leaves a tooltip that fits centred', () => {
-        stubTooltipRect(100, 80)
-        const { container } = render(<NoteGrid notes={makeNotes(6)} />)
-
-        hover(container, 2)
-
-        expect(screen.getByRole('tooltip').style.marginLeft).toBe('0px')
-      })
-    })
-
-    it('shows nothing over a placeholder, outside the grid, or after leaving', () => {
-      const { container } = render(<NoteGrid notes={makeNotes(5)} />)
-      const svg = container.querySelector('svg')!
-      const placeholder = container.querySelector('.note-placeholder')!
-
-      fireEvent.pointerMove(svg, {
-        clientX: Number(placeholder.getAttribute('x')) + 2,
-        clientY: Number(placeholder.getAttribute('y')) + 2,
-      })
-      expect(screen.queryByRole('tooltip')).toBeNull()
-
-      fireEvent.pointerMove(svg, { clientX: -5, clientY: -5 })
-      expect(screen.queryByRole('tooltip')).toBeNull()
-
-      hover(container, 0)
-      expect(screen.getByRole('tooltip')).toBeInTheDocument()
-      fireEvent.pointerLeave(svg)
-      expect(screen.queryByRole('tooltip')).toBeNull()
-    })
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
-  it('keeps every note visible as the set grows', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(5000)} />)
+  it('has the toggle for two notes', () => {
+    render(<NoteGrid sets={makeFakeSets([1, 1])} />)
 
-    expect(container.querySelectorAll('.note-square')).toHaveLength(5000)
+    expect(screen.getByRole('button', { name: 'group notes by set' })).toBeInTheDocument()
   })
 
-  it('draws bigger squares for fewer notes', () => {
-    const squareSize = (count: number) => {
-      const { container, unmount } = render(<NoteGrid notes={makeNotes(count)} />)
-      const size = Number(container.querySelector('.note-square')?.getAttribute('width'))
-      unmount()
-      return size
-    }
+  it('says note and set in the singular for one', () => {
+    render(<NoteGrid sets={makeFakeSets([1])} />)
 
-    expect(squareSize(5)).toBeGreaterThan(squareSize(100))
+    expect(screen.getByText('1 note in 1 set')).toBeInTheDocument()
   })
 
-  it('sizes the grid to its cells plus the gridline margin', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(2)} />)
-    const svg = container.querySelector('svg')
-    const cell = Number(container.querySelector('.note-square')?.getAttribute('width'))
+  it('leaves out sets without notes', () => {
+    render(<NoteGrid sets={[{ id: 'x', name: 'x', color: 1, notes: [] }, ...sets]} />)
 
-    expect(Number(svg?.getAttribute('width'))).toBe(2 * cell + 3)
-    expect(container.querySelectorAll('.note-placeholder')).toHaveLength(0)
+    expect(screen.getByText('3 notes in 2 sets')).toBeInTheDocument()
   })
 
-  it('is always a rectangle: placeholders fill the short last row', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(5)} />)
-    const cell = Number(container.querySelector('.note-square')?.getAttribute('width'))
-    const svg = container.querySelector('svg')
-    const cells = (Number(svg?.getAttribute('width')) - 3) / cell
-    const rows = (Number(svg?.getAttribute('height')) - 3) / cell
-
-    expect(cells * rows).toBe(5 + container.querySelectorAll('.note-placeholder').length)
-    expect(container.querySelectorAll('.note-placeholder').length).toBeGreaterThan(0)
-  })
-
-  it('has no border around the grid, so the hover outline stands alone', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(5)} />)
-
-    expect(container.querySelector('.note-border')).toBeNull()
-  })
-
-  it('lets the hover outline extend past the svg so it is not clipped on edge cells', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(5)} />)
-
-    expect(container.querySelector('svg')).toHaveClass('overflow-visible')
-  })
-
-  it('is not wrapped in a card', () => {
-    const { container } = render(<NoteGrid notes={makeNotes(3)} />)
-
-    expect(container.querySelector('[data-slot="card"]')).toBeNull()
-  })
-
-  it('wraps colour indexes onto the palette', () => {
-    const notes = [
-      { id: 'a', title: 'a', colors: [27] },
-      { id: 'b', title: 'b', colors: [-1] },
-    ]
-    const { container } = render(<NoteGrid notes={notes} />)
-
-    const colors = [...container.querySelectorAll('.note-square')].map((el) =>
-      el.getAttribute('data-color'),
-    )
-    expect(colors).toEqual(['2', '24'])
-  })
-
-  describe('stripes', () => {
-    // a cell is at least 8px in a 400x320 grid of a few notes, so every stripe is whole pixels
-    const stripeNote = (colors: number[]): Note => ({ id: 'a', title: 'a', colors })
-
-    it('draws a note with one tag as one square', () => {
-      const { container } = render(<NoteGrid notes={[stripeNote([3])]} />)
-
-      expect(container.querySelectorAll('.note-square')).toHaveLength(1)
-      expect(container.querySelectorAll('.note-stripe')).toHaveLength(0)
-    })
-
-    it('draws a note with no tags in the neutral grey', () => {
-      const { container } = render(<NoteGrid notes={[stripeNote([])]} />)
-
-      expect(container.querySelector('.note-square')).toHaveAttribute('data-color', '24')
-    })
-
-    it('adds a stripe for each further tag, down the square', () => {
-      const { container } = render(<NoteGrid notes={[stripeNote([1, 2, 3])]} />)
-
-      const square = container.querySelector('.note-square')!
-      const stripes = [...container.querySelectorAll('.note-stripe')]
-      expect(square).toHaveAttribute('data-color', '1')
-      expect(stripes.map((stripe) => stripe.getAttribute('data-color'))).toEqual(['2', '3'])
-      const [first, second] = stripes.map((stripe) => Number(stripe.getAttribute('y')))
-      expect(second).toBeGreaterThan(first)
-      const cell = Number(square.getAttribute('width'))
-      expect(Number(stripes[1].getAttribute('y')) + Number(stripes[1].getAttribute('height'))).toBe(
-        Number(square.getAttribute('y')) + cell - 0.5,
-      )
-    })
-
-    it('shows only the first three tags', () => {
-      const { container } = render(<NoteGrid notes={[stripeNote([1, 2, 3, 4, 5])]} />)
-
-      expect(container.querySelectorAll('.note-stripe')).toHaveLength(2)
-    })
-
-    it('keeps the stripes inside the gridlines', () => {
-      const { container } = render(<NoteGrid notes={[stripeNote([1, 2])]} />)
-
-      const square = container.querySelector('.note-square')!
-      const stripe = container.querySelector('.note-stripe')!
-      expect(Number(stripe.getAttribute('x'))).toBe(Number(square.getAttribute('x')) + 0.5)
-      expect(Number(stripe.getAttribute('width'))).toBe(Number(square.getAttribute('width')) - 1)
-    })
-
-    it('draws no stripe that would be less than a pixel high', () => {
-      const notes = Array.from({ length: 100 }, (_, i) => ({
-        id: `n${i}`,
-        title: `note ${i}`,
-        colors: [1, 2, 3],
-      }))
-      // a 3px drawing area makes 3px cells: 2px inside the lines, so only two of the three stripes get a pixel
-      const { container } = render(<NoteGrid notes={notes} height={6} />)
-
-      const stripes = [...container.querySelectorAll('.note-stripe')]
-      expect(container.querySelector('.note-square')).toHaveAttribute('width', '3')
-      expect(stripes).toHaveLength(notes.length)
-      expect(stripes.every((stripe) => stripe.getAttribute('height') === '1')).toBe(true)
-    })
-  })
-
-  describe('tooltip tags', () => {
-    it('lists all the tags of the hovered note under its title', () => {
-      const notes: Note[] = [
-        { id: 'a', title: 'plan', colors: [1, 2], tags: ['work', 'ideas', 'q4'] },
-      ]
-      const { container } = render(<NoteGrid notes={notes} />)
-      const svg = container.querySelector('svg')!
-      const rect = container.querySelector('.note-square')!
-
-      fireEvent.pointerMove(svg, {
-        clientX: Number(rect.getAttribute('x')) + 2,
-        clientY: Number(rect.getAttribute('y')) + 2,
-      })
-
-      expect(screen.getByRole('tooltip')).toHaveTextContent('plan')
-      expect(screen.getByRole('tooltip')).toHaveTextContent('work, ideas, q4')
-    })
-
-    it('shows only the title for a note without tags', () => {
-      const notes: Note[] = [{ id: 'a', title: 'plan', colors: [], tags: [] }]
-      const { container } = render(<NoteGrid notes={notes} />)
-      const rect = container.querySelector('.note-square')!
-
-      fireEvent.pointerMove(container.querySelector('svg')!, {
-        clientX: Number(rect.getAttribute('x')) + 2,
-        clientY: Number(rect.getAttribute('y')) + 2,
-      })
-
-      expect(screen.getByRole('tooltip').children).toHaveLength(1)
-    })
-  })
-
-  it('shows a lowercase empty state as a shadowed block, with its label', () => {
-    const { container } = render(<NoteGrid notes={[]} label="deleted" />)
-
-    const text = screen.getByText('the notes went out for coffee')
-    expect(text.closest('[data-slot="empty-state"]')?.parentElement).toHaveClass('shadow-hard')
-    expect(container.querySelector('[data-slot="card"]')).toHaveTextContent('deleted 0')
-    const all = container.textContent
-    expect(all).toBe(all.toLowerCase())
-  })
-
-  it('fills the drawing area with an empty block, less the stroke room', () => {
-    const { container } = render(<NoteGrid notes={[]} height={160} />)
-    const block = container.querySelector('[data-slot="empty-state"]')?.parentElement
-
-    expect(block).toHaveStyle({ width: '397px', height: '157px' })
-  })
-
-  it('gives the empty block the size it is told to have', () => {
-    const { container } = render(
-      <NoteGrid notes={[]} height={160} emptySize={{ width: 267, height: 135 }} />,
-    )
-    const block = container.querySelector('[data-slot="empty-state"]')?.parentElement
-
-    expect(block).toHaveStyle({ width: '267px', height: '135px' })
-  })
-
-  it('has no size on the empty block until its container has one', () => {
+  it('draws nothing before its container has a size', () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(0)
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(0)
-    const { container } = render(<NoteGrid notes={[]} />)
-    const block = container.querySelector('[data-slot="empty-state"]')?.parentElement
+    const { container } = render(<NoteGrid sets={sets} />)
 
-    expect(block?.style.width).toBe('')
-  })
-
-  it('shows the compact empty state when asked', () => {
-    const { container } = render(<NoteGrid notes={[]} compactEmpty />)
-
-    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute('data-compact')
+    expect(gridSvg(container)).not.toBeInTheDocument()
     expect(screen.queryByText('the notes went out for coffee')).not.toBeInTheDocument()
   })
 
-  it('draws nothing until its container has a size', () => {
-    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(0)
-    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(0)
-    const { container } = render(<NoteGrid notes={makeNotes(12)} />)
+  it('takes a class', () => {
+    const { container } = render(<NoteGrid sets={sets} className="extra" />)
 
-    expect(container.querySelectorAll('.note-square')).toHaveLength(0)
+    expect(container.querySelector('[data-slot="note-grid"]')).toHaveClass('extra')
+  })
+
+  describe('motion', () => {
+    it('moves the squares with a transition up to the motion limit', () => {
+      const { container } = render(<NoteGrid sets={sets} />)
+
+      expect((squareRects(container)[0] as SVGRectElement).style.transition).toContain('transform')
+    })
+
+    it('fades the grid instead of moving the squares above the motion limit', () => {
+      const animate = vi.fn()
+      Object.defineProperty(SVGElement.prototype, 'animate', { value: animate, configurable: true })
+      try {
+        const { container } = render(<NoteGrid sets={makeFakeSets([MOTION_LIMIT, 50])} />)
+        expect((squareRects(container)[0] as SVGRectElement).style.transition).toBe('')
+        expect(animate).not.toHaveBeenCalled()
+
+        fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
+
+        expect(animate).toHaveBeenCalledTimes(1)
+      } finally {
+        Reflect.deleteProperty(SVGElement.prototype, 'animate')
+      }
+    })
+
+    it('does not move the squares for a user who prefers reduced motion', () => {
+      Object.defineProperty(window, 'matchMedia', {
+        value: () => ({ matches: true }),
+        configurable: true,
+      })
+      const { container } = render(<NoteGrid sets={sets} />)
+
+      expect((squareRects(container)[0] as SVGRectElement).style.transition).toBe('')
+    })
+
+    it('switches without a fade when the browser cannot animate', () => {
+      render(<NoteGrid sets={makeFakeSets([MOTION_LIMIT, 50])} />)
+
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
+      })
+
+      expect(screen.getByRole('button', { name: 'ungroup notes' })).toBeInTheDocument()
+    })
   })
 })

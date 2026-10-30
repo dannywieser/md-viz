@@ -26,3 +26,6 @@ export const NOTE_COLORS = HUE_COLORS + 1
 
 /** the neutral grey: the colour of a note without tags. */
 export const DEFAULT_NOTE_COLOR = HUE_COLORS
+
+/** a palette colour as css; the theme sets `--note-0..24`, so a grid follows the theme switcher. */
+export const colorVar = (index: number) => `var(--note-${index})`

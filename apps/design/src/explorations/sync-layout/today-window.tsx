@@ -1,4 +1,5 @@
-import { Card, ErrorState, NoteGrid, StateBlock } from '@md-viz/ui'
+import { Card, ErrorState, StateBlock } from '@md-viz/ui'
+import { MockGrid } from './mock-grid'
 import { AppFrame } from './app-frame'
 import { COLUMN_GAP, COLUMN_WIDTH, TODAY_WINDOW } from './window-size'
 import { WindowHeader } from './window-header'
@@ -59,13 +60,7 @@ export function TodayWindow({ phase, percent }: { phase: Phase; percent: number 
                 className="shrink-0"
                 style={{ width: COLUMN_WIDTH }}
               >
-                <NoteGrid
-                  notes={groups[group]}
-                  label={group}
-                  height={160}
-                  align="start"
-                  compactEmpty
-                />
+                <MockGrid notes={groups[group]} label={group} height={160} />
               </section>
             ))}
           </div>

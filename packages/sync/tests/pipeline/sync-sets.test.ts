@@ -10,13 +10,13 @@ const byName = (sets: { id: string; noteIds: string[] }[]) =>
   Object.fromEntries(sets.map((set) => [set.id, set.noteIds]))
 
 describe('buildSyncSets', () => {
-  it('returns the seven sets of a bear sync, ranked with the narrower period first', () => {
+  it('returns the seven sets of a bear sync, ranked in the order a note is placed in them', () => {
     const sets = buildSyncSets('bear', [], now)
 
     expect(sets.map((set) => [set.id, set.rank])).toEqual([
       ['created-today', 0],
-      ['created-last-30-days', 1],
-      ['updated-today', 2],
+      ['updated-today', 1],
+      ['created-last-30-days', 2],
       ['updated-last-30-days', 3],
       ['deleted-today', 4],
       ['deleted-last-30-days', 5],
@@ -29,7 +29,7 @@ describe('buildSyncSets', () => {
     const sets = buildSyncSets('file', [], now)
 
     expect(sets.map((set) => [set.id, set.rank])).toEqual([
-      ['updated-today', 2],
+      ['updated-today', 1],
       ['updated-last-30-days', 3],
       ['deleted-today', 4],
       ['deleted-last-30-days', 5],
@@ -37,7 +37,7 @@ describe('buildSyncSets', () => {
     ])
   })
 
-  it('puts a note updated today in both updated sets and a note from last week in the second', () => {
+  it('puts a note updated today only in updated-today and a note from last week only in the second', () => {
     const notes: TimedNote[] = [
       { id: 'today', synced: TODAY },
       { id: 'week', synced: LAST_WEEK },
@@ -46,7 +46,7 @@ describe('buildSyncSets', () => {
     const sets = byName(buildSyncSets('file', notes, now))
 
     expect(sets['updated-today']).toEqual(['today'])
-    expect(sets['updated-last-30-days']).toEqual(['today', 'week'])
+    expect(sets['updated-last-30-days']).toEqual(['week'])
     expect(sets['unchanged']).toEqual([])
   })
 
@@ -86,17 +86,54 @@ describe('buildSyncSets', () => {
   it('builds the created sets from the created time of a bear note', () => {
     const notes: TimedNote[] = [
       { id: 'new', created: TODAY, synced: TODAY },
-      { id: 'week', created: LAST_WEEK, synced: TODAY },
+      { id: 'week', created: LAST_WEEK, synced: LAST_WEEK },
       { id: 'none', created: '', synced: TODAY },
     ]
 
     const sets = byName(buildSyncSets('bear', notes, now))
 
     expect(sets['created-today']).toEqual(['new'])
-    expect(sets['created-last-30-days']).toEqual(['new', 'week'])
+    expect(sets['created-last-30-days']).toEqual(['week'])
+    expect(sets['updated-today']).toEqual(['none'])
   })
 
-  it('puts a deleted note only in the deleted sets', () => {
+  it('puts a note in the first set it fits: created today, updated today, created, updated, unchanged', () => {
+    const notes: TimedNote[] = [
+      { id: 'created-and-updated-today', created: TODAY, synced: TODAY },
+      { id: 'old-updated-today', created: LONG_AGO, synced: TODAY },
+      { id: 'recent-updated-today', created: LAST_WEEK, synced: TODAY },
+      { id: 'created-last-week', created: LAST_WEEK, synced: LAST_WEEK },
+      { id: 'old-updated-last-week', created: LONG_AGO, synced: LAST_WEEK },
+      { id: 'untouched', created: LONG_AGO, synced: LONG_AGO },
+    ]
+
+    expect(byName(buildSyncSets('bear', notes, now))).toEqual({
+      'created-today': ['created-and-updated-today'],
+      'updated-today': ['old-updated-today', 'recent-updated-today'],
+      'created-last-30-days': ['created-last-week'],
+      'updated-last-30-days': ['old-updated-last-week'],
+      'deleted-today': [],
+      'deleted-last-30-days': [],
+      unchanged: ['untouched'],
+    })
+  })
+
+  it('puts every note in at most one set', () => {
+    const notes: TimedNote[] = [
+      { id: 'a', created: TODAY, synced: TODAY },
+      { id: 'b', created: LAST_WEEK, synced: TODAY },
+      { id: 'c', created: LONG_AGO, synced: LONG_AGO },
+      { id: 'd', created: TODAY, synced: TODAY, deleted: TODAY },
+      { id: 'e', synced: LAST_WEEK, deleted: LAST_WEEK },
+      { id: 'f', synced: LONG_AGO, deleted: LONG_AGO },
+    ]
+
+    const ids = buildSyncSets('bear', notes, now).flatMap((set) => set.noteIds)
+
+    expect(ids.sort()).toEqual(['a', 'b', 'c', 'd', 'e'])
+  })
+
+  it('puts a deleted note only in the deleted set of its period', () => {
     const notes: TimedNote[] = [
       { id: 'gone-today', created: TODAY, synced: TODAY, deleted: TODAY },
       { id: 'gone-week', synced: LONG_AGO, deleted: LAST_WEEK },
@@ -106,7 +143,7 @@ describe('buildSyncSets', () => {
     const sets = byName(buildSyncSets('bear', notes, now))
 
     expect(sets['deleted-today']).toEqual(['gone-today'])
-    expect(sets['deleted-last-30-days']).toEqual(['gone-today', 'gone-week'])
+    expect(sets['deleted-last-30-days']).toEqual(['gone-week'])
     for (const name of ['created-today', 'updated-today', 'updated-last-30-days', 'unchanged']) {
       expect(sets[name]).toEqual([])
     }

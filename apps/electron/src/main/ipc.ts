@@ -3,12 +3,19 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import {
   DEFAULT_CACHE_URL,
   loadLastSelection,
+  loadNoteSets,
   rememberFolder,
   scanTarget,
   selectSource,
   syncTarget,
 } from '@md-viz/sync'
-import { IPC, type LastSelection, type ScanResult, type SyncResult } from '../shared/ipc'
+import {
+  IPC,
+  type LastSelection,
+  type NoteSet,
+  type ScanResult,
+  type SyncResult,
+} from '../shared/ipc'
 
 export function registerIpc(): void {
   const stateFile = () => path.join(app.getPath('userData'), 'state.json')
@@ -42,6 +49,13 @@ export function registerIpc(): void {
 
   ipcMain.handle(IPC.selectSource, (_event, input: unknown): Promise<LastSelection> => {
     return selectSource(input, stateFile())
+  })
+
+  ipcMain.handle(IPC.sets, (_event, input: unknown): Promise<NoteSet[]> => {
+    return loadNoteSets(input, {
+      grouping: 'sync',
+      baseUrl: process.env['CACHE_URL'] ?? DEFAULT_CACHE_URL,
+    })
   })
 
   ipcMain.handle(IPC.loadLast, (): Promise<LastSelection> => loadLastSelection(stateFile()))

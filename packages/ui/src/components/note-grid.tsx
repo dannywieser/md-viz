@@ -1,246 +1,199 @@
-/* eslint-disable react/no-multi-comp -- `Cells`, the memo'd item layer, is internal to the grid and stays beside it (agreed exception). */
 import * as React from 'react'
 import { cn } from 'cn'
-import { Card } from './card'
 import { EmptyState } from './empty-state'
-import { DEFAULT_NOTE_COLOR, NOTE_COLORS } from '../lib/note-colors'
-import { stripeColors, stripeHeights } from '../lib/tag-stripes'
-import { STROKE_ROOM, layoutGrid } from '../lib/note-grid-layout'
-import { tooltipShift } from '../lib/tooltip-shift'
+import { GroupToggle } from './group-toggle'
+import { BAR_PX, NoteGridBar } from './note-grid-bar'
+import { NoteGridSquares } from './note-grid-squares'
 import { useElementSize } from '../hooks/use-element-size'
+import { groupStates } from '../lib/grid-layout/group-states'
+import { buildGridModel, type GridSet } from '../lib/grid-layout/grid-model'
 
-export { NOTE_COLORS, DEFAULT_NOTE_COLOR }
-
-export type Note = {
-  id: string
-  title: string
-  /** indexes into the note palette, one per tag; the first three are drawn as horizontal stripes, none gives the neutral grey. */
-  colors: number[]
-  /** all the tags of the note, listed in the tooltip. */
-  tags?: string[]
-}
+export type { GridNote, GridSet } from '../lib/grid-layout/grid-model'
 
 type NoteGridProps = {
-  /** the grid blocks, one square per note. An empty array shows the empty state instead. */
-  notes: Note[]
-  /** height of the drawing area in px; squares shrink so every note fits inside it. Omit to fill the container's height. */
-  height?: number
-  /** shown on a small card hanging above the grid, with the note count; room for it is added above the drawing area. */
+  /** the notes by set, one square per note, coloured by its set. Empty sets are left out; no notes at all shows the empty state. */
+  sets: GridSet[]
+  /** shown in the bar while nothing is hovered, before the totals. */
   label?: string
-  /** where the grid sits in its container; the container is the drawing area, so a grid that does not fill it floats in it: `start` pins it to the top-left, `end` to the top-right. */
-  align?: 'center' | 'start' | 'end'
-  /** use only whole multiples of this cell, so grids next to each other share a lattice. */
-  cellStep?: number
-  /** show the compact empty state (small muted ghost, no text) when there are no notes. */
-  compactEmpty?: boolean
-  /** size (px) of the empty block, e.g. to match a populated grid next to it. Omit to fill the drawing area less the stroke room. */
-  emptySize?: { width: number; height: number }
-  /** called with the cell size (px) whenever the layout changes it. */
+  /** called with the cell size (px) of the state shown (and when the layout changes it). */
   onCellChange?: (cell: number) => void
-  /** the grid block (the shadowed element holding the squares), e.g. to line the page's dots up with it. */
+  /** the grid block (the shadowed element holding the bar and the squares), e.g. to line the page's dots up with it. */
   ref?: React.Ref<HTMLDivElement>
   className?: string
 }
 
-/** how the grid sits in its container for each `align`. */
-const ALIGN_CLASSES = {
-  center: 'items-center justify-center',
-  start: 'items-start justify-start',
-  end: 'items-start justify-end',
+/** above this many notes the squares do not move one by one (thousands of transitions are too heavy): the grid fades instead. */
+export const MOTION_LIMIT = 1000
+const FADE_MS = 250
+
+/** how the block and its squares move to the size and places of the other state. */
+const MOVE = '450ms ease-in-out'
+
+const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
 }
 
-/** px kept between the tooltip and the window edge. */
-const TOOLTIP_MARGIN = 8
-
-/** px reserved above the drawing area for the label card: one text line, its padding and border, and a gap. */
-const LABEL_ROOM = 42
-
-type CellsProps = { notes: Note[]; columns: number; cell: number }
-
-/** the squares and placeholders; memoised so a hover change does not re-render thousands of rects. */
-const Cells = React.memo(function Cells({ notes, columns, cell }: CellsProps) {
-  const rows = Math.ceil(notes.length / columns)
-  const placeholders = columns * rows - notes.length
-  const cellX = (i: number) => (i % columns) * cell + 1.5
-  const cellY = (i: number) => Math.floor(i / columns) * cell + 1.5
-  return (
-    <>
-      {notes.map((note, i) => {
-        const colors = stripeColors(note.colors)
-        // the stripes sit inside the gridlines: the first is the square itself, the others cover the rest of its inner area.
-        const heights = stripeHeights(cell - 1, colors.length)
-        let top = cellY(i) + 0.5 + heights[0]
-        return (
-          <React.Fragment key={note.id}>
-            <rect
-              className="note-square"
-              data-color={colors[0]}
-              x={cellX(i)}
-              y={cellY(i)}
-              width={cell}
-              height={cell}
-            />
-            {colors.slice(1).map((color, j) => {
-              const y = top
-              top += heights[j + 1]
-              return (
-                heights[j + 1] > 0 && (
-                  <rect
-                    key={j}
-                    className="note-stripe"
-                    data-color={color}
-                    x={cellX(i) + 0.5}
-                    y={y}
-                    width={cell - 1}
-                    height={heights[j + 1]}
-                  />
-                )
-              )
-            })}
-          </React.Fragment>
-        )
-      })}
-      {Array.from({ length: placeholders }, (_, k) => (
-        <rect
-          key={`placeholder-${k}`}
-          className="note-placeholder"
-          x={cellX(notes.length + k)}
-          y={cellY(notes.length + k)}
-          width={cell}
-          height={cell}
-        />
-      ))}
-    </>
-  )
-})
-
-function NoteGrid({
-  notes,
-  height: fixedHeight,
-  label,
-  align = 'center',
-  cellStep,
-  compactEmpty = false,
-  emptySize,
-  onCellChange,
-  ref,
-  className,
-}: NoteGridProps) {
+/**
+ * the notes as a grid of squares in a shadowed block floating on the page and never inside a card.
+ * the block is as big as its squares, which are as big as fit its container (the slack of under one
+ * square is page background, at the right and bottom of the block). a bar across its top shows the totals, or the hovered note and its set,
+ * and holds a toggle (not with a single note, which has nothing to group) between two states: not grouped (the default; every note the same size in the
+ * order of their ids, coloured by set) and grouped (the sets as outlined flowing shapes, the
+ * squares of the smaller sets bigger). the block can differ in size between
+ * the two states, and follows the squares with a transition; every note is one square that keeps its identity, so switching moves and resizes each square
+ * (above `MOTION_LIMIT` notes, or with reduced motion, the grid fades instead). one pointer handler
+ * derives the hovered note from the layout of the current state.
+ */
+function NoteGrid({ sets, label, onCellChange, ref, className }: NoteGridProps) {
   const areaRef = React.useRef<HTMLDivElement>(null)
   const size = useElementSize(areaRef)
-  const width = Math.max(0, size.width - STROKE_ROOM)
-  const height = Math.max(0, (fixedHeight ?? size.height) - STROKE_ROOM)
+  const width = size.width
+  const height = Math.max(0, size.height - BAR_PX)
+  const [grouped, setGrouped] = React.useState(false)
   const [hovered, setHovered] = React.useState<number | null>(null)
-  const tooltipRef = React.useRef<HTMLDivElement>(null)
-  const { columns, rows, cell } = layoutGrid({
-    count: notes.length,
-    width,
-    height,
-    multipleOf: cellStep,
-  })
+  const squaresRef = React.useRef<SVGGElement>(null)
+
+  const model = React.useMemo(() => buildGridModel(sets), [sets])
+  const total = model.notes.length
+  const ready = total > 0 && width > 0 && height > 0
+  const states = React.useMemo(
+    () => (ready ? groupStates(model.counts, model.order, width, height) : null),
+    [ready, model, width, height],
+  )
+  const colors = React.useMemo(() => model.order.map((set) => model.sets[set].color), [model])
+  const animated = total <= MOTION_LIMIT && !prefersReducedMotion()
+
+  const state = states && (grouped ? states.grouped : states.natural)
+  const unit = state?.unit
   React.useEffect(() => {
-    if (notes.length > 0 && width > 0 && height > 0) onCellChange?.(cell)
-  }, [cell, notes.length, width, height, onCellChange])
-  const gridWidth = columns * cell
-  const gridHeight = rows * cell
-  const cellX = (i: number) => (i % columns) * cell + 1.5
-  const cellY = (i: number) => Math.floor(i / columns) * cell + 1.5
-  const active = hovered !== null && hovered < notes.length ? hovered : null
+    if (unit !== undefined) onCellChange?.(unit)
+  }, [unit, onCellChange])
 
-  // the one shared tooltip is centred on its cell; near a window edge it is moved sideways just enough to stay on screen.
-  // the room is the viewport less any scrollbar (clientWidth, not innerWidth): a tooltip reaching under a scrollbar would overflow the page, which adds the scrollbar and resizes the grid, and the tooltip flickers.
-  React.useLayoutEffect(() => {
-    const tooltip = tooltipRef.current
-    if (!tooltip) return
-    tooltip.style.marginLeft = '0px'
-    const { left, width } = tooltip.getBoundingClientRect()
-    tooltip.style.marginLeft = `${tooltipShift(left, width, document.documentElement.clientWidth, TOOLTIP_MARGIN)}px`
-  }, [active, notes])
+  // a switch fades the grid in when the squares do not move one by one.
+  const first = React.useRef(true)
+  React.useEffect(() => {
+    if (first.current) {
+      first.current = false
+      return
+    }
+    if (!animated) squaresRef.current?.animate?.([{ opacity: 0 }, { opacity: 1 }], FADE_MS)
+  }, [grouped, animated])
 
-  // one handler for the whole grid: the cell under the pointer follows from the uniform layout.
+  const lines = React.useMemo(() => {
+    if (!state) return ''
+    const { columns, rows, unit: cell } = state
+    const vertical = Array.from({ length: columns + 1 }, (_, i) => `M${i * cell},0V${rows * cell}`)
+    const horizontal = Array.from(
+      { length: rows + 1 },
+      (_, i) => `M0,${i * cell}H${columns * cell}`,
+    )
+    return [...vertical, ...horizontal].join('')
+  }, [state])
+
   function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
+    if (!state) return
     const box = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX - box.left - 1.5
-    const y = event.clientY - box.top - 1.5
-    const column = Math.floor(x / cell)
-    const row = Math.floor(y / cell)
-    const inside = x >= 0 && y >= 0 && column < columns && row < rows
-    const index = row * columns + column
-    setHovered(inside && index < notes.length ? index : null)
+    const column = Math.floor((event.clientX - box.left) / state.unit)
+    const row = Math.floor((event.clientY - box.top) / state.unit)
+    const inside = column >= 0 && column < state.columns && row >= 0 && row < state.rows
+    const id = inside ? state.idAt[row * state.columns + column] : -1
+    setHovered(id === -1 ? null : id)
   }
 
-  // the grid is always a shadowed block floating on the page, never inside a card; the label card hangs above it.
-  const block = (content: React.ReactNode, extra?: string, style?: React.CSSProperties) => (
-    <div ref={ref} className={cn('relative shrink-0 bg-card shadow-hard', extra)} style={style}>
-      {label && (
-        <Card className="absolute inset-x-0 bottom-full mb-3 flex-row items-baseline gap-2 whitespace-nowrap px-3 py-1 text-sm font-bold">
-          {label} <span className="font-normal text-muted-foreground">{notes.length}</span>
-        </Card>
-      )}
-      {content}
-    </div>
-  )
-
-  const grid = block(
-    <>
-      <svg
-        role="img"
-        aria-label={`${notes.length} notes`}
-        width={gridWidth + STROKE_ROOM}
-        height={gridHeight + STROKE_ROOM}
-        className="overflow-visible"
-        shapeRendering="crispEdges"
-        onPointerMove={handlePointerMove}
-        onPointerLeave={() => setHovered(null)}
-      >
-        <Cells notes={notes} columns={columns} cell={cell} />
-        {active !== null && (
-          <rect
-            className="note-hover"
-            x={cellX(active) - 0.5}
-            y={cellY(active) - 0.5}
-            width={cell}
-            height={cell}
-          />
-        )}
-      </svg>
-      {active !== null && (
-        <div
-          ref={tooltipRef}
-          role="tooltip"
-          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap border bg-card px-2 py-1 text-xs text-card-foreground shadow-hard"
-          style={{ left: cellX(active) + cell / 2, top: cellY(active) - 8 }}
-        >
-          <div>{notes[active].title}</div>
-          {notes[active].tags && notes[active].tags.length > 0 && (
-            <div className="text-muted-foreground">{notes[active].tags.join(', ')}</div>
-          )}
-        </div>
-      )}
-    </>,
-  )
-
-  // an empty block is `emptySize`, else it fills the drawing area (less the stroke room), so it is never bigger than its container.
-  const empty = block(
-    <EmptyState compact={compactEmpty} />,
-    'flex items-center justify-center',
-    emptySize ?? (width > 0 && height > 0 ? { width, height } : undefined),
-  )
+  const gridWidth = state ? state.columns * state.unit : 0
+  const gridHeight = state ? state.rows * state.unit : 0
+  const square = states && state && hovered !== null ? state.squares[hovered] : null
+  const note = hovered === null ? null : model.notes[hovered]
+  const set = hovered === null ? null : model.sets[model.order[hovered]]
+  const totals = `${plural(total, 'note')} in ${plural(model.sets.length, 'set')}`
+  const idle = label ? `${label}: ${totals}` : totals
 
   return (
     <div
       data-slot="note-grid"
-      className={cn('flex w-full flex-col', fixedHeight === undefined && 'h-full', className)}
-      style={{
-        ...(fixedHeight === undefined
-          ? undefined
-          : { height: fixedHeight + (label ? LABEL_ROOM : 0) }),
-        ...(label ? { paddingTop: LABEL_ROOM } : undefined),
-      }}
+      ref={areaRef}
+      className={cn('flex h-full w-full items-start justify-start', className)}
     >
-      <div ref={areaRef} className={cn('flex min-h-0 w-full flex-1', ALIGN_CLASSES[align])}>
-        {notes.length === 0 ? empty : width > 0 && height > 0 && grid}
-      </div>
+      {total === 0 && width > 0 && size.height > 0 && (
+        <div
+          ref={ref}
+          className="flex shrink-0 items-center justify-center bg-card shadow-hard"
+          style={{ width, height: size.height }}
+        >
+          <EmptyState />
+        </div>
+      )}
+      {states && state && (
+        <div
+          ref={ref}
+          className="shrink-0 bg-card shadow-hard"
+          style={{ width: gridWidth, transition: animated ? `width ${MOVE}` : undefined }}
+        >
+          <NoteGridBar
+            idle={idle}
+            hovered={note && set && { title: note.title, setName: set.name, color: set.color }}
+            action={
+              total > 1 ? (
+                <GroupToggle grouped={grouped} onToggle={() => setGrouped((value) => !value)} />
+              ) : undefined
+            }
+          />
+          <svg
+            role="img"
+            aria-label={`${grouped ? 'grouped' : 'not grouped'}: ${totals}`}
+            width={gridWidth}
+            height={gridHeight}
+            shapeRendering="crispEdges"
+            className="block overflow-visible bg-card"
+            style={{
+              width: gridWidth,
+              height: gridHeight,
+              transition: animated ? `width ${MOVE}, height ${MOVE}` : undefined,
+            }}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={() => setHovered(null)}
+          >
+            <path data-gridlines d={lines} fill="none" style={{ stroke: 'var(--note-stroke)' }} />
+            {/* the page's dots line up with this square: it never moves, unlike the first note's. */}
+            <rect
+              className="note-square"
+              x={0}
+              y={0}
+              width={state.unit}
+              height={state.unit}
+              style={{ fill: 'none', stroke: 'none', pointerEvents: 'none' }}
+            />
+            <g ref={squaresRef}>
+              <NoteGridSquares squares={state.squares} colors={colors} animated={animated} />
+            </g>
+            <path
+              data-outline
+              d={states.grouped.outline}
+              fill="none"
+              stroke="var(--focus)"
+              strokeWidth={2}
+              style={{
+                opacity: grouped ? 1 : 0,
+                transition: `opacity 200ms ease ${grouped && animated ? '300ms' : '0ms'}`,
+              }}
+            />
+            {square && (
+              <rect
+                className="note-hover"
+                x={square.x}
+                y={square.y}
+                width={square.size}
+                height={square.size}
+              />
+            )}
+          </svg>
+        </div>
+      )}
     </div>
   )
 }

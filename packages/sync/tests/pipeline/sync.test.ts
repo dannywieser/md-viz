@@ -334,7 +334,7 @@ describe('syncNotes', () => {
   })
 
   describe('tag sets', () => {
-    it('makes a set per top-level tag with the notes that have it', async () => {
+    it('puts each note in the set of its first tag, by its top level', async () => {
       const cache = fakeCache()
 
       await syncNotes(
@@ -343,16 +343,23 @@ describe('syncNotes', () => {
           note('a', { source: 'bear', tags: ['daily/10/28', 'work'] }),
           note('b', { source: 'bear', tags: ['daily/10/29', 'daily'] }),
           note('c', { source: 'bear' }),
+          note('d', { source: 'bear', tags: ['work', 'daily'] }),
         ),
         { fetch: cache.fetch },
       )
 
-      expect(membersOf(cache, 'bear', 'tags')).toEqual({ daily: ['a', 'b'], work: ['a'] })
+      expect(membersOf(cache, 'bear', 'tags')).toEqual({ daily: ['a', 'b'], work: ['d'] })
     })
 
     it('gives the new sets colours, per grouping and source, and keeps them', async () => {
       const cache = fakeCache()
-      await syncNotes('file', loaded(note('a', { tags: ['work', 'home'] })), { fetch: cache.fetch })
+      await syncNotes(
+        'file',
+        loaded(note('a', { tags: ['work'] }), note('b', { tags: ['home'] })),
+        {
+          fetch: cache.fetch,
+        },
+      )
       const color = (key: string) => cache.sets.get(key)?.color
       expect(color('file:tags:home')).toBe(0)
       expect(color('file:tags:work')).toBe(1)
@@ -361,7 +368,11 @@ describe('syncNotes', () => {
 
       await syncNotes(
         'file',
-        loaded(note('a', { tags: ['work', 'home'] }), note('c', { tags: ['c'] })),
+        loaded(
+          note('a', { tags: ['work'] }),
+          note('b', { tags: ['home'] }),
+          note('c', { tags: ['c'] }),
+        ),
         {
           fetch: cache.fetch,
         },
@@ -382,7 +393,13 @@ describe('syncNotes', () => {
         noteIds: [],
       })
 
-      await syncNotes('file', loaded(note('a', { tags: ['work', 'home'] })), { fetch: cache.fetch })
+      await syncNotes(
+        'file',
+        loaded(note('a', { tags: ['work'] }), note('b', { tags: ['home'] })),
+        {
+          fetch: cache.fetch,
+        },
+      )
 
       expect(cache.sets.get('file:tags:work')?.color).toBe(9)
       expect(cache.sets.get('file:tags:home')?.color).toBe(0)
@@ -479,15 +496,16 @@ describe('syncNotes', () => {
 
       expect(membersOf(cache, 'bear', 'sync')).toEqual({
         'created-today': ['new'],
-        'created-last-30-days': ['new'],
-        'updated-today': ['new'],
-        'updated-last-30-days': ['new'],
+        'created-last-30-days': [],
+        'updated-today': [],
+        'updated-last-30-days': [],
         'deleted-today': [],
         'deleted-last-30-days': [],
         unchanged: ['old'],
       })
       expect(cache.sets.get('bear:sync:created-today')?.rank).toBe(0)
       expect(cache.sets.get('bear:sync:unchanged')?.rank).toBe(6)
+      expect(cache.sets.get('bear:sync:updated-today')?.rank).toBe(1)
     })
 
     it('lists deleted notes in the deleted sets, not in the others', async () => {
@@ -503,7 +521,7 @@ describe('syncNotes', () => {
 
       const sync = membersOf(cache, 'file', 'sync')
       expect(sync['deleted-today']).toEqual(['b'])
-      expect(sync['deleted-last-30-days']).toEqual(['b'])
+      expect(sync['deleted-last-30-days']).toEqual([])
       expect(sync['updated-today']).toEqual(['a'])
     })
 

@@ -2,6 +2,7 @@
 import path from 'node:path'
 import {
   loadLastSelection,
+  loadNoteSets,
   rememberFolder,
   scanTarget,
   selectSource,
@@ -26,6 +27,7 @@ vi.mock('electron', () => ({
 vi.mock('@md-viz/sync', () => ({
   DEFAULT_CACHE_URL: 'http://default.test',
   loadLastSelection: vi.fn(),
+  loadNoteSets: vi.fn(),
   rememberFolder: vi.fn(),
   scanTarget: vi.fn(),
   selectSource: vi.fn(),
@@ -67,7 +69,7 @@ describe('registerIpc', () => {
     const channels = electron.handle.mock.calls.map(([name]) => name)
 
     expect(channels.sort()).toEqual(
-      [IPC.pickFolder, IPC.scan, IPC.sync, IPC.selectSource, IPC.loadLast].sort(),
+      [IPC.pickFolder, IPC.scan, IPC.sync, IPC.selectSource, IPC.loadLast, IPC.sets].sort(),
     )
   })
 
@@ -194,6 +196,32 @@ describe('registerIpc', () => {
 
       expect(await handler(IPC.loadLast)({})).toBe(selection)
       expect(loadLastSelection).toHaveBeenCalledWith(stateFile)
+    })
+  })
+
+  describe('sets', () => {
+    const noteSets = [{ id: 'unchanged', name: 'unchanged', color: 0, notes: [] }]
+
+    it('loads the sync sets of the source from the default cache', async () => {
+      vi.mocked(loadNoteSets).mockResolvedValue(noteSets)
+
+      expect(await handler(IPC.sets)({}, 'bear')).toBe(noteSets)
+      expect(loadNoteSets).toHaveBeenCalledWith('bear', {
+        grouping: 'sync',
+        baseUrl: 'http://default.test',
+      })
+    })
+
+    it('loads them from the cache named by CACHE_URL', async () => {
+      process.env['CACHE_URL'] = 'http://cache.test'
+      vi.mocked(loadNoteSets).mockResolvedValue(noteSets)
+
+      await handler(IPC.sets)({}, 'file')
+
+      expect(loadNoteSets).toHaveBeenCalledWith('file', {
+        grouping: 'sync',
+        baseUrl: 'http://cache.test',
+      })
     })
   })
 })
