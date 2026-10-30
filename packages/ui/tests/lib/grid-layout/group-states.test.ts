@@ -27,6 +27,13 @@ describe('groupStates', () => {
     )
   })
 
+  it('has only the rows the notes need in the natural state', () => {
+    const few = groupStates([5], [0, 0, 0, 0, 0], 100, 60)
+
+    expect(few.natural.rows).toBe(Math.ceil(5 / few.natural.columns))
+    expect(few.natural.rows * few.natural.unit).toBeLessThanOrEqual(60)
+  })
+
   it('marks the cells past the last note empty', () => {
     const few = groupStates([5], [0, 0, 0, 0, 0], 100, 60)
 

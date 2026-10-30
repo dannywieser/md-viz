@@ -62,7 +62,8 @@ export function groupStates(
     }
   }
 
-  const { cell, columns, rows } = fillGrid(total, width, height)
+  const { cell, columns } = fillGrid(total, width, height)
+  const rows = Math.ceil(total / columns)
   const natural: StateLayout = {
     unit: cell,
     columns,

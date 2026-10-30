@@ -16,6 +16,12 @@ const states = [
   { label: 'empty', total: 0, sets: 0 },
 ]
 
+// sets of very different sizes, like the sync sets of a real cache.
+const unevens = [
+  { label: 'two and thousands', counts: [2, 4862] },
+  { label: 'seven sets', counts: [2740, 1142, 525, 274, 205, 91, 23] },
+]
+
 /** `total` notes split over `sets` sets, the first the biggest (shares 1, 1/2, 1/3...) and none empty, so the board looks the same on every load. */
 function splitCounts(total: number, sets: number): number[] {
   const count = Math.min(sets, total)
@@ -83,6 +89,19 @@ export function NoteGridPage() {
           <div style={{ height: 360 }}>
             <NoteGrid sets={grid} label="notes" />
           </div>
+        </DemoBox>
+      </DemoGroup>
+      <DemoGroup title="uneven sets">
+        <p className="text-sm text-muted-foreground">
+          the sets of a real sync are far apart in size. grouped, the small sets get the bigger
+          squares: two notes next to thousands.
+        </p>
+        <DemoBox className="space-y-8">
+          {unevens.map(({ label, counts }) => (
+            <div key={label} className="h-80">
+              <NoteGrid sets={makeFakeSets(counts)} label={label} />
+            </div>
+          ))}
         </DemoBox>
       </DemoGroup>
       <DemoGroup title="states">

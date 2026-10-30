@@ -57,14 +57,50 @@ describe('placeTiles', () => {
   })
 })
 
-describe('fillTileLayout', () => {
-  it('fills a box of any size with no filler cell, the small sets never with smaller squares', () => {
-    const counts = [60, 20, 5]
-    const fit = fillTileLayout(counts, 400, 300)
+describe('placeTiles under the squares', () => {
+  it('gives the strip under a full column of big squares to the next set', () => {
+    // two squares of 2 fill 4 of the 5 rows of the first two columns; the row below is free
+    const fit = placeTiles([2, 4], [2, 1], 4, 5)
 
-    expect(fit.columns * fit.unit).toBeLessThanOrEqual(400)
-    expect(fit.rows * fit.unit).toBeLessThanOrEqual(300)
-    expect(fit.columns * fit.unit).toBeGreaterThan(400 - fit.unit)
+    expect(fit.tiles.filter((tile) => tile.set === 1)).toHaveLength(4)
+    const below = fit.tiles.filter((tile) => tile.set === 1 && tile.x < 2 && tile.y === 4)
+    expect(below.length).toBeGreaterThan(0)
+  })
+})
+
+describe('fillTileLayout', () => {
+  const empty = (fit: ReturnType<typeof fillTileLayout>) =>
+    fit.columns * fit.rows - fit.tiles.reduce((sum, tile) => sum + tile.size ** 2, 0)
+
+  it('gives a small set much bigger squares than a huge one, with hardly any cell left empty', () => {
+    for (const [width, height] of [
+      [880, 400],
+      [880, 260],
+      [711, 296],
+    ]) {
+      const fit = fillTileLayout([2, 4862], width, height)
+
+      expect(fit.scales[0]).toBeGreaterThan(fit.scales[1])
+      expect(fit.tiles).toHaveLength(4864)
+      expect(empty(fit)).toBeLessThan(100)
+      expect(fit.columns * fit.unit).toBeLessThanOrEqual(width)
+      expect(fit.rows * fit.unit).toBeLessThanOrEqual(height)
+    }
+  })
+
+  it('has only as many rows as the notes need, so the grid is as short as it can be', () => {
+    const fit = fillTileLayout([2, 4862], 880, 400)
+
+    expect(fit.rows * fit.unit).toBeLessThan(400)
+    expect(fit.columns * (fit.rows - 1)).toBeLessThan(5374)
+  })
+
+  it('makes the squares as big as the box allows for the sizes it picks', () => {
+    const fit = fillTileLayout([60, 20, 5], 400, 300)
+    const bigger = fit.unit + 1
+    const area = fit.tiles.reduce((sum, tile) => sum + tile.size ** 2, 0)
+
+    expect(Math.floor(400 / bigger) * Math.floor(300 / bigger)).toBeLessThan(area)
     expect(fit.scales[2]).toBeGreaterThanOrEqual(fit.scales[0])
     expect(fit.tiles).toHaveLength(85)
   })
@@ -73,22 +109,34 @@ describe('fillTileLayout', () => {
     const fit = fillTileLayout([12], 120, 90)
 
     expect(fit.tiles).toHaveLength(12)
-    expect(fit.scales).toEqual([fit.scales[0]])
+    expect(fit.scales).toEqual([1])
+    expect(empty(fit)).toBeLessThan(fit.columns)
   })
 
-  it('leaves the cells at the end empty when no sizes fill the box exactly', () => {
-    const fit = fillTileLayout([7, 3], 101, 67)
+  it('places every note of every set once', () => {
+    const fit = fillTileLayout([7, 3, 1], 101, 67)
 
-    expect(fit.tiles).toHaveLength(10)
-    expect(fit.owner.length).toBeGreaterThanOrEqual(10)
+    expect(fit.tiles).toHaveLength(11)
+    expect(new Set(fit.tiles.map((tile) => `${tile.set}:${tile.note}`)).size).toBe(11)
   })
 
-  it('uses one-unit squares when the box is too small for sizes of 3px', () => {
+  it('keeps the sizes of the sets it searches over a whole range of box sizes', () => {
+    for (const width of [300, 500, 700, 900]) {
+      for (const height of [150, 250, 350]) {
+        const fit = fillTileLayout([300, 120, 40, 6, 1], width, height)
+
+        expect(fit.tiles).toHaveLength(467)
+        expect(fit.columns * fit.unit).toBeLessThanOrEqual(width)
+        expect(fit.rows * fit.unit).toBeLessThanOrEqual(height)
+      }
+    }
+  })
+
+  it('uses one-unit squares when the box is too small for squares of 3px', () => {
     const fit = fillTileLayout([20, 5], 12, 10)
 
     expect(fit.scales).toEqual([1, 1])
     expect(fit.tiles).toHaveLength(25)
-    expect(fit.unit).toBeGreaterThanOrEqual(1)
     expect(fit.columns * fit.rows).toBeGreaterThanOrEqual(25)
   })
 

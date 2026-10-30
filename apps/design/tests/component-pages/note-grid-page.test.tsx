@@ -26,10 +26,24 @@ describe('NoteGridPage', () => {
     expect(total(mainGrid().sets)).toBe(50)
     expect(mainGrid().sets).toHaveLength(3)
     const states: Record<string, [number, number]> = {}
-    for (const props of calls().filter((candidate) => candidate.label !== 'notes')) {
+    for (const props of calls().filter((candidate) =>
+      ['one', 'a few', 'many', 'empty'].includes(candidate.label ?? ''),
+    )) {
       states[props.label!] = [total(props.sets), props.sets.length]
     }
     expect(states).toEqual({ one: [1, 1], 'a few': [5, 2], many: [500, 4], empty: [0, 0] })
+  })
+
+  it('shows grids of very uneven sets', () => {
+    render(<NoteGridPage />)
+    const uneven = calls().filter(
+      (props) => props.label?.startsWith('two') || props.label === 'seven sets',
+    )
+
+    expect(uneven.map((props) => props.sets.map((set) => set.notes.length))).toEqual([
+      [2, 4862],
+      [2740, 1142, 525, 274, 205, 91, 23],
+    ])
   })
 
   it('splits the notes with the first set the biggest and no set empty', () => {

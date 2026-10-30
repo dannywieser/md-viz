@@ -20,8 +20,11 @@ type Rect = { x: number; y: number; w: number; h: number }
 const MIN_UNIT = 3
 const MAX_SCALE = 16
 
-/** in a layout with no exact fit: how much the cells left empty count against the distance from the ideal sizes. */
-const NEAR_WEIGHT = 20
+/** how much a combination of sizes counts against its distance from the ideal ones for making the squares smaller (the share of the unit lost to the biggest possible). */
+const SMALLER_WEIGHT = 3
+
+/** how many of the best combinations are tried to place before falling back to equal squares. */
+const TRIES = 20
 
 /**
  * above this many sets the sizes are not searched for (the search grows with every set) and all
@@ -93,6 +96,12 @@ export function placeTiles(
           h: rect.h - partial * size,
         })
       }
+      // under the full columns of squares is what a whole number of squares left of the rect's height
+      const fullColumns = Math.floor(take / perColumn)
+      const under = rect.h - perColumn * size
+      if (fullColumns > 0 && under > 0) {
+        next.push({ x: rect.x, y: rect.y + perColumn * size, w: fullColumns * size, h: under })
+      }
       if (rect.w - used * size > 0) {
         next.push({ x: rect.x + used * size, y: rect.y, w: rect.w - used * size, h: rect.h })
       }
@@ -143,58 +152,66 @@ function scaleCombos(counts: number[], ideal: number[]) {
   return combos
 }
 
-/** one-unit squares on the smallest unit for which `counts` fit the box: the sets flow one after the other. */
+/** the largest unit (px, at least `min`) for which `area` cells fit a grid whose sides are at least `top` units; 0 when none does. */
+function largestUnit(area: number, top: number, width: number, height: number, min: number) {
+  const fits = (unit: number) => {
+    const columns = Math.floor(width / unit)
+    const rows = Math.floor(height / unit)
+    return columns * rows >= area && top <= Math.min(columns, rows)
+  }
+  if (!fits(min)) return 0
+  let low = min
+  let high = Math.max(min, Math.min(width, height))
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2)
+    if (fits(mid)) low = mid
+    else high = mid - 1
+  }
+  return low
+}
+
+/** the sets as one-unit squares on the biggest unit for which they fit the box; the rows are only as many as the notes need. */
 function uniformFit(counts: number[], width: number, height: number): TileFit {
   const ones = counts.map(() => 1)
   const total = counts.reduce((sum, count) => sum + count, 0)
-  for (let unit = Math.min(width, height); unit >= 1; unit--) {
-    const columns = Math.floor(width / unit)
-    const rows = Math.floor(height / unit)
-    if (columns * rows >= total) return { ...placeTiles(counts, ones, columns, rows), unit }
-  }
-  return { ...placeTiles(counts, ones, width, Math.ceil(total / width)), unit: 1 }
+  const unit = largestUnit(total, 1, width, height, 1)
+  if (unit === 0) return { ...placeTiles(counts, ones, width, Math.ceil(total / width)), unit: 1 }
+  const columns = Math.floor(width / unit)
+  return { ...placeTiles(counts, ones, columns, Math.ceil(total / columns)), unit }
 }
 
 /**
- * the grid of the sets as flowing shapes filling the `width` x `height` box: for each unit (px)
- * the grid is as many units as fit the box each way (the slack is less than one unit), and the
- * sizes of the sets are picked, as close to the ideal ones (see `idealScales`) as possible, so that
- * notes times size squared is exactly that grid. a box of any size is filled by a grid with no
- * filler; the sets take up the difference between the notes and the cells by growing their
- * squares. when no sizes fit any unit exactly, the sizes that leave the fewest cells empty are
- * used, the empty cells being left at the end; a box too small for that, or more than
- * `MAX_TILED_SETS` sets, gets one-unit squares.
+ * the grid of the sets as flowing shapes in the `width` x `height` box. every combination of
+ * square sizes near the ideal ones (see `idealScales`) is tried: the squares are as big as the
+ * box allows for those sizes (the largest unit, in whole px, for which the notes' cells fit), and a
+ * combination wins by being close to the ideal sizes without making the squares much smaller than
+ * all one-unit squares would. the grid has only as many rows as its cells need, so what the sets
+ * do not fill is a few empty cells at the end, not a band of the box. above `MAX_TILED_SETS` sets
+ * the sizes are not searched and all squares are the same, and so they are when the box is too
+ * small for squares of 3px.
  */
 export function fillTileLayout(counts: number[], width: number, height: number): TileFit {
   if (counts.length > MAX_TILED_SETS) return uniformFit(counts, width, height)
-  const ideal = idealScales(counts)
-  const byArea = new Map<number, ReturnType<typeof scaleCombos>>()
-  for (const combo of scaleCombos(counts, ideal))
-    byArea.set(combo.area, [...(byArea.get(combo.area) ?? []), combo])
-  const combos = [...byArea.values()].flat()
-  type Pick = { scales: number[]; columns: number; rows: number; unit: number; cost: number }
-  let exact: Pick | null = null
-  let near: Pick | null = null
-  let nearScore = Infinity
-  for (let unit = Math.min(width, height); unit >= MIN_UNIT; unit--) {
-    const columns = Math.floor(width / unit)
-    const rows = Math.floor(height / unit)
-    for (const combo of byArea.get(columns * rows) ?? []) {
-      if (columns % combo.top !== 0 || rows % combo.top !== 0) continue
-      if (!exact || combo.cost < exact.cost - 1e-9)
-        exact = { scales: combo.scales, columns, rows, unit, cost: combo.cost }
-    }
-    for (const combo of combos) {
-      const cells = columns * rows
-      if (combo.area > cells || columns % combo.top !== 0 || rows % combo.top !== 0) continue
-      const score = combo.cost + NEAR_WEIGHT * ((cells - combo.area) / cells)
-      if (score < nearScore - 1e-9) {
-        nearScore = score
-        near = { scales: combo.scales, columns, rows, unit, cost: combo.cost }
-      }
+  const total = counts.reduce((sum, count) => sum + count, 0)
+  const biggest = largestUnit(total, 1, width, height, 1)
+  if (biggest < MIN_UNIT) return uniformFit(counts, width, height)
+
+  const ideal = idealScales(counts).map((scale) => Math.min(scale, MAX_SCALE))
+  const ranked = scaleCombos(counts, ideal)
+    .map((combo) => {
+      const unit = largestUnit(combo.area, combo.top, width, height, MIN_UNIT)
+      return { ...combo, unit, score: combo.cost + SMALLER_WEIGHT * (1 - unit / biggest) }
+    })
+    .filter((combo) => combo.unit > 0)
+    .sort((a, b) => a.score - b.score || b.unit - a.unit)
+
+  for (const combo of ranked.slice(0, TRIES)) {
+    const columns = Math.floor(width / combo.unit)
+    const most = Math.floor(height / combo.unit)
+    for (let rows = Math.max(Math.ceil(combo.area / columns), combo.top); rows <= most; rows++) {
+      const fit = placeTiles(counts, combo.scales, columns, rows)
+      if (fit.tiles.length === total) return { ...fit, unit: combo.unit }
     }
   }
-  const best = exact ?? near
-  if (best) return { ...placeTiles(counts, best.scales, best.columns, best.rows), unit: best.unit }
   return uniformFit(counts, width, height)
 }
