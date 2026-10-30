@@ -87,3 +87,6 @@ Confirmed: Electron is only adapted to compile against the new sync contract (no
 
 ### [2026.10.30 08:08:20] Decision
 Implement everything (option 1), committing and pushing after each numbered plan step.
+
+### [2026.10.30 08:10:01] Claude
+Steps 1-2 done (cache store + API): store.ts (sets keyed by source/grouping/id with colour and rank, soft delete via `deleted` field, facet-aware listNotes, old tables dropped on open), schemas.ts, app.ts (PUT /sets, GET /sets, GET/DELETE /set, grouping on GET /notes, /tag-colors removed), tests, openapi.json regenerated, README. Cache tests and typecheck pass. No deviations.

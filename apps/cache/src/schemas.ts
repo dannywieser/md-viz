@@ -26,6 +26,11 @@ export const ListQuerySchema = z.object({
     .string()
     .min(1)
     .meta({ description: 'comma-separated field names to include', example: 'title,synced' }),
+  grouping: z.string().min(1).optional().meta({
+    description:
+      'the facet the notes are loaded for; only "sync" includes deleted notes (see their deleted field)',
+    example: 'tags',
+  }),
 })
 
 /** A list row is the note id plus only the requested fields. */
@@ -43,55 +48,54 @@ export const HealthSchema = z.object({ ok: z.literal(true) }).meta({ id: 'Health
 
 export const ErrorSchema = z.object({ error: z.string() }).meta({ id: 'Error' })
 
-export const SetIdSchema = NameSchema.meta({
-  description: 'set id, namespaced by source',
-  example: 'bear:created-today',
+/** a set is identified by three fields; the id is free text (a tag can contain slashes and colons). */
+export const SetKeySchema = z.object({
+  source: z.string().min(1).meta({ description: 'where the notes come from', example: 'bear' }),
+  grouping: z
+    .string()
+    .min(1)
+    .meta({ description: 'the facet the set belongs to', example: 'tags' }),
+  id: z.string().min(1).meta({ description: 'set name within its grouping', example: 'daily' }),
 })
 
-export const SetIdParamSchema = z.object({ id: SetIdSchema })
+export const SetFilterSchema = z.object({
+  source: z.string().min(1).optional().meta({ description: 'only sets of this source' }),
+  grouping: z.string().min(1).optional().meta({ description: 'only sets of this grouping' }),
+})
 
-export const ReplaceSetBodySchema = z
-  .object({ noteIds: z.array(IdSchema) })
-  .meta({ id: 'ReplaceSetBody' })
+const ColorSchema = z
+  .number()
+  .int()
+  .nonnegative()
+  .meta({ description: 'index into the note palette; not interpreted', example: 3 })
+
+const RankSchema = z
+  .number()
+  .int()
+  .meta({ description: 'order within the grouping, lower first; not interpreted', example: 0 })
+
+export const ReplaceSetBodySchema = SetKeySchema.extend({
+  color: ColorSchema,
+  rank: RankSchema,
+  noteIds: z.array(IdSchema),
+}).meta({ id: 'ReplaceSetBody' })
 
 export const ReplaceSetResultSchema = z
   .object({ count: z.number().int().nonnegative() })
   .meta({ id: 'ReplaceSetResult' })
 
-export const SetSummarySchema = z
-  .object({
-    id: SetIdSchema,
-    count: z.number().int().nonnegative(),
-    updated: z.string().meta({ description: 'ISO time the set was last replaced' }),
-  })
-  .meta({ id: 'SetSummary' })
+export const SetSummarySchema = SetKeySchema.extend({
+  color: ColorSchema,
+  rank: RankSchema,
+  count: z.number().int().nonnegative(),
+  updated: z.string().meta({ description: 'ISO time the set was last replaced' }),
+}).meta({ id: 'SetSummary' })
 
 export const SetSummariesSchema = z.array(SetSummarySchema)
 
-export const SetSchema = z
-  .object({
-    id: SetIdSchema,
-    updated: z.string().meta({ description: 'ISO time the set was last replaced' }),
-    noteIds: z.array(IdSchema),
-  })
-  .meta({ id: 'Set' })
-
-export const TagColorSchema = z
-  .object({
-    tag: z
-      .string()
-      .min(1)
-      .meta({ description: 'a note tag, as written in the notes', example: 'work/q4' }),
-    color: z
-      .number()
-      .int()
-      .nonnegative()
-      .meta({ description: 'index into the note palette', example: 3 }),
-  })
-  .meta({ id: 'TagColor' })
-
-export const TagColorsSchema = z.object({ tags: z.array(TagColorSchema) }).meta({ id: 'TagColors' })
-
-export const AddTagColorsResultSchema = z
-  .object({ added: z.number().int().nonnegative() })
-  .meta({ id: 'AddTagColorsResult' })
+export const SetSchema = SetKeySchema.extend({
+  color: ColorSchema,
+  rank: RankSchema,
+  updated: z.string().meta({ description: 'ISO time the set was last replaced' }),
+  noteIds: z.array(IdSchema),
+}).meta({ id: 'Set' })
