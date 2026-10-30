@@ -5,6 +5,7 @@ import { Iteration3 } from './iteration-3'
 import { Iteration4 } from './iteration-4'
 import { Iteration5 } from './iteration-5'
 import { Iteration6 } from './iteration-6'
+import { Iteration7 } from './iteration-7'
 
 export type Iteration = {
   number: number
@@ -19,6 +20,12 @@ export type Iteration = {
  * stay (nothing is replaced or deleted), so the page shows the whole path.
  */
 export const iterations: Iteration[] = [
+  {
+    number: 7,
+    title: 'flowing shapes with squares of different sizes',
+    date: '2026.10.30',
+    Component: Iteration7,
+  },
   {
     number: 6,
     title: 'every set by its notes, shapes that fill all the space',

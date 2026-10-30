@@ -180,3 +180,12 @@ Iteration 6 (on top; 1-5 kept): share by notes (every square the same size), set
 
 ### [2026.10.30 06:47:26] Claude
 Iteration 6 done: flow-layout.ts, flow-grid.tsx, flow-section.tsx, iteration-6.tsx, iterations.ts, with tests (note-grid-sets 160 pass; eslint, tsc clean). Viewer: wide 100 = 20 x 5 of 36px (720 x 180), 500 = 25 x 20 of 16px (400 x 320), 5000 = 100 x 50 of 6px (600 x 300); every cell is a note. The grid can be smaller than the box because columns x rows must equal the note count.
+
+### [2026.10.30 06:56:21] User
+I like this breakdown, but can we do another iteration which brings back in different size squares? Maybe we need to do the softened sharing so that the large sets get less space/smaller squares and the smaller sets get more space?
+
+### [2026.10.30 06:56:21] Decision
+Iteration 7 (on top; 1-6 kept): iteration 6 (flowing shapes, no filler, grid full) with different square sizes from the softened share (default; even and by notes are switchable). Exact fill with mixed squares needs sizes that nest, so the sizes are powers of two times the smallest square. The free space is a queue of rectangles: the sets with the biggest squares are placed first, each fills the first rectangle column by column and what is left (rest of the last column, then the columns to the right) goes to the front of the queue, so the next set carries on from there. The sizes are searched among powers of two near the ideal ones (share / notes) such that notes x size^2 is a grid whose sides are multiples of the biggest size; score = distance from the ideal sizes (log2) minus 2 x coverage of the box (a first version without coverage picked 4 x 34 unit grids). Fallback: rounded ideal sizes on a grid with a few empty cells, when no exact grid has a 3px unit.
+
+### [2026.10.30 06:56:21] Claude
+Iteration 7 done: tile-layout.ts, tile-grid.tsx, tile-section.tsx, iteration-7.tsx, iterations.ts, with tests (note-grid-sets 177 pass; eslint, tsc clean). Viewer, wide 100 softened: 20 x 8 units of 36px (720 x 288), sets a-c 1x, d, e, g 2x, f 4x, every cell a note; all 18 container / notes / share combinations fill the grid with units of 3px or more.
