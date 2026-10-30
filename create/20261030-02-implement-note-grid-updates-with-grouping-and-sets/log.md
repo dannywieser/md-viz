@@ -175,3 +175,12 @@ the match is still off in the sync app. The _shadow_ is lining up, but not the e
 
 ### [2026.10.30 15:31:03] Claude
 Reproduced by running the Electron renderer alone in the browser at 912x520 with a temporary window.api stub (removed again; I also started an extra Electron window by mistake and closed it). With 4864 notes the container is 880px (cards 16 to 896), the grid block 875px (16 to 891): the biggest cell is 7px, 875 = 125 columns of 7, and the only divisor of 880 near it is 5, below the 0.8 limit, so the grid hugged and fell 5px short (its shadow 5px short too). 880 has few divisors: only 590 of 857 sampled counts tile it exactly, against 855/857 for 960 and 856/857 for 720. Fix: the window content width is now 992 (960 after the page padding), so the squares tile it. CLAUDE.md updated. The running electron dev needs a restart for the main process to take the new size. The web app has no fixed width, so it can still be a few px short at some counts: a horizontal stretch of under 3% would be the next step if wanted.
+
+### [2026.10.30 15:32:27] User
+phase 4
+
+### [2026.10.30 15:32:27] Decision
+Starting Phase 4 (web: one grid grouped by the tag sets). Set names are the plain id, prefixed with the source only when two sources have a set of the same name; notes in no set go to a trailing grey set.
+
+### [2026.10.30 15:33:51] Claude
+Phase 4 steps 14 done. apps/web: lib/grid-sets.ts (was grid-note.ts) toGridSets(sets, notes): a GridSet per cache set (named by its id, with the source in front only when another source has the same id), notes titled by title else id, ids the cache no longer lists left out, a note in two sets stays in the first, the notes in no set in a last grey "untagged" set; hooks/use-dashboard.ts: useQuery for the tag sets (listSets grouping tags) and the note titles, useQueries with a stable combine for getSet of each non-empty set, status pending/error/ready and a retry that refetches only what failed; components/tag-grid.tsx (was all-notes-grid.tsx); dashboard.tsx composes it, the lattice follows it while there are sets. Tests for each (35 pass).
