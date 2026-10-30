@@ -136,3 +136,18 @@ hide the group toggle when there is only one note
 
 ### [2026.10.30 15:08:25] Claude
 Done: NoteGrid passes no toggle to the bar when it has one note (two or more keep it); tests and CLAUDE.md line updated.
+
+### [2026.10.30 15:10:14] User
+there doesn't seem to be a lot of block sizing happening at larger note set sizes (5000). In the exploration it did do sizing. Where did that get lost?
+
+### [2026.10.30 15:10:14] Claude
+Nothing was lost in the code: ran the exploration's fillTileLayout and the copy in packages/ui on the same inputs and frames, identical scales (880x440, 7 sets of the exploration's 120:50:23:12:9:4:1 shape: 500 notes -> 2,2,4,2,2,8,4; 5000 -> 1,1,2,4,4,2,8). The demo differs in data and frame: it splits notes over 3 sets with shares 1, 1/2, 1/3 (too even, so every set's ideal scale rounds to 1), and its frame is 711x296, where even the exploration's own data gets all 1s at 500 and 5000 (no exact fit, the near fit keeps scale 1). Offered: make the demo use the exploration's uneven 7-set shape.
+
+### [2026.10.30 15:11:15] User
+ok, let's proceed with phase 3
+
+### [2026.10.30 15:11:15] Decision
+Starting Phase 3 (Electron: one grid grouped by the sync sets). The demo default change offered earlier was not taken up and is left as is.
+
+### [2026.10.30 15:12:18] Claude
+Phase 3 steps 10-11 (part). packages/sync: loadNoteSets(source, { grouping, baseUrl }) in pipeline/note-sets.ts (validates the source, reads the sets of the grouping with getSet per non-empty set and one listNotes with grouping for titles, so deleted notes are titled), types SetNote and NoteSet in types.ts, exported from the package; tests. Electron: IPC channel sets (Api.sets(source)), main handler (grouping sync, CACHE_URL or default), preload; tests. Deviation: the plan called the function loadGridSets, it is loadNoteSets (the package has no UI).
