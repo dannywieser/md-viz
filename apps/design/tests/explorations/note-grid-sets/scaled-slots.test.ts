@@ -72,6 +72,14 @@ describe('scaleLayout', () => {
     })
   })
 
+  it('keeps the unit big enough for the empty gridlines to show', () => {
+    for (const exponent of [0, 0.5, 1]) {
+      const sets = [2740, 1142, 525, 274, 205, 91, 23]
+
+      expect(scaleLayout(sets, exponent, 440, 440).unit).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   it('falls back to one unit when nothing can be placed', () => {
     const fit = scaleLayout([5], 1, 0, 0)
 

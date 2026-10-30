@@ -36,6 +36,9 @@ export function spaceShares(counts: number[], exponent: number): number[] {
 /** how many more (smaller) units, after the largest that fits, are tried and compared. */
 const UNIT_TRIES = 4
 
+/** units smaller than this are only tried when no larger unit fits: the empty gridlines need room to show. */
+const MIN_UNIT = 3
+
 /** the area the notes' own squares cover, px squared: what a layout is judged by. */
 export function notesArea(counts: number[], fit: ScaledFit): number {
   return counts.reduce((sum, count, i) => sum + count * (fit.slots[i].scale * fit.unit) ** 2, 0)
@@ -49,7 +52,7 @@ export function notesArea(counts: number[], fit: ScaledFit): number {
  * not fill); a set that does not fit at its scale tries a smaller one. a unit is possible when the
  * biggest set (the first) has room for its notes at one unit and every set fits. then the free space
  * is used: each set in turn (the smallest first) grows one more multiple for as long as everything
- * still fits. the largest possible unit and a few smaller ones are tried, and the layout whose
+ * still fits. the largest possible unit and a few smaller ones (not below 3px unless nothing larger fits) are tried, and the layout whose
  * notes cover the most area wins.
  */
 export function scaleLayout(
@@ -62,6 +65,7 @@ export function scaleLayout(
   let best: ScaledFit | null = null
   let found = 0
   for (let unit = Math.min(width, height); unit >= 1 && found < UNIT_TRIES; unit--) {
+    if (found > 0 && unit < MIN_UNIT) break
     const columns = Math.floor(width / unit)
     const rows = Math.floor(height / unit)
     const base = tryUnit(counts, shares, unit, columns, rows)

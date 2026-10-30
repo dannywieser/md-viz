@@ -162,3 +162,12 @@ Iterations 2-4 already use the largest whole-px cell at which every set slots (a
 
 ### [2026.10.30 06:38:34] Claude
 Done in scaled-slots.ts (grow, notesArea, tryUnit with fixed scales) with tests (note-grid-sets 145 pass; eslint, tsc clean). Notes' share of the container, before -> after, wide container: 100 notes by notes 69 -> 75%, softened 53 -> 65%, even 57 -> 66%; 500 softened 59 -> 74%; 5000 softened 59 -> 86%. Layout takes up to about 0.5s at 5000 notes.
+
+### [2026.10.30 06:40:32] User
+the square option is missing the grid outside of the sets
+
+### [2026.10.30 06:40:32] Decision
+Cause: in the square container at 5000 notes (softened / even) the grow pass picked a smallest square of 1px (440 x 440 units), so the empty gridlines were drawn every pixel and read as a flat blank. Added MIN_UNIT = 3 in scaleLayout: units below 3px are only tried when no larger unit fits at all.
+
+### [2026.10.30 06:40:32] Claude
+Done in scaled-slots.ts with a test (note-grid-sets 146 pass; eslint, tsc clean). Viewer: square at 5000 notes is now 146 x 146 / 110 x 110 units, the empty area shows a visible 3px mesh; tall and 100/500 unchanged.
