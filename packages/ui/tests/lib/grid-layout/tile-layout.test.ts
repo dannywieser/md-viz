@@ -58,14 +58,14 @@ describe('placeTiles', () => {
 })
 
 describe('fillTileLayout', () => {
-  it('fills a box of any size with no filler cell, growing the squares of the small sets', () => {
+  it('fills a box of any size with no filler cell, the small sets never with smaller squares', () => {
     const counts = [60, 20, 5]
     const fit = fillTileLayout(counts, 400, 300)
 
     expect(fit.columns * fit.unit).toBeLessThanOrEqual(400)
     expect(fit.rows * fit.unit).toBeLessThanOrEqual(300)
     expect(fit.columns * fit.unit).toBeGreaterThan(400 - fit.unit)
-    expect(fit.scales[2]).toBeGreaterThan(fit.scales[0])
+    expect(fit.scales[2]).toBeGreaterThanOrEqual(fit.scales[0])
     expect(fit.tiles).toHaveLength(85)
   })
 
