@@ -3,6 +3,7 @@ import { Iteration1 } from './iteration-1'
 import { Iteration2 } from './iteration-2'
 import { Iteration3 } from './iteration-3'
 import { Iteration4 } from './iteration-4'
+import { Iteration5 } from './iteration-5'
 
 export type Iteration = {
   number: number
@@ -17,6 +18,12 @@ export type Iteration = {
  * stay (nothing is replaced or deleted), so the page shows the whole path.
  */
 export const iterations: Iteration[] = [
+  {
+    number: 5,
+    title: 'a share of the space per set, squares that grow to fill it',
+    date: '2026.10.30',
+    Component: Iteration5,
+  },
   {
     number: 4,
     title: 'outlined groups with a flush hover bar',

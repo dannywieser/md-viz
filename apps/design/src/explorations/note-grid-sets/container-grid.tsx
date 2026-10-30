@@ -1,4 +1,5 @@
 import { useMemo, useState, type PointerEvent } from 'react'
+import { BAR_PX, HoverBar } from './hover-bar'
 import { groupOutline } from './block-shapes'
 import { GridTooltip } from './grid-tooltip'
 import { CHAR_PX, LABEL_PAD, LINE_PX } from './label-fit'
@@ -6,9 +7,6 @@ import { LatticeStage } from './lattice-stage'
 import { colorVar } from './note-colors'
 import { fitContainer } from './slot-sets'
 import type { SizedSet } from './sized-grid'
-
-/** height of the bar across the top of the container, px. */
-const BAR_PX = 32
 
 type ContainerGridProps = {
   sets: SizedSet[]
@@ -75,26 +73,11 @@ export function ContainerGrid({
     <LatticeStage cell={cell} width={w} height={h + (bar ? BAR_PX : 0)}>
       <div className="shadow-hard" style={{ width: w }}>
         {bar && (
-          <div
-            className="flex items-center gap-2 border-b bg-card px-2 text-xs"
-            style={{ width: w, height: BAR_PX }}
-          >
-            {hovered ? (
-              <>
-                <span
-                  aria-hidden
-                  className="size-3 shrink-0 border"
-                  style={{ background: colorVar(sorted[hovered.set].color) }}
-                />
-                <span className="font-bold">{sorted[hovered.set].name}</span>
-                <span className="truncate text-muted-foreground">note {hovered.note + 1}</span>
-              </>
-            ) : (
-              <span className="truncate text-muted-foreground">
-                {sets.length} sets, {total} notes
-              </span>
-            )}
-          </div>
+          <HoverBar
+            width={w}
+            idle={`${sets.length} sets, ${total} notes`}
+            hovered={hovered && { ...sorted[hovered.set], note: hovered.note }}
+          />
         )}
         <svg
           role="img"

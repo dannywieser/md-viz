@@ -124,3 +124,14 @@ Added to iteration 4 (not a new iteration): a notes switch 100 / 500 / 5000 (def
 
 ### [2026.10.30 06:26:25] Claude
 Done: scale-sets.ts, notes switch in bar-slotting-section.tsx, with tests (note-grid-sets: 126 pass; eslint, tsc, prettier clean). Viewer, wide container: 500 notes = 36 x 16 squares of 20px, 5000 = 120 x 53 of 6px; hover still names the set and note in the bar. At 5000 about a third of the container stays empty because the groups are slotted by rectangle, not packed tight.
+
+### [2026.10.30 06:32:22] User
+ok, so iteration 5
+calculate a percentage of the available space for each set
+each set gets that space, and squares fill to expand that space at a multiple of the smallest square size. so a set with only 2 items might have larger squares
+
+### [2026.10.30 06:32:22] Decision
+Iteration 5 (on top; 1-4 kept): each set gets a share of the container; its squares are the biggest whole multiple of the smallest square (unit) that its share allows. A share purely by notes gives every square the same size (nothing to grow), so the share is a switch: notes ^ exponent (by notes 1, softened 0.5, even 0), plus container and 100/500/5000 notes switches. The unit is the largest whole px at which the biggest set holds its notes at one unit and every set fits (first fit placement, a set that does not fit tries a smaller multiple). Hover bar shared with iteration 4 (extracted to hover-bar.tsx).
+
+### [2026.10.30 06:32:22] Claude
+Iteration 5 done: scaled-slots.ts, scaled-grid.tsx, scaled-section.tsx, iteration-5.tsx, hover-bar.tsx (extracted from container-grid), iterations.ts, with tests (design explorations pass; eslint, tsc, prettier clean). Viewer, wide container, 100 notes: softened gives sets a-d 1x (35px) and sets e-g 2x (70px); even gives set g 7x (168px); by notes all 1x. At 5000 notes the unit falls to 3-6px. Full coverage not re-run.
