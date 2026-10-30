@@ -1,4 +1,5 @@
 import {
+  fillTileLayout,
   idealScales,
   placeTiles,
   tileLayout,
@@ -73,5 +74,40 @@ describe('tileLayout', () => {
 
     expect(fit.tiles).toHaveLength(8)
     expect(fit.unit).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('fillTileLayout', () => {
+  it('fills an odd window within one unit, with only a few cells empty', () => {
+    const fit = fillTileLayout(counts, 0, 901, 477)
+
+    expect(901 - fit.columns * fit.unit).toBeLessThan(fit.unit * 2)
+    expect(fit.tiles).toHaveLength(100)
+    expect(fit.owner.filter((o) => o === -1).length / fit.owner.length).toBeLessThan(0.15)
+  })
+
+  it.each([
+    [720, 320],
+    [440, 440],
+  ])('fills the box with every cell a note, within one unit (%ix%i)', (width, height) => {
+    const fit = fillTileLayout(counts, 0, width, height)
+
+    expect(fit.owner.every((o) => o !== -1)).toBe(true)
+    expect(width - fit.columns * fit.unit).toBeLessThan(fit.unit)
+    expect(height - fit.rows * fit.unit).toBeLessThan(fit.unit)
+    expect(fit.tiles).toHaveLength(100)
+  })
+
+  it('falls back to the rounded sizes with empty cells when nothing fits exactly', () => {
+    const fit = fillTileLayout([7, 1], 0.5, 40, 40)
+
+    expect(fit.tiles).toHaveLength(8)
+  })
+
+  it('falls back to a one px unit on a box too small for anything else', () => {
+    const fit = fillTileLayout([30, 1], 0, 3, 3)
+
+    expect(fit.unit).toBe(1)
+    expect(fit.tiles).toHaveLength(31)
   })
 })

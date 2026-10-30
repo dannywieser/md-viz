@@ -48,14 +48,13 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
     if (!animated) squares.current?.animate?.([{ opacity: 0 }, { opacity: 1 }], FADE_MS)
   }, [grouped, animated])
   const state = grouped ? states.grouped : states.natural
-  const { unit, columns, rows } = state
-  const w = columns * unit
-  const h = rows * unit
+  const { unit, columns, rows, x0, y0 } = state
+  const { width: w, height: h } = states
 
   function handlePointerMove(event: PointerEvent<SVGSVGElement>) {
     const box = event.currentTarget.getBoundingClientRect()
-    const column = Math.floor((event.clientX - box.left) / unit)
-    const row = Math.floor((event.clientY - box.top) / unit)
+    const column = Math.floor((event.clientX - box.left - x0) / unit)
+    const row = Math.floor((event.clientY - box.top - y0) / unit)
     const inside = column >= 0 && column < columns && row >= 0 && row < rows
     const id = inside ? state.idAt[row * columns + column] : -1
     setHovered(id === -1 ? null : id)
@@ -71,7 +70,7 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
   const note = hovered === null ? 0 : grouped ? states.noteInSet[hovered] : hovered
   return (
     <LatticeStage cell={unit} width={w} height={h + BAR_PX}>
-      <div className="shadow-hard" style={{ width: w, transition: `width ${MOVE}` }}>
+      <div className="shadow-hard" style={{ width: w }}>
         <HoverBar
           width={w}
           idle={`${sets.length} sets, ${states.order.length} notes`}
@@ -85,7 +84,7 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
           height={h}
           shapeRendering="crispEdges"
           className="block overflow-visible bg-card"
-          style={{ width: w, height: h, transition: `width ${MOVE}, height ${MOVE}` }}
+          style={{ width: w, height: h }}
           onPointerMove={handlePointerMove}
           onPointerLeave={() => setHovered(null)}
         >
@@ -99,7 +98,7 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
                 style={{
                   width: s.size,
                   height: s.size,
-                  transform: `translate(${s.x}px, ${s.y}px)`,
+                  transform: `translate(${x0 + s.x}px, ${y0 + s.y}px)`,
                   fill: colorVar(sets[states.order[id]].color),
                   stroke: 'var(--note-stroke)',
                   transition: animated
@@ -112,6 +111,7 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
           <path
             data-outline
             d={outline}
+            transform={`translate(${g.x0} ${g.y0})`}
             fill="none"
             stroke="var(--focus)"
             strokeWidth={2}
@@ -123,8 +123,8 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
           {square && (
             <rect
               className="note-hover"
-              x={square.x}
-              y={square.y}
+              x={x0 + square.x}
+              y={y0 + square.y}
               width={square.size}
               height={square.size}
             />

@@ -1,12 +1,15 @@
-import { chooseGrid } from './flow-layout'
+import { fillGrid } from './flow-layout'
 import { naturalOrder } from './natural-order'
-import { tileLayout } from './tile-layout'
+import { fillTileLayout } from './tile-layout'
 
 /** a note's square in px, in the frame of its grid. */
 export type Square = { x: number; y: number; size: number }
 
-/** where every note is in one state of the grid. */
+/** where every note is in one state of the grid. the grid sits in the middle of a fixed frame. */
 export type StateLayout = {
+  /** px: where the grid starts in the frame (the slack of less than one unit, halved). */
+  x0: number
+  y0: number
   /** px: the cell the grid's squares are built from (the pointer reads the grid in these). */
   unit: number
   columns: number
@@ -18,6 +21,9 @@ export type StateLayout = {
 }
 
 export type GroupStates = {
+  /** px: the frame, the box both states fill; it does not change between them. */
+  width: number
+  height: number
   /** per natural note: its set. */
   order: number[]
   /** per natural note: its position within its set (the order it has in the grouped state). */
@@ -30,7 +36,8 @@ export type GroupStates = {
 
 /**
  * the two states of the grid for the same notes, so a note can move from one to the other:
- * natural (the notes as listed, one size) and grouped (by set, see `tileLayout`).
+ * natural (the notes as listed, one size) and grouped (by set, see `fillTileLayout`). both fill
+ * the same `width` x `height` frame, so switching does not change the size of the grid.
  */
 export function groupStates(counts: number[], width: number, height: number): GroupStates {
   const order = naturalOrder(counts)
@@ -42,8 +49,10 @@ export function groupStates(counts: number[], width: number, height: number): Gr
     ids[set].push(id)
   })
 
-  const fit = tileLayout(counts, 0, width, height)
+  const fit = fillTileLayout(counts, 0, width, height)
   const grouped: GroupStates['grouped'] = {
+    x0: Math.floor((width - fit.columns * fit.unit) / 2),
+    y0: Math.floor((height - fit.rows * fit.unit) / 2),
     unit: fit.unit,
     columns: fit.columns,
     rows: fit.rows,
@@ -59,8 +68,10 @@ export function groupStates(counts: number[], width: number, height: number): Gr
     }
   }
 
-  const { cell, columns, rows } = chooseGrid(total, width, height)
+  const { cell, columns, rows } = fillGrid(total, width, height)
   const natural: StateLayout = {
+    x0: Math.floor((width - columns * cell) / 2),
+    y0: Math.floor((height - rows * cell) / 2),
     unit: cell,
     columns,
     rows,
@@ -71,5 +82,5 @@ export function groupStates(counts: number[], width: number, height: number): Gr
     })),
     idAt: Array.from({ length: columns * rows }, (_, i) => (i < total ? i : -1)),
   }
-  return { order, noteInSet, grouped, natural }
+  return { width, height, order, noteInSet, grouped, natural }
 }

@@ -26,6 +26,9 @@ const MAX_SCALE = 16
 /** how much of the box a grid covers counts against how far the sizes are from the ideal ones. */
 const COVERAGE_WEIGHT = 2
 
+/** in a fill layout with no exact fit: how much the cells left empty count against the distance from the ideal sizes. */
+const NEAR_WEIGHT = 20
+
 /**
  * how many times bigger than the smallest square each set's squares would be if the space were
  * shared as `spaceShares` says: the set with the least space per note is 1.
@@ -177,6 +180,84 @@ export function tileLayout(
   const fit = placeTiles(counts, rounded, columns, rows)
   const unit = Math.max(1, Math.min(Math.floor(width / columns), Math.floor(height / rows)))
   return { ...fit, unit }
+}
+
+/** every combination of power-of-two sizes near the ideal ones: sizes, area in units, biggest size and distance from ideal. */
+function scaleCombos(counts: number[], ideal: number[]) {
+  const options = ideal.map(candidates)
+  const combos: { scales: number[]; area: number; top: number; cost: number }[] = []
+  const scales: number[] = []
+  const visit = (i: number) => {
+    if (i === counts.length) {
+      combos.push({
+        scales: [...scales],
+        area: counts.reduce((sum, count, k) => sum + count * scales[k] ** 2, 0),
+        top: Math.max(...scales),
+        cost: scales.reduce((sum, s, k) => sum + Math.abs(Math.log2(s / ideal[k])), 0),
+      })
+      return
+    }
+    for (const option of options[i]) {
+      scales[i] = option
+      visit(i + 1)
+    }
+  }
+  visit(0)
+  return combos
+}
+
+/**
+ * like `tileLayout`, but the grid fills the `width` x `height` box: for each unit (px) the grid is
+ * as many units as fit the box each way (the slack is less than one unit), and the sizes of the
+ * sets are picked, as close to the ideal ones as possible, so that notes times size squared is
+ * exactly that grid. a window of any size is filled by a grid with no filler; the sets take up the
+ * difference between the notes and the cells by growing their squares. when no sizes fit any unit
+ * exactly (an odd window), the sizes that leave the fewest cells empty are used, the empty cells
+ * being left at the end; a box too small for that gets one-unit squares.
+ */
+export function fillTileLayout(
+  counts: number[],
+  exponent: number,
+  width: number,
+  height: number,
+): TileFit {
+  const ideal = idealScales(counts, exponent)
+  const byArea = new Map<number, ReturnType<typeof scaleCombos>>()
+  for (const combo of scaleCombos(counts, ideal))
+    byArea.set(combo.area, [...(byArea.get(combo.area) ?? []), combo])
+  const combos = [...byArea.values()].flat()
+  type Pick = { scales: number[]; columns: number; rows: number; unit: number; cost: number }
+  let exact: Pick | null = null
+  let near: Pick | null = null
+  let nearScore = Infinity
+  for (let unit = Math.min(width, height); unit >= MIN_UNIT; unit--) {
+    const columns = Math.floor(width / unit)
+    const rows = Math.floor(height / unit)
+    for (const combo of byArea.get(columns * rows) ?? []) {
+      if (columns % combo.top !== 0 || rows % combo.top !== 0) continue
+      if (!exact || combo.cost < exact.cost - 1e-9)
+        exact = { scales: combo.scales, columns, rows, unit, cost: combo.cost }
+    }
+    for (const combo of combos) {
+      const cells = columns * rows
+      if (combo.area > cells || columns % combo.top !== 0 || rows % combo.top !== 0) continue
+      const score = combo.cost + NEAR_WEIGHT * ((cells - combo.area) / cells)
+      if (score < nearScore - 1e-9) {
+        nearScore = score
+        near = { scales: combo.scales, columns, rows, unit, cost: combo.cost }
+      }
+    }
+  }
+  const best = exact ?? near
+  if (best) return { ...placeTiles(counts, best.scales, best.columns, best.rows), unit: best.unit }
+  const ones = counts.map(() => 1)
+  const total = counts.reduce((sum, count) => sum + count, 0)
+  for (let unit = Math.min(width, height); unit >= 1; unit--) {
+    const columns = Math.floor(width / unit)
+    const rows = Math.floor(height / unit)
+    if (columns * rows >= total) return { ...placeTiles(counts, ones, columns, rows), unit }
+  }
+  return { ...placeTiles(counts, ones, width, Math.ceil(total / width)), unit: 1 }
 }
 
 export { ownerOutline }

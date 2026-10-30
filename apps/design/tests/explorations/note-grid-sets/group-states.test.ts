@@ -16,9 +16,30 @@ describe('groupStates', () => {
       expect(state.squares.every(Boolean)).toBe(true)
       expect(state.columns * state.unit).toBeLessThanOrEqual(width)
       expect(state.rows * state.unit).toBeLessThanOrEqual(height)
+      expect(state.x0 + state.columns * state.unit).toBeLessThanOrEqual(width)
       expect(new Set(state.idAt.filter((id) => id !== -1)).size).toBe(total)
     }
     expect(order).toHaveLength(total)
+  })
+
+  it.each([
+    [720, 320],
+    [440, 440],
+    [320, 560],
+  ])('fills the same frame in both states, within one unit (%ix%i)', (width, height) => {
+    const states = groupStates(counts, width, height)
+
+    expect([states.width, states.height]).toEqual([width, height])
+    for (const state of [states.grouped, states.natural]) {
+      expect(width - state.columns * state.unit).toBeLessThan(state.unit)
+      expect(height - state.rows * state.unit).toBeLessThan(state.unit)
+    }
+  })
+
+  it('has no empty cell in the grouped state when an exact fit exists', () => {
+    const { grouped } = groupStates(counts, 720, 320)
+
+    expect(grouped.idAt.every((id) => id !== -1)).toBe(true)
   })
 
   it('keeps a note in its own set in the grouped state', () => {

@@ -37,6 +37,24 @@ export function chooseGrid(
 }
 
 /**
+ * a grid of squares as big as possible (whole px) that holds `total` notes and fills the box: as
+ * many columns and rows as fit (the slack is less than one square), the cells past the last note
+ * empty.
+ */
+export function fillGrid(
+  total: number,
+  width: number,
+  height: number,
+): { cell: number; columns: number; rows: number } {
+  for (let cell = Math.min(width, height); cell >= 1; cell--) {
+    const columns = Math.floor(width / cell)
+    const rows = Math.floor(height / cell)
+    if (columns * rows >= total) return { cell, columns, rows }
+  }
+  return { cell: 1, columns: width, rows: Math.ceil(total / width) }
+}
+
+/**
  * fills a grid with the sets without any filler: the notes are laid along a snake path through
  * the cells (down the first column, up the second, ... or, with `byRows`, along the rows), set
  * after set, so each set is one run of the path: a band across the grid with a ragged end where

@@ -209,3 +209,12 @@ Above MOTION_LIMIT (1000 notes) or with prefers-reduced-motion, StateGrid no lon
 
 ### [2026.10.30 07:06:01] Claude
 Done in state-grid.tsx with tests (note-grid-sets 201 pass; eslint, tsc clean). Measured in the viewer at 5000: one render hitch of roughly 100-160ms on toggle and no animation work after it; the frame timing in this hidden pane is not reliable, so smoothness on a real display is not verified.
+
+### [2026.10.30 07:13:46] User
+this is a good start. but one thing: when toggling, the size of the grid as a whole is changing. when we implement this for real, the grid will be filling h/w for a window and should be fixed to fill that size. I don't want the grouped layout to end up filling only a portion of the screen. What do we need to do to have the layout switch stay in the same size container?
+
+### [2026.10.30 07:13:46] Decision
+Cause: both layouts chose the grid by an exact fit of cells to notes (columns x rows = notes), and the frame took the size of that grid, so each state had its own size (e.g. 720 x 288 grouped, 720 x 180 not grouped). Fix: the frame is the container (fixed width x height, GroupStates.width/height) and both states are laid out to fill it. Not grouped: fillGrid, the biggest whole-px squares for which floor(W/u) x floor(H/u) holds the notes; the cells past the last note are empty. Grouped: fillTileLayout, for each unit the grid is floor(W/u) x floor(H/u) and the sizes of the sets (powers of two near the ideal ones) are picked so notes x size^2 equals that grid exactly, so the sets absorb the difference by growing their squares; if no sizes fit exactly (an odd window) the sizes that leave the fewest cells empty are used (NEAR_WEIGHT 20). The grid sits centred in the frame (slack under one unit). Iteration 7 is unchanged (it keeps tileLayout). The size transition on the card was removed (nothing changes size).
+
+### [2026.10.30 07:13:46] Claude
+Done: tile-layout.ts (fillTileLayout), flow-layout.ts (fillGrid), group-states.ts (frame, x0/y0), state-grid.tsx (fixed frame, offsets), tests (design explorations 322+ pass; eslint, tsc clean). Viewer: the frame is identical in both states for all 9 container / notes combinations. Share of the frame covered by squares, grouped: 90-100% (wide 100 is the low one, 90%); not grouped 70-100% (5000 in the tall container 70%, because equal squares cannot fill an arbitrary box with exactly the number of notes).

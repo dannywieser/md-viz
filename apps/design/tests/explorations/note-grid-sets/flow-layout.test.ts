@@ -1,5 +1,6 @@
 import {
   chooseGrid,
+  fillGrid,
   flowLayout,
   ownerOutline,
 } from '../../../src/explorations/note-grid-sets/flow-layout'
@@ -80,5 +81,19 @@ describe('ownerOutline', () => {
 
   it('draws nothing around empty cells', () => {
     expect(ownerOutline([-1, -1], 2, 1, 10)).toBe('')
+  })
+})
+
+describe('fillGrid', () => {
+  it('fills the box within one square and holds all the notes', () => {
+    const { cell, columns, rows } = fillGrid(100, 720, 320)
+
+    expect(columns * rows).toBeGreaterThanOrEqual(100)
+    expect(720 - columns * cell).toBeLessThan(cell)
+    expect(320 - rows * cell).toBeLessThan(cell)
+  })
+
+  it('uses a one px cell when the box is too small to do better', () => {
+    expect(fillGrid(20, 4, 4).cell).toBe(1)
   })
 })
