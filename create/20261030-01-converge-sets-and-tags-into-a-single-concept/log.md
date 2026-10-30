@@ -2,6 +2,7 @@
 
 - **Slug:** 20261030-01-converge-sets-and-tags-into-a-single-concept
 - **Started:** 2026.10.30 07:22:58 MDT
+- **Completed:** 2026.10.30 13:22:06
 
 ---
 
@@ -102,3 +103,18 @@ one thing I'd like to see improved in the code: groupings should be considered s
 
 ### [2026.10.30 08:22:46] Claude
 Added pipeline/groupings.ts with a GROUPINGS const ({ name, build }) and made replaceGroupings in sync.ts loop over it; test, README and CLAUDE.md updated. Sync tests/coverage and lint pass. Not changed: the cache still hardcodes "sync" as the grouping that includes deleted notes (noted as a risk in plan.md).
+
+### [2026.10.30 13:19:25] User
+take me through the flow in the sync package when a sync is run, naming the functions in play; then: final question, if I want a component that takes props of a source and a grouping and displays the notes in the grid and allows grouping by sets, what is the planned API call structure? does it look up sets and then load groups?
+
+### [2026.10.30 13:19:25] Claude
+Walked through syncTarget -> syncNotes -> replaceGroupings -> GROUPINGS loop. Answered the component question: no component is planned in this session; with the current API it would call GET /sets (source, grouping), GET /notes (fields, grouping), then GET /set once per set; noted the N+1 and missing source filter on /notes as gaps for a later change.
+
+### [2026.10.30 13:21:05] User
+/create-complete
+
+### [2026.10.30 13:21:05] Claude
+Running the final coverage check, writing summary.md, harvesting docs, marking the PR ready.
+
+### [2026.10.30 13:22:06] Decision
+Session complete. Coverage re-run fresh: all workspaces above 95%, exit 0. summary.md written; README.md and CLAUDE.md harvested.
