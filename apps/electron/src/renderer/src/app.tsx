@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AppHeader, Button, ErrorState, StateBlock, ThemeSelect, useTheme } from '@md-viz/ui'
-import type { LastSelection, Source, SyncNotes, SyncTarget, TagColors } from '../../shared/ipc'
+import type { LastSelection, Source, SyncNotes, SyncTarget } from '../../shared/ipc'
 import { FolderCard } from './components/folder-card'
 import { SourceSelect } from './components/source-select'
 import { SyncGrids } from './components/sync-grids'
@@ -15,7 +15,6 @@ const headerClearance = navigator.userAgent.includes('Macintosh') ? 'pl-24' : 'p
 
 /** the grids before anything has been synced. */
 const NO_NOTES: SyncNotes = { updated: [], deleted: [], unchanged: [] }
-const NO_TAG_COLORS: TagColors = {}
 
 export function App() {
   const { theme, themes, setTheme } = useTheme()
@@ -89,12 +88,7 @@ export function App() {
               <ErrorState detail={error} />
             </StateBlock>
           ) : (
-            scan.target && (
-              <SyncGrids
-                notes={sync.lastSync?.notes ?? NO_NOTES}
-                tagColors={sync.lastSync?.tagColors ?? NO_TAG_COLORS}
-              />
-            )
+            scan.target && <SyncGrids notes={sync.lastSync?.notes ?? NO_NOTES} />
           )}
           <SyncOverlay
             scanning={scan.scanning}

@@ -14,7 +14,6 @@ const result: SyncResult = {
   deleted: 0,
   failed: 0,
   notes,
-  tagColors: { idea: 4 },
 }
 
 const target: SyncTarget = { source: 'file', folder: '/notes' }
@@ -57,7 +56,6 @@ describe('useSync', () => {
 
     expect(window.api.sync).toHaveBeenCalledWith(target)
     expect(hook.current.lastSync?.notes).toEqual(notes)
-    expect(hook.current.lastSync?.tagColors).toEqual({ idea: 4 })
     expect(Date.parse(hook.current.lastSync!.syncedAt)).not.toBeNaN()
     expect(hook.current.syncing).toBe(false)
     expect(onError).toHaveBeenCalledExactlyOnceWith(null)
@@ -87,7 +85,7 @@ describe('useSync', () => {
     stubApi(vi.fn().mockRejectedValue(new Error('connect ECONNREFUSED')))
     const onError = vi.fn()
     const { result: hook } = renderHook(() => useSync(target, onError))
-    const saved: LastSync = { syncedAt: '2026-10-20T09:30:00.000Z', notes, tagColors: {} }
+    const saved: LastSync = { syncedAt: '2026-10-20T09:30:00.000Z', notes }
     act(() => hook.current.reset(saved))
 
     await act(() => hook.current.sync())
@@ -98,7 +96,7 @@ describe('useSync', () => {
 
   it('resets to a saved sync and forgets the progress', () => {
     const { result: hook } = renderHook(() => useSync(target, vi.fn()))
-    const saved: LastSync = { syncedAt: '2026-10-20T09:30:00.000Z', notes, tagColors: {} }
+    const saved: LastSync = { syncedAt: '2026-10-20T09:30:00.000Z', notes }
 
     act(() => hook.current.reset(saved))
     expect(hook.current.lastSync).toBe(saved)

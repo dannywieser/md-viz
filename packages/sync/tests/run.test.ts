@@ -24,7 +24,6 @@ const syncResult: SyncResult = {
   deleted: 0,
   failed: 0,
   notes: { updated: [{ id: 'a', title: 'a', tags: ['x'] }], deleted: [], unchanged: [] },
-  tagColors: { x: 3 },
 }
 
 describe('run', () => {

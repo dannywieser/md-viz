@@ -1,14 +1,13 @@
 import { ErrorState, Loader, StateBlock, useGridLattice } from '@md-viz/ui'
 import { useDashboard } from '../hooks/use-dashboard'
 import { AllNotesGrid } from './all-notes-grid'
-import { SetGrid } from './set-grid'
 
 /**
- * the cached notes as a dashboard of floating grids: the automatic sets in two columns and all
- * notes, the one with the most notes and so the reference for the page's dots, in a narrower third.
+ * the cached notes as a dashboard. for now it is one floating grid of all notes, the reference for
+ * the page's dots; the grids for the cache's sets come back in a later change.
  */
 export function Dashboard() {
-  const { status, notes, sets, retry } = useDashboard()
+  const { status, notes, retry } = useDashboard()
   const { ref, onCellChange } = useGridLattice(notes.length > 0)
 
   if (status === 'pending') {
@@ -27,15 +26,8 @@ export function Dashboard() {
   }
 
   return (
-    <div className="grid h-full grid-cols-[2fr_2fr_1fr] grid-rows-2 gap-6">
-      {sets.map((set) => (
-        <div key={set.id} className="min-h-0 min-w-0">
-          <SetGrid id={set.id} label={set.label} notes={notes} />
-        </div>
-      ))}
-      <div className="col-start-3 row-span-2 row-start-1 min-h-0 min-w-0">
-        <AllNotesGrid notes={notes} gridRef={ref} onCellChange={onCellChange} />
-      </div>
+    <div className="h-full">
+      <AllNotesGrid notes={notes} gridRef={ref} onCellChange={onCellChange} />
     </div>
   )
 }

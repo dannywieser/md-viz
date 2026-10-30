@@ -3,7 +3,6 @@ import { bodyLimit } from 'hono/body-limit'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import {
-  AddTagColorsResultSchema,
   ErrorSchema,
   HealthSchema,
   IdParamSchema,
@@ -12,10 +11,10 @@ import {
   NoteSchema,
   ReplaceSetBodySchema,
   ReplaceSetResultSchema,
-  SetIdParamSchema,
+  SetFilterSchema,
+  SetKeySchema,
   SetSchema,
   SetSummariesSchema,
-  TagColorsSchema,
   UpsertBodySchema,
   UpsertResultSchema,
 } from './schemas.ts'
@@ -71,7 +70,8 @@ const listRoute = createRoute({
   method: 'get',
   path: '/notes',
   operationId: 'listNotes',
-  summary: 'list notes with the requested fields, ordered by id',
+  summary:
+    'list notes with the requested fields, ordered by id; deleted notes only for grouping=sync',
   request: { query: ListQuerySchema },
   responses: {
     200: { description: 'one row per note', content: jsonContent(NoteRowsSchema) },
@@ -83,7 +83,7 @@ const getRoute = createRoute({
   method: 'get',
   path: '/notes/{id}',
   operationId: 'getNote',
-  summary: 'all fields of one note',
+  summary: 'all fields of one note; a deleted note is not found',
   request: { params: IdParamSchema },
   responses: {
     200: { description: 'the note', content: { 'application/json': { schema: NoteSchema } } },
@@ -95,7 +95,7 @@ const deleteRoute = createRoute({
   method: 'delete',
   path: '/notes/{id}',
   operationId: 'deleteNote',
-  summary: 'remove a note; succeeds even if it did not exist',
+  summary: 'mark a note deleted (it stays in the cache); succeeds even if it did not exist',
   request: { params: IdParamSchema },
   responses: {
     204: { description: 'note removed' },
@@ -104,12 +104,11 @@ const deleteRoute = createRoute({
 
 const replaceSetRoute = createRoute({
   method: 'put',
-  path: '/sets/{id}',
+  path: '/sets',
   operationId: 'replaceSet',
-  summary: 'replace the note ids of a set, creating it if needed',
+  summary: 'replace the colour, rank and note ids of a set, creating it if needed',
   middleware: [bodyLimit({ maxSize: MAX_BODY_BYTES })],
   request: {
-    params: SetIdParamSchema,
     body: { required: true, content: { 'application/json': { schema: ReplaceSetBodySchema } } },
   },
   responses: {
@@ -125,7 +124,8 @@ const listSetsRoute = createRoute({
   method: 'get',
   path: '/sets',
   operationId: 'listSets',
-  summary: 'list sets with their note counts, ordered by id',
+  summary: 'list sets with their note counts, ordered by source, grouping, rank and id',
+  request: { query: SetFilterSchema },
   responses: {
     200: { description: 'one row per set', content: jsonContent(SetSummariesSchema) },
   },
@@ -133,10 +133,10 @@ const listSetsRoute = createRoute({
 
 const getSetRoute = createRoute({
   method: 'get',
-  path: '/sets/{id}',
+  path: '/set',
   operationId: 'getSet',
   summary: 'the note ids of one set',
-  request: { params: SetIdParamSchema },
+  request: { query: SetKeySchema },
   responses: {
     200: { description: 'the set', content: { 'application/json': { schema: SetSchema } } },
     404: { description: 'unknown set', content: jsonContent(ErrorSchema) },
@@ -145,43 +145,12 @@ const getSetRoute = createRoute({
 
 const deleteSetRoute = createRoute({
   method: 'delete',
-  path: '/sets/{id}',
+  path: '/set',
   operationId: 'deleteSet',
   summary: 'remove a set; succeeds even if it did not exist',
-  request: { params: SetIdParamSchema },
+  request: { query: SetKeySchema },
   responses: {
     204: { description: 'set removed' },
-  },
-})
-
-const listTagColorsRoute = createRoute({
-  method: 'get',
-  path: '/tag-colors',
-  operationId: 'listTagColors',
-  summary: 'the color index of every tag, ordered by tag',
-  responses: {
-    200: {
-      description: 'one row per tag',
-      content: { 'application/json': { schema: TagColorsSchema } },
-    },
-  },
-})
-
-const addTagColorsRoute = createRoute({
-  method: 'post',
-  path: '/tag-colors',
-  operationId: 'addTagColors',
-  summary: 'give tags a color index; a tag that has one keeps it',
-  middleware: [bodyLimit({ maxSize: MAX_BODY_BYTES })],
-  request: {
-    body: { required: true, content: { 'application/json': { schema: TagColorsSchema } } },
-  },
-  responses: {
-    200: {
-      description: 'number of tags that had no color yet',
-      content: { 'application/json': { schema: AddTagColorsResultSchema } },
-    },
-    400: badRequest,
   },
 })
 
@@ -220,7 +189,8 @@ export function createApp(store: Store): OpenAPIHono {
     if (fields.length === 0) {
       return c.json({ error: 'fields is required, e.g. ?fields=title,synced' }, 400)
     }
-    return c.json(store.listNotes(fields), 200)
+    const grouping = c.req.valid('query').grouping
+    return c.json(store.listNotes(fields, grouping === 'sync'), 200)
   })
 
   app.openapi(getRoute, (c) => {
@@ -234,28 +204,21 @@ export function createApp(store: Store): OpenAPIHono {
   })
 
   app.openapi(replaceSetRoute, (c) => {
-    const { noteIds } = c.req.valid('json')
-    store.replaceSet(c.req.valid('param').id, noteIds)
+    const { source, grouping, id, color, rank, noteIds } = c.req.valid('json')
+    store.replaceSet({ source, grouping, id }, { color, rank, noteIds })
     return c.json({ count: new Set(noteIds).size }, 200)
   })
 
-  app.openapi(listSetsRoute, (c) => c.json(store.listSets(), 200))
+  app.openapi(listSetsRoute, (c) => c.json(store.listSets(c.req.valid('query')), 200))
 
   app.openapi(getSetRoute, (c) => {
-    const set = store.getSet(c.req.valid('param').id)
+    const set = store.getSet(c.req.valid('query'))
     return set ? c.json(set, 200) : c.json({ error: 'not found' }, 404)
   })
 
   app.openapi(deleteSetRoute, (c) => {
-    store.deleteSet(c.req.valid('param').id)
+    store.deleteSet(c.req.valid('query'))
     return c.body(null, 204)
-  })
-
-  app.openapi(listTagColorsRoute, (c) => c.json({ tags: store.listTagColors() }, 200))
-
-  app.openapi(addTagColorsRoute, (c) => {
-    const { tags } = c.req.valid('json')
-    return c.json({ added: store.addTagColors(tags) }, 200)
   })
 
   return app

@@ -1,17 +1,17 @@
 import {
-  addTagColors,
   configureCacheClient,
   deleteNote,
   listNotes,
-  listTagColors,
+  listSets,
   replaceSet,
   upsertNotes,
 } from '@md-viz/api-client/cache'
-import type { NoteRef, Source, SyncProgress, SyncResult, TagColors } from '../types'
+import type { NoteRef, Source, SyncProgress, SyncResult } from '../types'
 import type { LoadedNotes } from '../sources/types'
-import { buildNoteSets } from './note-sets'
 import { noteToFields, type Note } from './notes'
-import { assignTagColors, topLevelTag } from './tag-colors'
+import { assignColors, type SetColors } from './set-colors'
+import { GROUPINGS, type CachedGroupNote } from './groupings'
+import type { GroupSet } from './tag-sets'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
 
@@ -44,10 +44,10 @@ function parseTags(value: string | undefined): string[] {
   }
 }
 
-/** the colour the cache has for each tag. */
-async function fetchTagColors(): Promise<TagColors> {
-  const { data } = await listTagColors({ throwOnError: true })
-  return Object.fromEntries(data.tags.map(({ tag, color }) => [tag, color]))
+/** the colour the cache has for each set of one source and grouping, by set id. */
+async function fetchSetColors(source: Source, grouping: string): Promise<SetColors> {
+  const { data } = await listSets({ query: { source, grouping }, throwOnError: true })
+  return Object.fromEntries(data.map((set) => [set.id, set.color]))
 }
 
 /** reads the titles and sync times of the cached notes that came from `source`, by id. */
@@ -82,13 +82,13 @@ function needsPush(note: Note, cached: Map<string, CachedNote>): boolean {
 /**
  * pushes the notes of one source to the cache, whatever that source is: new and changed notes
  * (`modified` newer than the cached `synced`) are upserted in batches, and cached notes of the
- * same source that are no longer in `loaded` are deleted. notes that exist but could not be
- * read (`loaded.failed`) are neither pushed nor deleted. the notes are loaded before this
- * runs, so nothing is deleted when loading failed; nothing is deleted either when the cache
- * cannot be listed. the top-level tags of the notes (`daily` for `daily/10/28`) that have no colour
- * in the cache get one first (see `assignTagColors`), and the colours of all tags come back in the
- * result. afterwards the source's automatic sets are recomputed at `now` and replaced
- * in the cache, even when no note changed, because they move with the clock.
+ * same source that are no longer in `loaded` are deleted (the cache only marks them deleted).
+ * notes that exist but could not be read (`loaded.failed`) are neither pushed nor deleted. the
+ * notes are loaded before this runs, so nothing is deleted when loading failed; nothing is
+ * deleted either when the cache cannot be listed. afterwards the source's sets are recomputed
+ * from what the cache holds and replaced in the cache, even when no note changed, because the
+ * `sync` sets move with the clock (see `GROUPINGS`). a set that has no
+ * colour yet gets one (see `assignColors`) and keeps it.
  */
 export async function syncNotes(
   source: Source,
@@ -99,11 +99,6 @@ export async function syncNotes(
 
   const { notes, failed } = loaded
   const cached = await fetchCachedNotes(source)
-  const known = await fetchTagColors()
-  const added = assignTagColors(
-    known,
-    notes.flatMap((note) => note.tags.map(topLevelTag)),
-  )
   const present = new Set([...notes.map((note) => note.id), ...failed])
   const changed = notes.filter((note) => needsPush(note, cached))
   const changedIds = new Set(changed.map((note) => note.id))
@@ -122,19 +117,9 @@ export async function syncNotes(
       deleted: [],
       unchanged: notes.filter((note) => !changedIds.has(note.id)).map(ref),
     },
-    tagColors: { ...known, ...added },
   }
   const report = () => onProgress?.({ synced: result.synced, deleted: result.deleted, total })
   report()
-
-  // give the new tags their colours before any note is pushed, so no note is ever stored with a tag that has none.
-  const addedTags = Object.entries(added)
-  if (addedTags.length > 0) {
-    await addTagColors({
-      body: { tags: addedTags.map(([tag, color]) => ({ tag, color })) },
-      throwOnError: true,
-    })
-  }
 
   // push new and changed notes, one batch per request.
   for (let i = 0; i < changed.length; i += BATCH_SIZE) {
@@ -163,9 +148,53 @@ export async function syncNotes(
     report()
   }
 
-  for (const { id, noteIds } of buildNoteSets(source, notes, now)) {
-    await replaceSet({ path: { id }, body: { noteIds }, throwOnError: true })
-  }
+  await replaceGroupings(source, now)
 
   return result
+}
+
+/** replaces the sets of every grouping (see `GROUPINGS`) of `source` with what the cache holds now. */
+async function replaceGroupings(source: Source, now: Date): Promise<void> {
+  // the sync grouping is the one that lists deleted notes; builders leave them out where they must.
+  const { data: rows } = await listNotes({
+    query: { fields: 'synced,created,deleted,source,tags', grouping: 'sync' },
+    throwOnError: true,
+  })
+  const notes: CachedGroupNote[] = rows
+    .filter((row) => row.fields['source'] === source)
+    .map((row) => ({
+      id: row.id,
+      tags: parseTags(row.fields['tags']),
+      synced: row.fields['synced'],
+      created: row.fields['created'],
+      deleted: row.fields['deleted'],
+    }))
+
+  for (const grouping of GROUPINGS) {
+    const colors = await fetchSetColors(source, grouping.name)
+    const sets = grouping.build({ source, notes, known: Object.keys(colors), now })
+    await replaceSets(source, grouping.name, sets, colors)
+  }
+}
+
+/** gives the sets without a colour one, then replaces every set in the cache. */
+async function replaceSets(
+  source: Source,
+  grouping: string,
+  sets: GroupSet[],
+  known: SetColors,
+): Promise<void> {
+  const colors = {
+    ...known,
+    ...assignColors(
+      known,
+      sets.map((set) => set.id),
+    ),
+  }
+  for (const { id, rank, noteIds } of sets) {
+    await replaceSet({
+      body: { source, grouping, id, color: colors[id] ?? 0, rank, noteIds },
+      throwOnError: true,
+    })
+  }
 }

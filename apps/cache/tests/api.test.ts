@@ -87,6 +87,33 @@ describe('api', () => {
     expect(body.fields).toMatchObject({ title: 'garden plan', body: 'raised beds' })
   })
 
+  it('lists deleted notes only for the sync grouping', async () => {
+    await put(garden)
+    await app.request('/notes/abc123', { method: 'DELETE' })
+
+    const ids = async (query: string) =>
+      (
+        (await (await app.request(`/notes?fields=title,deleted${query}`)).json()) as {
+          id: string
+        }[]
+      ).map((note) => note.id)
+
+    expect(await ids('')).toEqual(['def456'])
+    expect(await ids('&grouping=tags')).toEqual(['def456'])
+    expect(await ids('&grouping=sync')).toEqual(['abc123', 'def456'])
+    const sync = (await (await app.request('/notes?fields=deleted&grouping=sync')).json()) as {
+      fields: { deleted?: string }
+    }[]
+    expect(sync[0]?.fields.deleted).toBeDefined()
+  })
+
+  it('restores a deleted note when it is put again', async () => {
+    await put(garden)
+    await app.request('/notes/abc123', { method: 'DELETE' })
+    await put({ notes: [{ id: 'abc123', fields: { title: 'back' } }] })
+    expect((await app.request('/notes/abc123')).status).toBe(200)
+  })
+
   it('deletes a note, idempotently', async () => {
     await put(garden)
     expect((await app.request('/notes/abc123', { method: 'DELETE' })).status).toBe(204)
@@ -147,122 +174,96 @@ describe('api', () => {
   })
 
   describe('sets', () => {
-    const putSet = (id: string, body: unknown) =>
-      app.request(`/sets/${id}`, {
+    const key = (id: string, grouping = 'tags', source = 'bear') => ({ source, grouping, id })
+    const query = (k: { source: string; grouping: string; id: string }) =>
+      `source=${encodeURIComponent(k.source)}&grouping=${encodeURIComponent(k.grouping)}&id=${encodeURIComponent(k.id)}`
+    const putSet = (body: unknown) =>
+      app.request('/sets', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
       })
 
     it('replaces a set and reports the count', async () => {
-      const res = await putSet('bear:created-today', { noteIds: ['a', 'b', 'a'] })
+      const res = await putSet({ ...key('daily'), color: 4, rank: 0, noteIds: ['a', 'b', 'a'] })
       expect(res.status).toBe(200)
       expect(await res.json()).toEqual({ count: 2 })
     })
 
-    it('lists sets with counts', async () => {
-      await putSet('bear:created-today', { noteIds: ['a', 'b'] })
-      await putSet('bear:modified-today', { noteIds: [] })
-      const res = await app.request('/sets')
-      expect(res.status).toBe(200)
-      expect(await res.json()).toMatchObject([
-        { id: 'bear:created-today', count: 2 },
-        { id: 'bear:modified-today', count: 0 },
+    it('lists sets with counts, optionally filtered', async () => {
+      await putSet({ ...key('daily'), color: 4, rank: 0, noteIds: ['a', 'b'] })
+      await putSet({ ...key('today', 'sync'), color: 1, rank: 2, noteIds: [] })
+      await putSet({ ...key('daily', 'tags', 'file'), color: 4, rank: 0, noteIds: [] })
+
+      const all = (await (await app.request('/sets')).json()) as {
+        source: string
+        grouping: string
+        id: string
+      }[]
+      expect(all.map((set) => `${set.source}:${set.grouping}:${set.id}`)).toEqual([
+        'bear:sync:today',
+        'bear:tags:daily',
+        'file:tags:daily',
       ])
+      expect(all[1]).toMatchObject({ color: 4, rank: 0, count: 2 })
+
+      const filtered = (await (
+        await app.request('/sets?source=bear&grouping=tags')
+      ).json()) as unknown[]
+      expect(filtered).toHaveLength(1)
     })
 
-    it('returns the note ids of one set', async () => {
-      await putSet('bear:created-today', { noteIds: ['b', 'a'] })
-      const res = await app.request('/sets/bear:created-today')
+    it('returns one set with its note ids, ids with slashes included', async () => {
+      await putSet({ ...key('work/q4:x'), color: 2, rank: 1, noteIds: ['b', 'a'] })
+      const res = await app.request(`/set?${query(key('work/q4:x'))}`)
       expect(res.status).toBe(200)
-      expect(await res.json()).toMatchObject({ id: 'bear:created-today', noteIds: ['a', 'b'] })
+      expect(await res.json()).toMatchObject({
+        ...key('work/q4:x'),
+        color: 2,
+        rank: 1,
+        noteIds: ['a', 'b'],
+      })
     })
 
     it('returns 404 for an unknown set', async () => {
-      const res = await app.request('/sets/nope')
-      expect(res.status).toBe(404)
-      expect(await res.json()).toEqual({ error: 'not found' })
-    })
-
-    it('rejects a bad body', async () => {
-      const res = await putSet('s', { noteIds: 'a' })
-      expect(res.status).toBe(400)
-    })
-
-    it('rejects a note id with a slash', async () => {
-      const res = await putSet('s', { noteIds: ['a/b'] })
-      expect(res.status).toBe(400)
-    })
-
-    it('deletes a set, even an unknown one', async () => {
-      await putSet('s', { noteIds: ['a'] })
-      expect((await app.request('/sets/s', { method: 'DELETE' })).status).toBe(204)
-      expect((await app.request('/sets/s', { method: 'DELETE' })).status).toBe(204)
-      expect((await app.request('/sets/s')).status).toBe(404)
-    })
-
-    it('drops a deleted note from its sets', async () => {
-      await putSet('s', { noteIds: ['a', 'b'] })
-      await app.request('/notes/a', { method: 'DELETE' })
-      const res = await app.request('/sets/s')
-      expect(await res.json()).toMatchObject({ noteIds: ['b'] })
-    })
-  })
-
-  describe('tag colors', () => {
-    const post = (body: unknown) =>
-      app.request('/tag-colors', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-
-    it('lists no tags at first', async () => {
-      const res = await app.request('/tag-colors')
-
-      expect(res.status).toBe(200)
-      expect(await res.json()).toEqual({ tags: [] })
-    })
-
-    it('adds tag colors and lists them', async () => {
-      const res = await post({
-        tags: [
-          { tag: 'work', color: 3 },
-          { tag: 'home', color: 7 },
-        ],
-      })
-
-      expect(res.status).toBe(200)
-      expect(await res.json()).toEqual({ added: 2 })
-      expect(await (await app.request('/tag-colors')).json()).toEqual({
-        tags: [
-          { tag: 'home', color: 7 },
-          { tag: 'work', color: 3 },
-        ],
-      })
-    })
-
-    it('keeps the color a tag already has', async () => {
-      await post({ tags: [{ tag: 'work', color: 3 }] })
-
-      const res = await post({ tags: [{ tag: 'work', color: 9 }] })
-
-      expect(await res.json()).toEqual({ added: 0 })
-      expect(await (await app.request('/tag-colors')).json()).toEqual({
-        tags: [{ tag: 'work', color: 3 }],
-      })
+      expect((await app.request(`/set?${query(key('nope'))}`)).status).toBe(404)
     })
 
     it.each([
-      ['an empty tag', { tags: [{ tag: '', color: 1 }] }],
-      ['a negative color', { tags: [{ tag: 'a', color: -1 }] }],
-      ['a fractional color', { tags: [{ tag: 'a', color: 1.5 }] }],
-      ['no tags key', {}],
-    ])('rejects %s', async (_name, body) => {
-      const res = await post(body)
-
+      ['noteIds not an array', { ...key('s'), color: 0, rank: 0, noteIds: 'a' }],
+      ['an id with a slash in noteIds', { ...key('s'), color: 0, rank: 0, noteIds: ['a/b'] }],
+      ['a negative color', { ...key('s'), color: -1, rank: 0, noteIds: [] }],
+      ['no source', { grouping: 'tags', id: 's', color: 0, rank: 0, noteIds: [] }],
+      ['an empty id', { ...key(''), color: 0, rank: 0, noteIds: [] }],
+    ])('rejects a bad set: %s', async (_name, body) => {
+      const res = await putSet(body)
       expect(res.status).toBe(400)
-      expect(((await res.json()) as { error?: string }).error).toEqual(expect.any(String))
+      expect(await res.json()).toHaveProperty('error')
+    })
+
+    it('needs all three key fields to read or delete a set', async () => {
+      expect((await app.request('/set?source=bear&grouping=tags')).status).toBe(400)
+      expect(
+        (await app.request('/set?source=bear&grouping=tags', { method: 'DELETE' })).status,
+      ).toBe(400)
+    })
+
+    it('deletes a set, even an unknown one', async () => {
+      await putSet({ ...key('s'), color: 0, rank: 0, noteIds: ['a'] })
+      const url = `/set?${query(key('s'))}`
+      expect((await app.request(url, { method: 'DELETE' })).status).toBe(204)
+      expect((await app.request(url, { method: 'DELETE' })).status).toBe(204)
+      expect((await app.request(url)).status).toBe(404)
+    })
+
+    it('keeps a deleted note in its sets', async () => {
+      await put(garden)
+      await putSet({ ...key('s'), color: 0, rank: 0, noteIds: ['abc123', 'def456'] })
+      await app.request('/notes/abc123', { method: 'DELETE' })
+      const set = (await (await app.request(`/set?${query(key('s'))}`)).json()) as {
+        noteIds: string[]
+      }
+      expect(set.noteIds).toEqual(['abc123', 'def456'])
     })
   })
 })

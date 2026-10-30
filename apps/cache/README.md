@@ -25,35 +25,33 @@ A note is an `id` (chosen by the client) plus string fields such as `title` and 
 
 The fields are free-form; the cache does not interpret them. The Electron app writes `title`, `body`, `tags` (a JSON array string), `created` and `modified` (ISO 8601), and `source` (`file` or `bear`, which scopes what a sync may delete). Notes from Bear use Bear's note id as their id, notes from a folder a hash of their relative path.
 
-| request                       | does                                                                                                           |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `PUT /notes`                  | upsert a batch: `{ "notes": [{ "id": "...", "fields": { "title": "..." } }] }`                                 |
-| `GET /notes?fields=title,...` | an array of `{ "id", "fields": { ... } }` with only the requested fields, ordered by id (`fields` is required) |
-| `GET /notes/:id`              | all fields of one note as `{ "fields": { ... } }`, `404` if unknown                                            |
-| `DELETE /notes/:id`           | remove a note, `204` even if it did not exist                                                                  |
-| `GET /health`                 | `{ "ok": true }`                                                                                               |
+| request                       | does                                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PUT /notes`                  | upsert a batch: `{ "notes": [{ "id": "...", "fields": { "title": "..." } }] }`                                                                                     |
+| `GET /notes?fields=title,...` | an array of `{ "id", "fields": { ... } }` with only the requested fields, ordered by id (`fields` is required); deleted notes are left out unless `&grouping=sync` |
+| `GET /notes/:id`              | all fields of one note as `{ "fields": { ... } }`, `404` if unknown or deleted                                                                                     |
+| `DELETE /notes/:id`           | mark a note deleted (it stays in the cache), `204` even if it did not exist                                                                                        |
+| `GET /health`                 | `{ "ok": true }`                                                                                                                                                   |
+
+A delete stamps a `deleted` field (ISO 8601) on the note instead of removing it; the note is then left out of normal retrieval. The `sync` grouping (see below) is the one facet that lists deleted notes, so it can show what was deleted when. Nothing is purged. A `PUT` of the same id clears the mark again (file ids are not unique, so an id can come back).
 
 ### Sets
 
-A set is a named group of note IDs. The Electron sync computes the automatic sets of the source it just synced and replaces them on every sync (the cache does not derive them, so they are only as fresh as the last sync). Set ids are `<source>:<name>`: `created-today`, `modified-today`, `created-last-30-days` and `modified-last-30-days` for `bear`, and the two `modified` ones for `file` (a file has no created date). Today is the PC's local calendar day, the last 30 days a rolling 30 x 24 hours.
+A set is a named group of note IDs, identified by three fields: `source` (`bear` or `file`, one cache can hold both), `grouping` (the facet it belongs to) and `id` (its name within the grouping, free text: a tag can contain `/` and `:`). Display form: `bear:tags:daily`. A set also has a `color` (an index into the note palette) and a `rank` (its order within the grouping, lower first); the cache stores both and interprets neither. The Electron sync fills the sets of the source it just synced and replaces them on every sync, so they are only as fresh as the last sync:
 
-| request            | does                                                              |
-| ------------------ | ----------------------------------------------------------------- |
-| `PUT /sets/:id`    | replace a set: `{ "noteIds": ["..."] }`, answers `{ "count": n }` |
-| `GET /sets`        | an array of `{ "id", "count", "updated" }` ordered by id          |
-| `GET /sets/:id`    | `{ "id", "updated", "noteIds": [...] }`, `404` if unknown         |
-| `DELETE /sets/:id` | remove a set, `204` even if it did not exist                      |
+- grouping `tags`: one set per top-level tag (`daily` for `daily/10/28`) holding the notes that have it. A tag that has no notes any more keeps an empty set, so its colour is kept. The order of a note's tags is in its `tags` field.
+- grouping `sync`, ranked in this order: `created-today`, `created-last-30-days`, `updated-today`, `updated-last-30-days`, `deleted-today`, `deleted-last-30-days`, `unchanged`. Today is the PC's local calendar day, the last 30 days a rolling 30 x 24 hours at the time of the sync; updated is the note's `synced` stamp, created its `created` field (a file has none), deleted its `deleted` stamp, and unchanged is every note not deleted and not updated in the last 30 days.
 
-`updated` is stamped by the service. Deleting a note also removes it from every set.
+Colours are given per source and grouping with the whole palette each: a new set gets the least-used colour of its grouping and keeps it.
 
-### Tag colors
+| request                             | does                                                                                                                                               |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUT /sets`                         | replace a set: `{ "source", "grouping", "id", "color", "rank", "noteIds": [...] }`, answers `{ "count": n }`                                       |
+| `GET /sets?source=&grouping=`       | an array of `{ "source", "grouping", "id", "color", "rank", "count", "updated" }`, both filters optional, ordered by source, grouping, rank and id |
+| `GET /set?source=&grouping=&id=`    | the same plus `"noteIds": [...]`, `404` if unknown                                                                                                 |
+| `DELETE /set?source=&grouping=&id=` | remove a set, `204` even if it did not exist                                                                                                       |
 
-Each tag gets a color: an index into the note palette that the apps draw squares with. The Electron sync gives tags that have none the next indexes and adds them, only for the top level of a nested tag (`daily` for `daily/10/28`); a tag that already has a color keeps it, so a tag looks the same on every sync and in every app. The cache only stores the indexes and does not interpret them (nor the tags: it takes whatever the caller sends); the palette (and so the actual color) is the app's theme.
-
-| request            | does                                                                                                            |
-| ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `GET /tag-colors`  | `{ "tags": [{ "tag", "color" }] }` ordered by tag                                                               |
-| `POST /tag-colors` | add tags: `{ "tags": [{ "tag": "work", "color": 3 }] }`, answers `{ "added": n }`; existing tags are left alone |
+`updated` is stamped by the service. A deleted note stays in its sets until the sync replaces them.
 
 `PUT` only writes the fields it names; other stored fields of that note are kept. The service stamps `synced` (ISO 8601 UTC time of the upsert) on every upserted note and overwrites any `synced` the client sends. Errors are `{ "error": "..." }` with `400` for bad input.
 
@@ -96,7 +94,8 @@ curl $BASE/notes/abc123
 
 # 5. delete a note
 curl -i -X DELETE $BASE/notes/def456
-curl -i $BASE/notes/def456   # 404
+curl -i $BASE/notes/def456   # 404 (the note is marked deleted, not removed)
+curl "$BASE/notes?fields=title,deleted&grouping=sync"   # still listed, with deleted
 
 # 6. missing fields is rejected
 curl -i "$BASE/notes"        # 400
@@ -107,43 +106,28 @@ curl -i "$BASE/notes"        # 400
 The Electron app fills the sets on every sync (`pnpm dev:all`, choose a source, sync). To see them:
 
 ```bash
-# every set with its count and when it was last replaced
+# every set with its colour, rank and count
 curl $BASE/sets
 
-# the note ids of one set
-curl $BASE/sets/bear:modified-last-30-days
+# only the sync grouping of Bear
+curl "$BASE/sets?source=bear&grouping=sync"
 
-# resolve those ids to titles
-curl "$BASE/notes?fields=title,created,modified"
+# the note ids of one set (an id with a slash is URL-encoded)
+curl "$BASE/set?source=bear&grouping=sync&id=updated-today"
+
+# resolve ids to titles; the sync grouping also lists deleted notes
+curl "$BASE/notes?fields=title,synced,deleted&grouping=sync"
 ```
 
-Without the app you can fill a set by hand and watch it follow note deletes:
+Without the app you can fill a set by hand:
 
 ```bash
-curl -X PUT $BASE/sets/bear:created-today -H 'content-type: application/json' \
-  -d '{ "noteIds": ["abc123", "def456"] }'
-curl $BASE/sets/bear:created-today
+curl -X PUT $BASE/sets -H 'content-type: application/json' \
+  -d '{ "source": "bear", "grouping": "tags", "id": "work/q4", "color": 3, "rank": 0, "noteIds": ["abc123", "def456"] }'
+curl "$BASE/set?source=bear&grouping=tags&id=work%2Fq4"
 
-curl -X DELETE $BASE/notes/abc123
-curl $BASE/sets/bear:created-today   # only def456 is left
-
-curl -i -X DELETE $BASE/sets/bear:created-today   # 204
-curl -i $BASE/sets/bear:created-today             # 404
+curl -i -X DELETE "$BASE/set?source=bear&grouping=tags&id=work%2Fq4"   # 204
+curl -i "$BASE/set?source=bear&grouping=tags&id=work%2Fq4"             # 404
 ```
 
-### Look at the tag colors
-
-The Electron app adds the colors of the tags it syncs. To see them, or add some by hand:
-
-```bash
-curl $BASE/tag-colors
-
-curl -X POST $BASE/tag-colors -H 'content-type: application/json' \
-  -d '{ "tags": [{ "tag": "work", "color": 3 }, { "tag": "home", "color": 7 }] }'
-
-# a tag that has a color keeps it: this answers { "added": 0 }
-curl -X POST $BASE/tag-colors -H 'content-type: application/json' \
-  -d '{ "tags": [{ "tag": "work", "color": 9 }] }'
-```
-
-To start over, stop the service and delete `apps/cache/data/`.
+To start over, stop the service and delete `apps/cache/data/`. An older database with the previous set layout is reset on open (its sets and tag colours are dropped; the next sync rebuilds the sets).

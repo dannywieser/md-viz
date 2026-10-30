@@ -143,6 +143,35 @@
       "ReplaceSetBody": {
         "type": "object",
         "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "where the notes come from",
+            "example": "bear"
+          },
+          "grouping": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the facet the set belongs to",
+            "example": "tags"
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "set name within its grouping",
+            "example": "daily"
+          },
+          "color": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "index into the note palette; not interpreted",
+            "example": 3
+          },
+          "rank": {
+            "type": "integer",
+            "description": "order within the grouping, lower first; not interpreted",
+            "example": 0
+          },
           "noteIds": {
             "type": "array",
             "items": {
@@ -154,17 +183,45 @@
           }
         },
         "required": [
+          "source",
+          "grouping",
+          "id",
+          "color",
+          "rank",
           "noteIds"
         ]
       },
       "SetSummary": {
         "type": "object",
         "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "where the notes come from",
+            "example": "bear"
+          },
+          "grouping": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the facet the set belongs to",
+            "example": "tags"
+          },
           "id": {
             "type": "string",
-            "pattern": "^[^/]+$",
-            "description": "set id, namespaced by source",
-            "example": "bear:created-today"
+            "minLength": 1,
+            "description": "set name within its grouping",
+            "example": "daily"
+          },
+          "color": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "index into the note palette; not interpreted",
+            "example": 3
+          },
+          "rank": {
+            "type": "integer",
+            "description": "order within the grouping, lower first; not interpreted",
+            "example": 0
           },
           "count": {
             "type": "integer",
@@ -176,7 +233,11 @@
           }
         },
         "required": [
+          "source",
+          "grouping",
           "id",
+          "color",
+          "rank",
           "count",
           "updated"
         ]
@@ -184,11 +245,34 @@
       "Set": {
         "type": "object",
         "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "where the notes come from",
+            "example": "bear"
+          },
+          "grouping": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the facet the set belongs to",
+            "example": "tags"
+          },
           "id": {
             "type": "string",
-            "pattern": "^[^/]+$",
-            "description": "set id, namespaced by source",
-            "example": "bear:created-today"
+            "minLength": 1,
+            "description": "set name within its grouping",
+            "example": "daily"
+          },
+          "color": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "index into the note palette; not interpreted",
+            "example": 3
+          },
+          "rank": {
+            "type": "integer",
+            "description": "order within the grouping, lower first; not interpreted",
+            "example": 0
           },
           "updated": {
             "type": "string",
@@ -205,56 +289,13 @@
           }
         },
         "required": [
+          "source",
+          "grouping",
           "id",
+          "color",
+          "rank",
           "updated",
           "noteIds"
-        ]
-      },
-      "TagColors": {
-        "type": "object",
-        "properties": {
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TagColor"
-            }
-          }
-        },
-        "required": [
-          "tags"
-        ]
-      },
-      "TagColor": {
-        "type": "object",
-        "properties": {
-          "tag": {
-            "type": "string",
-            "minLength": 1,
-            "description": "a note tag, as written in the notes",
-            "example": "work/q4"
-          },
-          "color": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "index into the note palette",
-            "example": 3
-          }
-        },
-        "required": [
-          "tag",
-          "color"
-        ]
-      },
-      "AddTagColorsResult": {
-        "type": "object",
-        "properties": {
-          "added": {
-            "type": "integer",
-            "minimum": 0
-          }
-        },
-        "required": [
-          "added"
         ]
       }
     },
@@ -318,7 +359,7 @@
       },
       "get": {
         "operationId": "listNotes",
-        "summary": "list notes with the requested fields, ordered by id",
+        "summary": "list notes with the requested fields, ordered by id; deleted notes only for grouping=sync",
         "parameters": [
           {
             "schema": {
@@ -330,6 +371,18 @@
             "required": true,
             "description": "comma-separated field names to include",
             "name": "fields",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "the facet the notes are loaded for; only \"sync\" includes deleted notes (see their deleted field)",
+              "example": "tags"
+            },
+            "required": false,
+            "description": "the facet the notes are loaded for; only \"sync\" includes deleted notes (see their deleted field)",
+            "name": "grouping",
             "in": "query"
           }
         ],
@@ -363,7 +416,7 @@
     "/notes/{id}": {
       "get": {
         "operationId": "getNote",
-        "summary": "all fields of one note",
+        "summary": "all fields of one note; a deleted note is not found",
         "parameters": [
           {
             "schema": {
@@ -403,7 +456,7 @@
       },
       "delete": {
         "operationId": "deleteNote",
-        "summary": "remove a note; succeeds even if it did not exist",
+        "summary": "mark a note deleted (it stays in the cache); succeeds even if it did not exist",
         "parameters": [
           {
             "schema": {
@@ -425,24 +478,10 @@
         }
       }
     },
-    "/sets/{id}": {
+    "/sets": {
       "put": {
         "operationId": "replaceSet",
-        "summary": "replace the note ids of a set, creating it if needed",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "pattern": "^[^/]+$",
-              "description": "set id, namespaced by source",
-              "example": "bear:created-today"
-            },
-            "required": true,
-            "description": "set id, namespaced by source",
-            "name": "id",
-            "in": "path"
-          }
-        ],
+        "summary": "replace the colour, rank and note ids of a set, creating it if needed",
         "requestBody": {
           "required": true,
           "content": {
@@ -477,20 +516,89 @@
         }
       },
       "get": {
+        "operationId": "listSets",
+        "summary": "list sets with their note counts, ordered by source, grouping, rank and id",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "only sets of this source"
+            },
+            "required": false,
+            "description": "only sets of this source",
+            "name": "source",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "only sets of this grouping"
+            },
+            "required": false,
+            "description": "only sets of this grouping",
+            "name": "grouping",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "one row per set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SetSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/set": {
+      "get": {
         "operationId": "getSet",
         "summary": "the note ids of one set",
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "pattern": "^[^/]+$",
-              "description": "set id, namespaced by source",
-              "example": "bear:created-today"
+              "minLength": 1,
+              "description": "where the notes come from",
+              "example": "bear"
             },
             "required": true,
-            "description": "set id, namespaced by source",
+            "description": "where the notes come from",
+            "name": "source",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "the facet the set belongs to",
+              "example": "tags"
+            },
+            "required": true,
+            "description": "the facet the set belongs to",
+            "name": "grouping",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "set name within its grouping",
+              "example": "daily"
+            },
+            "required": true,
+            "description": "set name within its grouping",
             "name": "id",
-            "in": "path"
+            "in": "query"
           }
         ],
         "responses": {
@@ -523,94 +631,43 @@
           {
             "schema": {
               "type": "string",
-              "pattern": "^[^/]+$",
-              "description": "set id, namespaced by source",
-              "example": "bear:created-today"
+              "minLength": 1,
+              "description": "where the notes come from",
+              "example": "bear"
             },
             "required": true,
-            "description": "set id, namespaced by source",
+            "description": "where the notes come from",
+            "name": "source",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "the facet the set belongs to",
+              "example": "tags"
+            },
+            "required": true,
+            "description": "the facet the set belongs to",
+            "name": "grouping",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "set name within its grouping",
+              "example": "daily"
+            },
+            "required": true,
+            "description": "set name within its grouping",
             "name": "id",
-            "in": "path"
+            "in": "query"
           }
         ],
         "responses": {
           "204": {
             "description": "set removed"
-          }
-        }
-      }
-    },
-    "/sets": {
-      "get": {
-        "operationId": "listSets",
-        "summary": "list sets with their note counts, ordered by id",
-        "responses": {
-          "200": {
-            "description": "one row per set",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SetSummary"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/tag-colors": {
-      "get": {
-        "operationId": "listTagColors",
-        "summary": "the color index of every tag, ordered by tag",
-        "responses": {
-          "200": {
-            "description": "one row per tag",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagColors"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "addTagColors",
-        "summary": "give tags a color index; a tag that has one keeps it",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TagColors"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "number of tags that had no color yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddTagColorsResult"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
         }
       }

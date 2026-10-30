@@ -22,7 +22,6 @@ describe('StatusGrid', () => {
       <StatusGrid
         label="updated"
         notes={notes}
-        tagColors={{}}
         reference={false}
         onCellChange={vi.fn()}
         cellStep={undefined}
@@ -49,7 +48,6 @@ describe('StatusGrid', () => {
       <StatusGrid
         label="unchanged"
         notes={notes}
-        tagColors={{}}
         reference={false}
         onCellChange={vi.fn()}
         cellStep={undefined}
@@ -69,7 +67,6 @@ describe('StatusGrid', () => {
       <StatusGrid
         label="updated"
         notes={notes}
-        tagColors={{}}
         reference
         onCellChange={onCellChange}
         cellStep={20}
@@ -89,7 +86,6 @@ describe('StatusGrid', () => {
       <StatusGrid
         label="deleted"
         notes={notes}
-        tagColors={{}}
         reference={false}
         onCellChange={vi.fn()}
         cellStep={20}
@@ -104,12 +100,11 @@ describe('StatusGrid', () => {
     expect(lastProps().ref).toBeUndefined()
   })
 
-  it('colours the squares by the tags of the notes', () => {
+  it('draws the notes as squares that list their tags', () => {
     render(
       <StatusGrid
         label="updated"
         notes={[{ id: 'a', title: 'plan', tags: ['work', 'home', 'new'] }]}
-        tagColors={{ work: 3, home: 7 }}
         reference={false}
         onCellChange={vi.fn()}
         cellStep={undefined}
@@ -120,7 +115,7 @@ describe('StatusGrid', () => {
     )
 
     expect(lastProps().notes).toEqual([
-      { id: 'a', title: 'plan', colors: [3, 7], tags: ['work', 'home', 'new'] },
+      { id: 'a', title: 'plan', colors: [], tags: ['work', 'home', 'new'] },
     ])
   })
 })
