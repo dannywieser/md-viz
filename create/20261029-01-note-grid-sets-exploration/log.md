@@ -189,3 +189,14 @@ Iteration 7 (on top; 1-6 kept): iteration 6 (flowing shapes, no filler, grid ful
 
 ### [2026.10.30 06:56:21] Claude
 Iteration 7 done: tile-layout.ts, tile-grid.tsx, tile-section.tsx, iteration-7.tsx, iterations.ts, with tests (note-grid-sets 177 pass; eslint, tsc clean). Viewer, wide 100 softened: 20 x 8 units of 36px (720 x 288), sets a-c 1x, d, e, g 2x, f 4x, every cell a note; all 18 container / notes / share combinations fill the grid with units of 3px or more.
+
+### [2026.10.30 07:03:32] User
+ok, iteration 7 with even share is what I want. 
+for iteration 8 we're going to start to explore the ability to move between states of the grid. 
+add a toggle to the header (icon button?) that switches between grouped and not grouped. For not grouped, squares are colorized by set but order is natural. Grouped is what we've been exploring.
+
+### [2026.10.30 07:03:32] Decision
+Iteration 8 (on top; 1-7 kept): the iteration 7 grid with the even share fixed, and an icon button in the grid's header bar (the white hover bar; HoverBar got an optional action slot) that toggles grouped / not grouped. Not grouped: the notes in a natural order (a fixed seeded shuffle, naturalOrder, so sets are mixed), all squares one size, coloured by set, no outline. Grouped: the iteration 7 layout with its outline. Each note is one square with a stable identity; the two layouts (groupStates) give its position and size in each state and the switch is a CSS transition (450ms) on transform, width and height, the outline fading in after the move. The icon is a small pixel svg (four squares apart = ungroup, together = group), since lucide is not a dependency of the design app. Hover names the set and the note (position in the whole list when not grouped, in the set when grouped).
+
+### [2026.10.30 07:03:32] Claude
+Iteration 8 done: natural-order.ts, group-states.ts, group-toggle.tsx, state-grid.tsx, state-section.tsx, iteration-8.tsx, hover-bar action slot, iterations.ts, with tests (note-grid-sets 199 pass; eslint, tsc clean). Viewer, wide 100: grouped is 720 x 288 (iteration 7 layout), not grouped 20 x 5 of 36px; the toggle animates (squares mid-move after 150ms) and the outline hides when not grouped. Not checked: 5000-note transition smoothness.
