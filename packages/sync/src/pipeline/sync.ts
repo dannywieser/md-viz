@@ -10,8 +10,8 @@ import type { NoteRef, Source, SyncProgress, SyncResult } from '../types'
 import type { LoadedNotes } from '../sources/types'
 import { noteToFields, type Note } from './notes'
 import { assignColors, type SetColors } from './set-colors'
-import { buildSyncSets, type TimedNote } from './sync-sets'
-import { buildTagSets, type GroupSet } from './tag-sets'
+import { GROUPINGS, type CachedGroupNote } from './groupings'
+import type { GroupSet } from './tag-sets'
 
 export const DEFAULT_CACHE_URL = 'http://localhost:8787'
 
@@ -87,7 +87,7 @@ function needsPush(note: Note, cached: Map<string, CachedNote>): boolean {
  * notes are loaded before this runs, so nothing is deleted when loading failed; nothing is
  * deleted either when the cache cannot be listed. afterwards the source's sets are recomputed
  * from what the cache holds and replaced in the cache, even when no note changed, because the
- * `sync` sets move with the clock (see `buildTagSets` and `buildSyncSets`). a set that has no
+ * `sync` sets move with the clock (see `GROUPINGS`). a set that has no
  * colour yet gets one (see `assignColors`) and keeps it.
  */
 export async function syncNotes(
@@ -153,30 +153,28 @@ export async function syncNotes(
   return result
 }
 
-/** replaces the `tags` and `sync` sets of `source` with what the cache holds now. */
+/** replaces the sets of every grouping (see `GROUPINGS`) of `source` with what the cache holds now. */
 async function replaceGroupings(source: Source, now: Date): Promise<void> {
-  // the sync grouping is the one that lists deleted notes; the live ones are the rest.
+  // the sync grouping is the one that lists deleted notes; builders leave them out where they must.
   const { data: rows } = await listNotes({
     query: { fields: 'synced,created,deleted,source,tags', grouping: 'sync' },
     throwOnError: true,
   })
-  const own = rows.filter((row) => row.fields['source'] === source)
-  const timed: TimedNote[] = own.map((row) => ({
-    id: row.id,
-    synced: row.fields['synced'],
-    created: row.fields['created'],
-    deleted: row.fields['deleted'],
-  }))
-  const tagged = own
-    .filter((row) => row.fields['deleted'] === undefined)
-    .map((row) => ({ id: row.id, tags: parseTags(row.fields['tags']) }))
+  const notes: CachedGroupNote[] = rows
+    .filter((row) => row.fields['source'] === source)
+    .map((row) => ({
+      id: row.id,
+      tags: parseTags(row.fields['tags']),
+      synced: row.fields['synced'],
+      created: row.fields['created'],
+      deleted: row.fields['deleted'],
+    }))
 
-  const tagColors = await fetchSetColors(source, 'tags')
-  const tagSets = buildTagSets(tagged, Object.keys(tagColors))
-  await replaceSets(source, 'tags', tagSets, tagColors)
-
-  const syncColors = await fetchSetColors(source, 'sync')
-  await replaceSets(source, 'sync', buildSyncSets(source, timed, now), syncColors)
+  for (const grouping of GROUPINGS) {
+    const colors = await fetchSetColors(source, grouping.name)
+    const sets = grouping.build({ source, notes, known: Object.keys(colors), now })
+    await replaceSets(source, grouping.name, sets, colors)
+  }
 }
 
 /** gives the sets without a colour one, then replaces every set in the cache. */

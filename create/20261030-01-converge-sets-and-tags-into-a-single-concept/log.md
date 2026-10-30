@@ -96,3 +96,9 @@ Steps 3-6 done (sync package): set-colors.ts (was tag-colors.ts, generic per gro
 
 ### [2026.10.30 08:15:49] Claude
 Steps 7-10 done. Electron: tagColors removed from IPC/renderer (grids still draw LastSync.notes, in grey). Web: dashboard reduced to the all-notes grid (set-grid, dashboard-sets removed). CLAUDE.md updated. pnpm format, lint, typecheck and coverage all pass (every workspace >= 95%). End-to-end check: synced demo/ into a throwaway cache with the real cache service; sets file:sync:* came out with colours, ranks and counts (18 updated, 0 deleted/unchanged); the demo notes have no tags, so no tag sets there. No deviations beyond the one logged at steps 3-6.
+
+### [2026.10.30 08:22:46] User
+one thing I'd like to see improved in the code: groupings should be considered something that will grow over time. So it seems like code like this (fetchSetColors/buildTagSets/replaceSets for 'tags', then fetchSetColors for 'sync') which runs operations on each grouping as a fixed value could be optimized to iterate over a globally defined const with the current grouping.
+
+### [2026.10.30 08:22:46] Claude
+Added pipeline/groupings.ts with a GROUPINGS const ({ name, build }) and made replaceGroupings in sync.ts loop over it; test, README and CLAUDE.md updated. Sync tests/coverage and lint pass. Not changed: the cache still hardcodes "sync" as the grouping that includes deleted notes (noted as a risk in plan.md).
