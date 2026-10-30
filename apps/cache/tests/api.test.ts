@@ -195,7 +195,11 @@ describe('api', () => {
       await putSet({ ...key('today', 'sync'), color: 1, rank: 2, noteIds: [] })
       await putSet({ ...key('daily', 'tags', 'file'), color: 4, rank: 0, noteIds: [] })
 
-      const all = (await (await app.request('/sets')).json()) as Record<string, unknown>[]
+      const all = (await (await app.request('/sets')).json()) as {
+        source: string
+        grouping: string
+        id: string
+      }[]
       expect(all.map((set) => `${set.source}:${set.grouping}:${set.id}`)).toEqual([
         'bear:sync:today',
         'bear:tags:daily',

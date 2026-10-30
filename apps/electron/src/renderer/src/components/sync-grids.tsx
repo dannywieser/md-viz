@@ -1,5 +1,5 @@
 import { latticeSpacing, useGridLattice } from '@md-viz/ui'
-import type { SyncNotes, TagColors } from '../../../shared/ipc'
+import type { SyncNotes } from '../../../shared/ipc'
 import { COLUMN_WIDTH } from '../../../shared/window-size'
 import { columnPitch, gridHeight, GROUPS } from '../lib/sync-layout'
 import { StatusGrid } from './status-grid'
@@ -11,7 +11,7 @@ import { StatusGrid } from './status-grid'
  * a block is only as wide as its squares, so the last one is pinned to the right of its column and
  * its edge meets the status card's (that column is off the dots by the leftover width).
  */
-export function SyncGrids({ notes, tagColors }: { notes: SyncNotes; tagColors: TagColors }) {
+export function SyncGrids({ notes }: { notes: SyncNotes }) {
   const reference = GROUPS.reduce((most, group) =>
     notes[group].length > notes[most].length ? group : most,
   )
@@ -27,7 +27,6 @@ export function SyncGrids({ notes, tagColors }: { notes: SyncNotes; tagColors: T
           key={group}
           label={group}
           notes={notes[group]}
-          tagColors={tagColors}
           reference={group === reference}
           onCellChange={onCellChange}
           cellStep={spacing}

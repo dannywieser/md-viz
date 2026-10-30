@@ -93,3 +93,6 @@ Steps 1-2 done (cache store + API): store.ts (sets keyed by source/grouping/id w
 
 ### [2026.10.30 08:12:50] Claude
 Steps 3-6 done (sync package): set-colors.ts (was tag-colors.ts, generic per grouping, SET_COLOR_COUNT), tag-sets.ts, sync-sets.ts (7 sets), note-sets.ts removed, sync.ts rewired (no tag-colour calls; sets worked out from the cache after push/delete using grouping=sync listing), TagColors removed from types/state/run, tests per file, README. Deviation from plan: the tag and sync sets are built from the cache listing after the push (not from the loaded notes), so unreadable notes keep their place; sync package tests and coverage pass.
+
+### [2026.10.30 08:15:49] Claude
+Steps 7-10 done. Electron: tagColors removed from IPC/renderer (grids still draw LastSync.notes, in grey). Web: dashboard reduced to the all-notes grid (set-grid, dashboard-sets removed). CLAUDE.md updated. pnpm format, lint, typecheck and coverage all pass (every workspace >= 95%). End-to-end check: synced demo/ into a throwaway cache with the real cache service; sets file:sync:* came out with colours, ranks and counts (18 updated, 0 deleted/unchanged); the demo notes have no tags, so no tag sets there. No deviations beyond the one logged at steps 3-6.

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { NoteGrid } from '@md-viz/ui'
-import type { NoteRef, TagColors } from '../../../shared/ipc'
+import type { NoteRef } from '../../../shared/ipc'
 import { COLUMN_WIDTH } from '../../../shared/window-size'
 import { toCells } from '../lib/cells'
 import type { Group } from '../lib/sync-layout'
@@ -8,8 +8,6 @@ import type { Group } from '../lib/sync-layout'
 interface StatusGridProps {
   label: Group
   notes: NoteRef[]
-  /** the colour of each tag, to colour the squares by. */
-  tagColors: TagColors
   /** the grid whose first square the page's dots line up with. */
   reference: boolean
   /** the reference grid reports its cell here. */
@@ -26,7 +24,6 @@ interface StatusGridProps {
 export function StatusGrid({
   label,
   notes,
-  tagColors,
   reference,
   onCellChange,
   cellStep,
@@ -34,7 +31,7 @@ export function StatusGrid({
   height,
   align,
 }: StatusGridProps) {
-  const cells = useMemo(() => toCells(notes, tagColors), [notes, tagColors])
+  const cells = useMemo(() => toCells(notes), [notes])
   return (
     <section aria-label={label} className="shrink-0" style={{ width: COLUMN_WIDTH }}>
       <NoteGrid

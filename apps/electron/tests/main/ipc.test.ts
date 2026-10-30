@@ -49,7 +49,6 @@ const syncResult: SyncResult = {
   deleted: 0,
   failed: 0,
   notes: { updated: [{ id: 'a', title: 'a', tags: [] }], deleted: [], unchanged: [] },
-  tagColors: {},
 }
 
 const selection: LastSelection = { source: 'bear', folder: null, lastSync: null }

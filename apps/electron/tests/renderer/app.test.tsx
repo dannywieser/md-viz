@@ -16,7 +16,6 @@ const sync = vi.fn()
 const lastSync: LastSync = {
   syncedAt: '2026-10-20T09:30:00.000Z',
   notes: { updated: [], deleted: [], unchanged: [{ id: 'k1', title: 'same idea', tags: [] }] },
-  tagColors: {},
 }
 
 const clear = vi.fn()

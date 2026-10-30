@@ -58,7 +58,8 @@ function fakeCache() {
       upserts.push(body.notes.length)
       writes.push('notes')
       for (const note of body.notes) {
-        const { deleted: _deleted, ...kept } = notes.get(note.id) ?? {}
+        const kept = { ...notes.get(note.id) }
+        delete kept['deleted']
         notes.set(note.id, { ...kept, ...note.fields, synced: new Date().toISOString() })
       }
       return json({ upserted: body.notes.length })

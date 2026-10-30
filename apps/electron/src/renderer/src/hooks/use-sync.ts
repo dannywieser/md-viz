@@ -25,7 +25,6 @@ export function useSync(target: SyncTarget | null, onError: (message: string | n
       setLastSync({
         syncedAt: new Date().toISOString(),
         notes: result.notes,
-        tagColors: result.tagColors,
       })
     } catch (err) {
       onError(errorMessage(err))
