@@ -97,3 +97,12 @@ Iteration 2 (added on top, iteration 1 kept): a card container filled with empty
 
 ### [2026.10.29 17:10:56] Claude
 Iteration 2 done: slot-sets.ts (squarest-first first-fit slotting, fitContainer), container-grid.tsx, slotting-section.tsx, iteration-2.tsx, iterations.ts (iteration 2 on top, iteration 1 kept), with tests. Checked in the design viewer: wide container 23 x 10 squares of 31px, 11 of 230 empty; set a is 12 x 10 there because the container is only 10 rows tall (a squarer 11 x 11 would not fit). Format, lint, typecheck clean; coverage passes in every workspace (design 99.7 / 99.09 / 98.93 / 99.66).
+
+### [2026.10.29 17:14:32] User
+iteration 3: same as 2 but let's go with the outline. show me what it looks like to have the set name as text which sort of sits on top and doesn't interfere with the hover state. and it would only show if the width was past a certain threshold
+
+### [2026.10.29 17:14:32] Decision
+Iteration 3 (on top, 1 and 2 kept): the iteration 2 container with the group outline always on, plus the set name drawn as text over its group (top-left, pointer-events none so hover is untouched), shown only when the group is at least a threshold px wide (and the name fits). A threshold switch (off / 60 / 100 / 140 px) and the container switch let the user compare.
+
+### [2026.10.29 18:53:37] Claude
+Iteration 3 done: container-grid.tsx got an optional labelWidth (set name as text over its group, top-left, pointer-events none, halo of the card colour, shown when the group is at least labelWidth px wide and the name fits); new container-sizes.ts (shared by sections 2 and 3), labelled-slotting-section.tsx (container and threshold off/60/100/140 switches), iteration-3.tsx, iterations.ts (3 on top; 1 and 2 kept), with tests. Checked in the design viewer: names show on sets a, b and c at 100px, and hovering a square under a name still outlines it and shows "set a note 1". Format, lint and typecheck clean. Coverage: the machine was heavily loaded (another process at 100% CPU), so vitest workers timed out in the full runs; the last design run passed every file it completed (99 files, 98.52 / 97.62 / 96.85 / 98.5) but with 5 worker start errors, so a clean full run is still to be confirmed. The 117 note-grid-sets tests passed in isolation.

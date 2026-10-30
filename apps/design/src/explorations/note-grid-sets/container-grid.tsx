@@ -1,6 +1,7 @@
 import { useMemo, useState, type PointerEvent } from 'react'
 import { groupOutline } from './block-shapes'
 import { GridTooltip } from './grid-tooltip'
+import { CHAR_PX, LABEL_PAD, LINE_PX } from './label-fit'
 import { LatticeStage } from './lattice-stage'
 import { colorVar } from './note-colors'
 import { fitContainer } from './slot-sets'
@@ -10,6 +11,8 @@ type ContainerGridProps = {
   sets: SizedSet[]
   /** draw a heavier outline around each group. */
   outlined: boolean
+  /** show each set's name over its group when the group is at least this wide (px); no names when omitted. */
+  labelWidth?: number
   /** the box the container may fill, px. */
   width: number
   height: number
@@ -21,7 +24,7 @@ type ContainerGridProps = {
  * the empty squares are one set of gridlines, not one element each; one pointer handler derives
  * the hovered note from the layout.
  */
-export function ContainerGrid({ sets, outlined, width, height }: ContainerGridProps) {
+export function ContainerGrid({ sets, outlined, labelWidth, width, height }: ContainerGridProps) {
   const [hovered, setHovered] = useState<{ set: number; note: number } | null>(null)
   const { sorted, fit } = useMemo(() => {
     const sorted = [...sets].sort((a, b) => b.count - a.count)
@@ -91,6 +94,27 @@ export function ContainerGrid({ sets, outlined, width, height }: ContainerGridPr
             )}
           </g>
         ))}
+        {labelWidth !== undefined &&
+          sorted.map((set, i) => {
+            const groupWidth = slots[i].columns * cell
+            if (groupWidth < Math.max(labelWidth, set.name.length * CHAR_PX + 2 * LABEL_PAD))
+              return null
+            return (
+              <text
+                key={set.id}
+                data-set-label
+                x={slots[i].x * cell + LABEL_PAD}
+                y={slots[i].y * cell + LABEL_PAD + LINE_PX / 2}
+                dominantBaseline="central"
+                pointerEvents="none"
+                paintOrder="stroke"
+                strokeWidth={3}
+                className="fill-card-foreground stroke-card text-xs"
+              >
+                {set.name}
+              </text>
+            )
+          })}
         {hovered && slot && (
           <rect
             className="note-hover"

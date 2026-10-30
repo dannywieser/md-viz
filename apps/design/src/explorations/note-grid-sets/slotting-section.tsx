@@ -1,22 +1,9 @@
 import { useState } from 'react'
 import { ContainerGrid } from './container-grid'
+import { CONTAINER_SIZES, CONTAINERS, type Container } from './container-sizes'
 import { ModeSwitch } from './mode-switch'
 import { SAMPLE_SETS, setCount } from './sample-sets'
 import { fitContainer } from './slot-sets'
-
-type Container = 'wide' | 'square' | 'tall'
-
-const CONTAINERS: { value: Container; label: string }[] = [
-  { value: 'wide', label: 'wide' },
-  { value: 'square', label: 'square' },
-  { value: 'tall', label: 'tall' },
-]
-
-const SIZES: Record<Container, { width: number; height: number }> = {
-  wide: { width: 720, height: 320 },
-  square: { width: 440, height: 440 },
-  tall: { width: 320, height: 560 },
-}
 
 const sets = SAMPLE_SETS.map((set) => ({ ...set, count: setCount(set.id) })).sort(
   (a, b) => b.count - a.count,
@@ -26,7 +13,7 @@ const sets = SAMPLE_SETS.map((set) => ({ ...set, count: setCount(set.id) })).sor
 export function SlottingSection() {
   const [container, setContainer] = useState<Container>('wide')
   const [outlined, setOutlined] = useState('colour')
-  const { width, height } = SIZES[container]
+  const { width, height } = CONTAINER_SIZES[container]
   const fit = fitContainer(
     sets.map((set) => set.count),
     width,

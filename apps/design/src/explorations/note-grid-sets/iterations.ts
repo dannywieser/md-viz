@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { Iteration1 } from './iteration-1'
 import { Iteration2 } from './iteration-2'
+import { Iteration3 } from './iteration-3'
 
 export type Iteration = {
   number: number
@@ -15,6 +16,12 @@ export type Iteration = {
  * stay (nothing is replaced or deleted), so the page shows the whole path.
  */
 export const iterations: Iteration[] = [
+  {
+    number: 3,
+    title: 'outlined groups with the set name on top',
+    date: '2026.10.29',
+    Component: Iteration3,
+  },
   {
     number: 2,
     title: 'grouped squares slotted into a container',

@@ -6,8 +6,16 @@ const sets = [
   { id: 'a', name: 'set a', count: 9, color: 0 },
 ]
 
-function renderGrid(outlined = false) {
-  render(<ContainerGrid sets={sets} outlined={outlined} width={200} height={100} />)
+function renderGrid(outlined = false, labelWidth?: number) {
+  render(
+    <ContainerGrid
+      sets={sets}
+      outlined={outlined}
+      labelWidth={labelWidth}
+      width={200}
+      height={100}
+    />,
+  )
   const svg = screen.getByRole('img')
   svg.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect
   return svg
@@ -65,5 +73,42 @@ describe('ContainerGrid', () => {
     fireEvent.pointerMove(svg, { clientX: 1, clientY: 1 })
     fireEvent.pointerLeave(svg)
     expect(screen.queryByRole('tooltip')).toBeNull()
+  })
+
+  it('draws no names without a label width', () => {
+    renderGrid()
+
+    expect(document.querySelectorAll('[data-set-label]')).toHaveLength(0)
+  })
+
+  it('names the groups at least the label width wide, on top of the squares and deaf to the pointer', () => {
+    const svg = renderGrid(true, 20)
+    const labels = [...document.querySelectorAll('[data-set-label]')]
+
+    expect(labels.map((label) => label.textContent)).toContain('set a')
+    expect(labels[0]).toHaveAttribute('pointer-events', 'none')
+    expect(
+      svg.querySelector('rect') && labels[0].compareDocumentPosition(svg.querySelector('rect')!),
+    ).toBe(Node.DOCUMENT_POSITION_PRECEDING)
+  })
+
+  it('leaves out a name when its group is narrower than the threshold', () => {
+    renderGrid(true, 10000)
+
+    expect(document.querySelectorAll('[data-set-label]')).toHaveLength(0)
+  })
+
+  it('leaves out a name that does not fit its group', () => {
+    render(
+      <ContainerGrid
+        sets={[{ id: 'x', name: 'a very long set name', count: 1, color: 0 }]}
+        outlined
+        labelWidth={0}
+        width={200}
+        height={100}
+      />,
+    )
+
+    expect(document.querySelectorAll('[data-set-label]')).toHaveLength(0)
   })
 })
