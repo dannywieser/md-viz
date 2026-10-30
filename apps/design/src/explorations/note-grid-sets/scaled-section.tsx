@@ -42,7 +42,8 @@ export function ScaledSection() {
       </h3>
       <p className="text-sm text-muted-foreground">
         every set is given a percentage of the container, and its squares are made as big as that
-        space allows, in whole multiples of the smallest square (so everything stays on the dot
+        space allows (every set is a full square block, with filler squares for what its notes do
+        not fill), in whole multiples of the smallest square (so everything stays on the dot
         lattice): a set of two notes with a big share gets big squares. the share is the set's notes
         to a power: by notes gives every set space in proportion to its notes, so all squares end up
         the same size; softened (square root) and even give the small sets more than their notes ask
@@ -64,7 +65,9 @@ export function ScaledSection() {
         {sets.map((set, i) => (
           <li key={set.id}>
             {set.name}: {set.count} notes, {Math.round(fit.shares[i] * 100)}% of the space, squares{' '}
-            {fit.slots[i].scale}x the smallest ({fit.slots[i].scale * fit.unit}px)
+            {fit.slots[i].scale}x the smallest ({fit.slots[i].scale * fit.unit}px),{' '}
+            {fit.slots[i].columns} x {fit.slots[i].rows} block,{' '}
+            {fit.slots[i].columns ** 2 - set.count} filler
           </li>
         ))}
       </ul>

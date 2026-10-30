@@ -1,4 +1,8 @@
-import { scaleLayout, spaceShares } from '../../../src/explorations/note-grid-sets/scaled-slots'
+import {
+  blockSide,
+  scaleLayout,
+  spaceShares,
+} from '../../../src/explorations/note-grid-sets/scaled-slots'
 
 const counts = [55, 23, 10, 5, 4, 2, 1]
 
@@ -16,7 +20,23 @@ describe('spaceShares', () => {
   })
 })
 
+describe('blockSide', () => {
+  it('is the side of the smallest square block that holds the notes', () => {
+    expect([1, 2, 4, 5, 9, 10].map(blockSide)).toEqual([1, 2, 2, 3, 3, 4])
+  })
+})
+
 describe('scaleLayout', () => {
+  it('makes every set a full square block', () => {
+    const fit = scaleLayout(counts, 0.5, 720, 320)
+
+    counts.forEach((count, i) => {
+      const { columns, rows } = fit.slots[i]
+      expect(columns).toBe(rows)
+      expect(columns ** 2).toBeGreaterThanOrEqual(count)
+    })
+  })
+
   it('places every set without overlap, on whole units', () => {
     const fit = scaleLayout(counts, 0.5, 720, 320)
 

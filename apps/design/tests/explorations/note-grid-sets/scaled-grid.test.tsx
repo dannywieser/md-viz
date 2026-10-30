@@ -19,7 +19,8 @@ describe('ScaledGrid', () => {
   it('draws one square and one outline per note and set, and the totals in the bar', () => {
     renderGrid()
 
-    expect(document.querySelectorAll('g rect')).toHaveLength(31)
+    expect(document.querySelectorAll('g rect:not([data-filler])')).toHaveLength(31)
+    expect(document.querySelectorAll('[data-filler]')).toHaveLength(6)
     expect(document.querySelectorAll('g > path')).toHaveLength(2)
     expect(screen.getByText('2 sets, 31 notes')).toBeInTheDocument()
   })

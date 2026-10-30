@@ -80,8 +80,19 @@ export function ScaledGrid({ sets, fit }: ScaledGridProps) {
                     style={{ fill: colorVar(set.color), stroke: 'var(--note-stroke)' }}
                   />
                 ))}
+                {Array.from({ length: perRow * perRow - set.count }, (_, k) => (
+                  <rect
+                    key={k}
+                    data-filler
+                    x={((set.count + k) % perRow) * side}
+                    y={Math.floor((set.count + k) / perRow) * side}
+                    width={side}
+                    height={side}
+                    style={{ fill: 'var(--card)', stroke: 'var(--note-stroke)' }}
+                  />
+                ))}
                 <path
-                  d={groupOutline(set.count, perRow, side)}
+                  d={groupOutline(perRow * perRow, perRow, side)}
                   fill="none"
                   stroke="var(--foreground)"
                   strokeWidth={2}

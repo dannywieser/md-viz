@@ -135,3 +135,12 @@ Iteration 5 (on top; 1-4 kept): each set gets a share of the container; its squa
 
 ### [2026.10.30 06:32:22] Claude
 Iteration 5 done: scaled-slots.ts, scaled-grid.tsx, scaled-section.tsx, iteration-5.tsx, hover-bar.tsx (extracted from container-grid), iterations.ts, with tests (design explorations pass; eslint, tsc, prettier clean). Viewer, wide container, 100 notes: softened gives sets a-d 1x (35px) and sets e-g 2x (70px); even gives set g 7x (168px); by notes all 1x. At 5000 notes the unit falls to 3-6px. Full coverage not re-run.
+
+### [2026.10.30 06:33:21] User
+let's do one tweak to this iteration. make the individual sets always fully square (same filler blocks as needed
+
+### [2026.10.30 06:33:21] Decision
+Iteration 5 tweak: every set is a full square block (side = ceil(sqrt(notes)) squares each way); the squares past its notes are filler, drawn like the empty container squares (card fill, gridline stroke) inside the group outline, and ignored by hover. The whole block is reserved when placing, and the share-to-scale rule uses the block (scale = floor(sqrt(space) / side)). The list shows each set's block and filler count.
+
+### [2026.10.30 06:33:21] Claude
+Done: scaled-slots.ts (blockSide, square blocks, reserved filler), scaled-grid.tsx (filler squares), scaled-section.tsx (list), tests (design note-grid-sets: 144 pass; eslint, tsc clean). Viewer, 100 notes, even share: set a 8 x 8 block with 10 filler (22px), set g 1 x 1 at 6x (132px); 5000 notes: set a 53 x 53 with 69 filler.

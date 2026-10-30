@@ -1,6 +1,7 @@
-import { candidateWidths } from './slot-sets'
-
-/** a set placed on the unit grid: its squares are `scale` units wide, `columns` of them per row. */
+/**
+ * a set placed on the unit grid as a square block of `columns` x `rows` squares (the same number),
+ * each `scale` units wide; the squares past the set's notes are filler.
+ */
 export type ScaledSlot = { x: number; y: number; columns: number; rows: number; scale: number }
 
 export type ScaledFit = {
@@ -16,8 +17,10 @@ export type ScaledFit = {
   shares: number[]
 }
 
-/** how many shapes per set are tried at each scale, squarest first. */
-const SHAPES_TRIED = 6
+/** squares per side of the square block that holds `count` notes (the rest of the block is filler). */
+export function blockSide(count: number): number {
+  return Math.ceil(Math.sqrt(count))
+}
 
 /**
  * the share of the space of each set: its notes to the power of `exponent` over the sum. 1 is by
@@ -60,25 +63,31 @@ function tryUnit(
   rows: number,
 ): ScaledFit | null {
   // the smallest square is the one the biggest set needs: its share must hold all its notes at one unit
-  if (shares[0] * columns * rows < counts[0]) return null
+  if (shares[0] * columns * rows < blockSide(counts[0]) ** 2) return null
   const owner = Array.from({ length: columns * rows }, () => -1)
-  const free = (x: number, y: number, w: number, h: number) => {
-    if (x + w > columns || y + h > rows) return false
-    for (let cy = y; cy < y + h; cy++)
-      for (let cx = x; cx < x + w; cx++) if (owner[cy * columns + cx] !== -1) return false
+  const used = Array.from({ length: columns * rows }, () => false)
+  const free = (x: number, y: number, side: number) => {
+    if (x + side > columns || y + side > rows) return false
+    for (let cy = y; cy < y + side; cy++)
+      for (let cx = x; cx < x + side; cx++) if (used[cy * columns + cx]) return false
     return true
   }
   const scales = counts.map((count, i) =>
-    Math.max(1, Math.floor(Math.sqrt((shares[i] * columns * rows) / count))),
+    Math.max(1, Math.floor(Math.sqrt(shares[i] * columns * rows) / blockSide(count))),
   )
   const slots: ScaledSlot[] = []
   const order = counts
     .map((_, i) => i)
-    .sort((a, b) => counts[b] * scales[b] ** 2 - counts[a] * scales[a] ** 2)
+    .sort(
+      (a, b) => (blockSide(counts[b]) * scales[b]) ** 2 - (blockSide(counts[a]) * scales[a]) ** 2,
+    )
   for (const index of order) {
-    const slot = place(counts[index], scales[index], columns, rows, free)
+    const slot = place(blockSide(counts[index]), scales[index], columns, rows, free)
     if (!slot) return null
     slots[index] = slot
+    for (let cy = slot.y; cy < slot.y + slot.rows * slot.scale; cy++)
+      for (let cx = slot.x; cx < slot.x + slot.columns * slot.scale; cx++)
+        used[cy * columns + cx] = true
     for (let k = 0; k < counts[index]; k++) {
       const sx = slot.x + (k % slot.columns) * slot.scale
       const sy = slot.y + Math.floor(k / slot.columns) * slot.scale
@@ -89,24 +98,18 @@ function tryUnit(
   return { unit, columns, rows, slots, owner, shares }
 }
 
-/** the first free spot for `count` squares of `scale` units, or a smaller scale when none fits. */
+/** the first free spot for a block of `side` x `side` squares of `scale` units, or a smaller scale when none fits. */
 function place(
-  count: number,
+  side: number,
   scale: number,
   columns: number,
   rows: number,
-  free: (x: number, y: number, w: number, h: number) => boolean,
+  free: (x: number, y: number, side: number) => boolean,
 ): ScaledSlot | null {
   for (let s = scale; s >= 1; s--) {
-    const widths = candidateWidths(count, Math.floor(columns / s)).slice(0, SHAPES_TRIED)
-    for (const w of widths) {
-      const h = Math.ceil(count / w)
-      const last = count - (h - 1) * w
-      for (let y = 0; y + h * s <= rows; y++) {
-        for (let x = 0; x + w * s <= columns; x++) {
-          const fits = free(x, y, w * s, (h - 1) * s) && free(x, y + (h - 1) * s, last * s, s)
-          if (fits) return { x, y, columns: w, rows: h, scale: s }
-        }
+    for (let y = 0; y + side * s <= rows; y++) {
+      for (let x = 0; x + side * s <= columns; x++) {
+        if (free(x, y, side * s)) return { x, y, columns: side, rows: side, scale: s }
       }
     }
   }
