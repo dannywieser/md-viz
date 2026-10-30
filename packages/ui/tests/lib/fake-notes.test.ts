@@ -9,6 +9,14 @@ describe('makeFakeSets', () => {
     expect(new Set(ids).size).toBe(46)
   })
 
+  it('mixes the sets when the notes are listed by id', () => {
+    const sets = makeFakeSets([20, 20])
+    const owner = new Map(sets.flatMap((set, i) => set.notes.map((note) => [note.id, i] as const)))
+    const listed = [...owner.keys()].sort().map((id) => owner.get(id))
+
+    expect(listed.slice(0, 20).includes(0) && listed.slice(0, 20).includes(1)).toBe(true)
+  })
+
   it('gives the sets names and palette colours of their own', () => {
     const sets = makeFakeSets([3, 3, 3])
 

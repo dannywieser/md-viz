@@ -26,6 +26,8 @@ type NoteGridProps = {
 export const MOTION_LIMIT = 1000
 const FADE_MS = 250
 
+const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
+
 function prefersReducedMotion(): boolean {
   return (
     typeof window.matchMedia === 'function' &&
@@ -102,7 +104,8 @@ function NoteGrid({ sets, label, onCellChange, ref, className }: NoteGridProps) 
   const square = states && state && hovered !== null ? state.squares[hovered] : null
   const note = hovered === null ? null : model.notes[hovered]
   const set = hovered === null ? null : model.sets[model.order[hovered]]
-  const idle = `${label ? `${label}: ` : ''}${total} notes in ${model.sets.length} sets`
+  const totals = `${plural(total, 'note')} in ${plural(model.sets.length, 'set')}`
+  const idle = label ? `${label}: ${totals}` : totals
 
   return (
     <div
@@ -131,7 +134,7 @@ function NoteGrid({ sets, label, onCellChange, ref, className }: NoteGridProps) 
           />
           <svg
             role="img"
-            aria-label={`${grouped ? 'grouped' : 'not grouped'}: ${total} notes in ${model.sets.length} sets`}
+            aria-label={`${grouped ? 'grouped' : 'not grouped'}: ${totals}`}
             width={width}
             height={height}
             shapeRendering="crispEdges"

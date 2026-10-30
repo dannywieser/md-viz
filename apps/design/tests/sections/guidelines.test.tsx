@@ -11,7 +11,7 @@ describe('Guidelines', () => {
       screen.getByRole('heading', { level: 3, name: 'lowercase text only' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 3, name: 'themes' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 3, name: 'tag colors' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: 'set colors' })).toBeInTheDocument()
     expectLowercase(container)
   })
 })

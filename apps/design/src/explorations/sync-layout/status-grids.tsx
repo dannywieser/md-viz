@@ -1,5 +1,5 @@
-import { NoteGrid } from '@md-viz/ui'
 import type { FakeGroups } from './fake-sync'
+import { MockGrid } from './mock-grid'
 import { COLUMN_GAP, COLUMN_WIDTH, SMALL_GRID_HEIGHT } from './window-size'
 
 /**
@@ -9,7 +9,7 @@ import { COLUMN_GAP, COLUMN_WIDTH, SMALL_GRID_HEIGHT } from './window-size'
  */
 const HEIGHTS = { updated: undefined, deleted: SMALL_GRID_HEIGHT, unchanged: undefined }
 
-/** the three status grids side by side, in columns of the same width; the last block is pinned right, so its edge meets the status card's. */
+/** the three status grids side by side, in columns of the same width. */
 export function StatusGrids({ groups }: { groups: FakeGroups }) {
   return (
     <div className="flex min-h-0 flex-1 px-4 pb-4" style={{ columnGap: COLUMN_GAP }}>
@@ -20,13 +20,7 @@ export function StatusGrids({ groups }: { groups: FakeGroups }) {
           className="shrink-0"
           style={{ width: COLUMN_WIDTH }}
         >
-          <NoteGrid
-            notes={groups[group]}
-            label={group}
-            height={HEIGHTS[group]}
-            align={group === 'unchanged' ? 'end' : 'start'}
-            compactEmpty
-          />
+          <MockGrid notes={groups[group]} label={group} height={HEIGHTS[group]} />
         </section>
       ))}
     </div>

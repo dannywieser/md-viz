@@ -46,8 +46,10 @@ export function makeFakeSets(counts: number[]): GridSet[] {
     color: index % HUE_COLORS,
     notes: Array.from({ length: count }, () => {
       const n = note++
+      // the ids are scrambled (and still unique), so listed by id the notes of the sets are mixed
+      const scrambled = Math.imul(n + 1, 2654435761) >>> 0
       return {
-        id: `note-${String(n).padStart(6, '0')}`,
+        id: `${scrambled.toString(16).padStart(8, '0')}-${n}`,
         title: `${WORDS[(n * 7) % WORDS.length]} ${WORDS[(n * 13 + 5) % WORDS.length]}`,
       }
     }),

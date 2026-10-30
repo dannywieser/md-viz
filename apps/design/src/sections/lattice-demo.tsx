@@ -1,8 +1,15 @@
 import { useMemo, useRef } from 'react'
-import { latticeSpacing, makeFakeNotes, NoteGrid, useDotLattice } from '@md-viz/ui'
+import { latticeSpacing, makeFakeSets, NoteGrid, useDotLattice } from '@md-viz/ui'
 
-/** drawing area of the demo grid in px, so the same count always gives the same cell. */
-const AREA = { width: 360, height: 200 }
+/** the box of the demo grid in px (its bar included), so the same count always gives the same cell. */
+const AREA = { width: 360, height: 232 }
+
+/** a count of notes in three sets, the first the biggest. */
+function threeSets(count: number) {
+  const first = Math.ceil(count / 2)
+  const second = Math.ceil((count - first) / 2)
+  return [first, second, count - first - second].filter((size) => size > 0)
+}
 
 /** the rule the cell fell under, from the spacing it got. */
 function rule(cell: number, spacing: number) {
@@ -22,21 +29,15 @@ interface LatticeDemoProps {
 export function LatticeDemo({ count, cell, onCellChange }: LatticeDemoProps) {
   const box = useRef<HTMLDivElement>(null)
   const grid = useRef<HTMLDivElement>(null)
-  const notes = useMemo(() => makeFakeNotes(count), [count])
+  const sets = useMemo(() => makeFakeSets(threeSets(count)), [count])
   useDotLattice(grid, cell, box)
   const spacing = cell === null ? null : latticeSpacing(cell)
 
   return (
     <div className="space-y-3">
       <div ref={box} className="bg-background bg-dots flex justify-center border p-10">
-        <div style={{ width: AREA.width }}>
-          <NoteGrid
-            ref={grid}
-            notes={notes}
-            label="notes"
-            height={AREA.height}
-            onCellChange={onCellChange}
-          />
+        <div style={AREA}>
+          <NoteGrid ref={grid} sets={sets} label="notes" onCellChange={onCellChange} />
         </div>
       </div>
       {cell !== null && spacing !== null && (

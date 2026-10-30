@@ -1,4 +1,5 @@
-import type { Note } from '@md-viz/ui'
+/** a mock note: the three-grid layout of this exploration predates the sets, so its notes only have a title. */
+export type Note = { id: string; title: string }
 
 /** what the sync app is doing, or has done, in a mock window. */
 export type Phase = 'never' | 'scanning' | 'syncing' | 'done' | 'empty' | 'error'
@@ -24,7 +25,6 @@ export const makeNotes = (count: number, offset = 0): Note[] =>
   Array.from({ length: count }, (_, i) => ({
     id: `note-${offset + i}`,
     title: titleAt(offset + i),
-    colors: [],
   }))
 
 export interface FakeGroups {

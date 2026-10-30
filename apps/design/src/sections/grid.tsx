@@ -11,8 +11,8 @@ const presets = [4, 50, 150, 400, 1200, 3000]
 
 /** how the dots are spaced: what a grid does, then the dot spacing for each size of cell. */
 const intro = [
-  'note grids have a fixed height and width.',
-  'as the number of notes increases, the size of each cell is decreased.',
+  'a note grid fills a frame of fixed size, grouped or not.',
+  'as the number of notes increases, the size of each cell is decreased (grouped, the cell is the smallest square, the sets with fewer notes get bigger ones).',
   'the dots on the page are spaced to match the note grid shown.',
 ]
 

@@ -186,6 +186,12 @@ describe('NoteGrid', () => {
     expect(ref.current?.style.height).toBe('320px')
   })
 
+  it('says note and set in the singular for one', () => {
+    render(<NoteGrid sets={makeFakeSets([1])} />)
+
+    expect(screen.getByText('1 note in 1 set')).toBeInTheDocument()
+  })
+
   it('leaves out sets without notes', () => {
     render(<NoteGrid sets={[{ id: 'x', name: 'x', color: 1, notes: [] }, ...sets]} />)
 
