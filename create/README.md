@@ -72,3 +72,4 @@ New sessions are appended to the bottom of this table.
 | [20261029-01-design-board-cleanup-and-optimize](20261029-01-design-board-cleanup-and-optimize/) | design board cleanup and optimize | complete | 2026-10-29 |
 | [20261029-01-note-grid-sets-exploration](20261029-01-note-grid-sets-exploration/) | note grid sets exploration | complete | 2026.10.29 |
 | [20261030-01-converge-sets-and-tags-into-a-single-concept](20261030-01-converge-sets-and-tags-into-a-single-concept/) | converge sets and tags into a single concept | complete | 2026.10.30 |
+| [20261030-02-implement-note-grid-updates-with-grouping-and-sets](20261030-02-implement-note-grid-updates-with-grouping-and-sets/) | implement note grid updates with grouping and sets | review | 2026.10.30 |
