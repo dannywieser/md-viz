@@ -6,12 +6,13 @@ const sets = [
   { id: 'a', name: 'set a', count: 9, color: 0 },
 ]
 
-function renderGrid(outlined = false, labelWidth?: number) {
+function renderGrid(outlined = false, labelWidth?: number, bar = false) {
   render(
     <ContainerGrid
       sets={sets}
       outlined={outlined}
       labelWidth={labelWidth}
+      bar={bar}
       width={200}
       height={100}
     />,
@@ -41,7 +42,8 @@ describe('ContainerGrid', () => {
     renderGrid()
 
     const svg = screen.getByRole('img')
-    expect(svg).toHaveClass('bg-card', 'shadow-hard')
+    expect(svg).toHaveClass('bg-card')
+    expect(svg.parentElement).toHaveClass('shadow-hard')
     expect(Number(svg.getAttribute('width'))).toBeLessThanOrEqual(200)
     expect(Number(svg.getAttribute('height'))).toBeLessThanOrEqual(100)
   })
@@ -110,5 +112,19 @@ describe('ContainerGrid', () => {
     )
 
     expect(document.querySelectorAll('[data-set-label]')).toHaveLength(0)
+  })
+
+  it('shows the hovered set and note in a bar instead of a tooltip', () => {
+    const svg = renderGrid(true, undefined, true)
+    expect(screen.getByText('2 sets, 11 notes')).toBeInTheDocument()
+
+    fireEvent.pointerMove(svg, { clientX: 1, clientY: 1 })
+
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(screen.getByText('set a')).toBeInTheDocument()
+    expect(screen.getByText('note 1')).toBeInTheDocument()
+
+    fireEvent.pointerLeave(svg)
+    expect(screen.getByText('2 sets, 11 notes')).toBeInTheDocument()
   })
 })

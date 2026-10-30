@@ -106,3 +106,12 @@ Iteration 3 (on top, 1 and 2 kept): the iteration 2 container with the group out
 
 ### [2026.10.29 18:53:37] Claude
 Iteration 3 done: container-grid.tsx got an optional labelWidth (set name as text over its group, top-left, pointer-events none, halo of the card colour, shown when the group is at least labelWidth px wide and the name fits); new container-sizes.ts (shared by sections 2 and 3), labelled-slotting-section.tsx (container and threshold off/60/100/140 switches), iteration-3.tsx, iterations.ts (3 on top; 1 and 2 kept), with tests. Checked in the design viewer: names show on sets a, b and c at 100px, and hovering a square under a name still outlines it and shows "set a note 1". Format, lint and typecheck clean. Coverage: the machine was heavily loaded (another process at 100% CPU), so vitest workers timed out in the full runs; the last design run passed every file it completed (99 files, 98.52 / 97.62 / 96.85 / 98.5) but with 5 worker start errors, so a clean full run is still to be confirmed. The 117 note-grid-sets tests passed in isolation.
+
+### [2026.10.30 06:18:28] User
+iteration 4: outlined groups, with outline, add a white bar across the top of the grid which is flush with it (no spacing). hovering shows the set and title here, no tooltips
+
+### [2026.10.30 06:18:28] Decision
+Iteration 4 (on top; 1-3 kept): the outlined container of iteration 3 with a white bar flush across its top (same width, no gap, one shared hard shadow). It shows the totals while idle and, on hover, the set's colour swatch, name and the note; no tooltip and no names over the groups. ContainerGrid got an optional `bar` prop (the shadow moved to a wrapper so bar and grid share it); the note has no stored title in the sample data, so it shows "note N".
+
+### [2026.10.30 06:18:28] Claude
+Iteration 4 done: bar-slotting-section.tsx, iteration-4.tsx, iterations.ts (4 on top), container-grid.tsx bar prop, with tests (note-grid-sets: 121 pass). Checked in the design viewer: bar-to-grid gap 0, equal widths, hover shows "set a note 55" in the bar, no tooltip. Format and lint clean; full coverage not re-run this iteration.

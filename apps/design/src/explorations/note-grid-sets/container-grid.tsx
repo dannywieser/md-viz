@@ -7,12 +7,17 @@ import { colorVar } from './note-colors'
 import { fitContainer } from './slot-sets'
 import type { SizedSet } from './sized-grid'
 
+/** height of the bar across the top of the container, px. */
+const BAR_PX = 32
+
 type ContainerGridProps = {
   sets: SizedSet[]
   /** draw a heavier outline around each group. */
   outlined: boolean
   /** show each set's name over its group when the group is at least this wide (px); no names when omitted. */
   labelWidth?: number
+  /** a white bar flush across the top of the container shows the hovered set and note, in place of the tooltip. */
+  bar?: boolean
   /** the box the container may fill, px. */
   width: number
   height: number
@@ -24,7 +29,14 @@ type ContainerGridProps = {
  * the empty squares are one set of gridlines, not one element each; one pointer handler derives
  * the hovered note from the layout.
  */
-export function ContainerGrid({ sets, outlined, labelWidth, width, height }: ContainerGridProps) {
+export function ContainerGrid({
+  sets,
+  outlined,
+  labelWidth,
+  bar = false,
+  width,
+  height,
+}: ContainerGridProps) {
   const [hovered, setHovered] = useState<{ set: number; note: number } | null>(null)
   const { sorted, fit } = useMemo(() => {
     const sorted = [...sets].sort((a, b) => b.count - a.count)
@@ -38,6 +50,7 @@ export function ContainerGrid({ sets, outlined, labelWidth, width, height }: Con
     }
   }, [sets, width, height])
   const { cell, columns, rows, slots, owner } = fit
+  const total = sorted.reduce((sum, set) => sum + set.count, 0)
   const w = columns * cell
   const h = rows * cell
 
@@ -59,73 +72,97 @@ export function ContainerGrid({ sets, outlined, labelWidth, width, height }: Con
     return [...vertical, ...horizontal].join('')
   }, [cell, columns, rows, w, h])
   return (
-    <LatticeStage cell={cell} width={w} height={h}>
-      <svg
-        role="img"
-        aria-label={`${sets.length} sets slotted into a container of ${columns} by ${rows} squares`}
-        width={w}
-        height={h}
-        shapeRendering="crispEdges"
-        className="overflow-visible bg-card shadow-hard"
-        onPointerMove={handlePointerMove}
-        onPointerLeave={() => setHovered(null)}
-      >
-        <path d={lines} fill="none" style={{ stroke: 'var(--note-stroke)' }} />
-        {sorted.map((set, i) => (
-          <g key={set.id} transform={`translate(${slots[i].x * cell} ${slots[i].y * cell})`}>
-            {Array.from({ length: set.count }, (_, k) => (
-              <rect
-                key={k}
-                className={i === 0 && k === 0 ? 'note-square' : undefined}
-                x={(k % slots[i].columns) * cell}
-                y={Math.floor(k / slots[i].columns) * cell}
-                width={cell}
-                height={cell}
-                style={{ fill: colorVar(set.color), stroke: 'var(--note-stroke)' }}
-              />
-            ))}
-            {outlined && (
-              <path
-                d={groupOutline(set.count, slots[i].columns, cell)}
-                fill="none"
-                stroke="var(--foreground)"
-                strokeWidth={2}
-              />
+    <LatticeStage cell={cell} width={w} height={h + (bar ? BAR_PX : 0)}>
+      <div className="shadow-hard" style={{ width: w }}>
+        {bar && (
+          <div
+            className="flex items-center gap-2 border-b bg-card px-2 text-xs"
+            style={{ width: w, height: BAR_PX }}
+          >
+            {hovered ? (
+              <>
+                <span
+                  aria-hidden
+                  className="size-3 shrink-0 border"
+                  style={{ background: colorVar(sorted[hovered.set].color) }}
+                />
+                <span className="font-bold">{sorted[hovered.set].name}</span>
+                <span className="truncate text-muted-foreground">note {hovered.note + 1}</span>
+              </>
+            ) : (
+              <span className="truncate text-muted-foreground">
+                {sets.length} sets, {total} notes
+              </span>
             )}
-          </g>
-        ))}
-        {labelWidth !== undefined &&
-          sorted.map((set, i) => {
-            const groupWidth = slots[i].columns * cell
-            if (groupWidth < Math.max(labelWidth, set.name.length * CHAR_PX + 2 * LABEL_PAD))
-              return null
-            return (
-              <text
-                key={set.id}
-                data-set-label
-                x={slots[i].x * cell + LABEL_PAD}
-                y={slots[i].y * cell + LABEL_PAD + LINE_PX / 2}
-                dominantBaseline="central"
-                pointerEvents="none"
-                paintOrder="stroke"
-                strokeWidth={3}
-                className="fill-card-foreground stroke-card text-xs"
-              >
-                {set.name}
-              </text>
-            )
-          })}
-        {hovered && slot && (
-          <rect
-            className="note-hover"
-            x={(slot.x + (hovered.note % slot.columns)) * cell}
-            y={(slot.y + Math.floor(hovered.note / slot.columns)) * cell}
-            width={cell}
-            height={cell}
-          />
+          </div>
         )}
-      </svg>
-      {hovered && slot && (
+        <svg
+          role="img"
+          aria-label={`${sets.length} sets slotted into a container of ${columns} by ${rows} squares`}
+          width={w}
+          height={h}
+          shapeRendering="crispEdges"
+          className="block overflow-visible bg-card"
+          onPointerMove={handlePointerMove}
+          onPointerLeave={() => setHovered(null)}
+        >
+          <path d={lines} fill="none" style={{ stroke: 'var(--note-stroke)' }} />
+          {sorted.map((set, i) => (
+            <g key={set.id} transform={`translate(${slots[i].x * cell} ${slots[i].y * cell})`}>
+              {Array.from({ length: set.count }, (_, k) => (
+                <rect
+                  key={k}
+                  className={i === 0 && k === 0 ? 'note-square' : undefined}
+                  x={(k % slots[i].columns) * cell}
+                  y={Math.floor(k / slots[i].columns) * cell}
+                  width={cell}
+                  height={cell}
+                  style={{ fill: colorVar(set.color), stroke: 'var(--note-stroke)' }}
+                />
+              ))}
+              {outlined && (
+                <path
+                  d={groupOutline(set.count, slots[i].columns, cell)}
+                  fill="none"
+                  stroke="var(--foreground)"
+                  strokeWidth={2}
+                />
+              )}
+            </g>
+          ))}
+          {labelWidth !== undefined &&
+            sorted.map((set, i) => {
+              const groupWidth = slots[i].columns * cell
+              if (groupWidth < Math.max(labelWidth, set.name.length * CHAR_PX + 2 * LABEL_PAD))
+                return null
+              return (
+                <text
+                  key={set.id}
+                  data-set-label
+                  x={slots[i].x * cell + LABEL_PAD}
+                  y={slots[i].y * cell + LABEL_PAD + LINE_PX / 2}
+                  dominantBaseline="central"
+                  pointerEvents="none"
+                  paintOrder="stroke"
+                  strokeWidth={3}
+                  className="fill-card-foreground stroke-card text-xs"
+                >
+                  {set.name}
+                </text>
+              )
+            })}
+          {hovered && slot && (
+            <rect
+              className="note-hover"
+              x={(slot.x + (hovered.note % slot.columns)) * cell}
+              y={(slot.y + Math.floor(hovered.note / slot.columns)) * cell}
+              width={cell}
+              height={cell}
+            />
+          )}
+        </svg>
+      </div>
+      {!bar && hovered && slot && (
         <GridTooltip
           x={(slot.x + (hovered.note % slot.columns) + 0.5) * cell}
           y={(slot.y + Math.floor(hovered.note / slot.columns)) * cell}
