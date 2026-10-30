@@ -2,6 +2,7 @@
 
 - **Slug:** 20261029-01-note-grid-sets-exploration
 - **Started:** 2026.10.29 07:50:38 MDT
+- **Completed:** 2026.10.30 07:19:15
 
 ---
 
@@ -227,3 +228,12 @@ StateGrid draws the current state's unit gridlines (one path, note-stroke colour
 
 ### [2026.10.30 07:15:34] Claude
 Done in state-grid.tsx with a test (note-grid-sets 213 pass; eslint, tsc clean). Viewer, wide 500 not grouped: the empty cells at the end of the last row show the grid. The lines swap with the state, they do not animate.
+
+### [2026.10.30 07:18:10] User
+ok, let's mark this one as final and run /create-complete we'll start a new session to get this implemented in the live components.
+
+### [2026.10.30 07:18:10] Claude
+/create-complete: read the log, plan and repo changes (design exploration only: apps/design note-grid-sets, registry line, CLAUDE.md rule, create/ files); running the full pnpm coverage fresh.
+
+### [2026.10.30 07:19:15] Decision
+Session complete. Coverage run fresh: all workspaces at or above 95% (design 98.34 / 98.31 / 98.8 / 98.45), thresholds unchanged. summary.md written; CLAUDE.md harvest: pointer to the final design in the exploration notes.
