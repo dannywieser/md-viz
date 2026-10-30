@@ -70,3 +70,24 @@ Decision: colour by set only, no stripes (this supersedes the earlier stripe ans
 
 ### [2026.10.30 14:42:38] User
 /create-plan
+
+### [2026.10.30 14:44:03] Claude
+Opened draft PR https://github.com/dannywieser/md-viz/pull/22 (discussion committed). Wrote plan.md: four phases, each a stop for review. 1 exclusive sets in packages/sync (steps 1-4); 2 new NoteGrid in packages/ui + design page (5-9); 3 Electron single grid on the sync sets (10-13); 4 web single grid on the tag sets (14-16); 17 coverage. Open questions listed in plan.md (source prefix for set names, N+1 getSet in web, many-sets layout cost, duplicated layout code, lattice moves on toggle, LastSync.notes left in place, stale cache sets). Status set to planned. Asked how to proceed (phase by phase suggested).
+
+### [2026.10.30 14:46:04] User
+I don't understand open question 1. are you talking about note_fields table?
+
+### [2026.10.30 14:46:05] Claude
+Explained: not note_fields; it is the sets table. A set is identified by (source, grouping, id), so bear:tags:daily and file:tags:daily are two different sets. The web app shows sets of all sources, so two sets can share a name; question is only how to label them. Proposed: plain id, prefix with source only on a clash.
+
+### [2026.10.30 14:47:13] User
+yes, your suggestion works
+
+### [2026.10.30 14:47:13] Decision
+Open question 1 decided: set name is the plain id, prefixed with the source only when two sources have a set of the same name (keyed by source and id). plan.md marked.
+
+### [2026.10.30 14:47:29] User
+and then proceed with phase 1
+
+### [2026.10.30 14:47:29] Decision
+Approach: phase by phase, one commit and push per numbered step, pause for review at the end of each phase. Open questions 2-4 accepted as proposed in plan.md (N+1 getSet in web, test and cap the many-sets layout in Phase 2, interim grey-set adapters so every phase stays green). Starting Phase 1.
