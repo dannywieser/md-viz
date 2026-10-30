@@ -45,10 +45,12 @@ export function ScaledSection() {
         space allows (every set is a full square block, with filler squares for what its notes do
         not fill), in whole multiples of the smallest square (so everything stays on the dot
         lattice): a set of two notes with a big share gets big squares. the share is the set's notes
-        to a power: by notes gives every set space in proportion to its notes, so all squares end up
-        the same size; softened (square root) and even give the small sets more than their notes ask
-        for. a set that does not fit at its size tries a smaller one, so the list shows what each
-        set actually got.
+        to a power: by notes gives every set space in proportion to its notes, so the squares start
+        out the same size; softened (square root) and even give the small sets more than their notes
+        ask for. a set that does not fit at its size tries a smaller one. once everything is placed
+        the free space is used: each set, the smallest first, grows another multiple for as long as
+        everything still fits, and a few unit sizes are compared for the most area covered by notes.
+        the list shows what each set actually got.
       </p>
       <div className="flex flex-wrap gap-6">
         <ModeSwitch

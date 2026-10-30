@@ -1,5 +1,6 @@
 import {
   blockSide,
+  notesArea,
   scaleLayout,
   spaceShares,
 } from '../../../src/explorations/note-grid-sets/scaled-slots'
@@ -55,10 +56,20 @@ describe('scaleLayout', () => {
     expect(fit.slots[6].scale).toBeGreaterThan(fit.slots[0].scale)
   })
 
-  it('keeps every square the same size when the share is by notes', () => {
+  it('uses the free space: the notes cover most of the container', () => {
+    for (const exponent of [0, 0.5, 1]) {
+      const fit = scaleLayout(counts, exponent, 720, 320)
+
+      expect(notesArea(counts, fit) / (720 * 320)).toBeGreaterThan(0.6)
+    }
+  })
+
+  it('never overlaps after growing', () => {
     const fit = scaleLayout(counts, 1, 720, 320)
 
-    expect(new Set(fit.slots.map((slot) => slot.scale)).size).toBeLessThanOrEqual(2)
+    counts.forEach((count, i) => {
+      expect(fit.owner.filter((o) => o === i).length).toBe(count * fit.slots[i].scale ** 2)
+    })
   })
 
   it('falls back to one unit when nothing can be placed', () => {

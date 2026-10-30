@@ -153,3 +153,12 @@ The set outline used --foreground, which in Solarized is base01 (#586e75), a mid
 
 ### [2026.10.30 06:35:10] Claude
 Done: stroke var(--focus) in container-grid.tsx and scaled-grid.tsx. Solarized outline now computes to rgb(0,0,0). Tests pass. Not checked visually in the other themes.
+
+### [2026.10.30 06:38:34] User
+why does it feel like across the board there is quite a bit of empty space. Could we not do a slight increase in size across the board to optimize space usage?
+
+### [2026.10.30 06:38:34] Decision
+Iterations 2-4 already use the largest whole-px cell at which every set slots (about 5% of the squares empty in the wide container), so there is nothing to grow there. The empty space is in iteration 5: sets stop at the scale their share allows (rounded down), blocks are full squares with filler, and the unit was the largest that fits, not the one that fills best. Added a grow pass to scaleLayout: after placing, each set (smallest first) takes one more multiple while everything still fits, and the largest unit plus 3 smaller ones are compared by the area the notes cover (notesArea).
+
+### [2026.10.30 06:38:34] Claude
+Done in scaled-slots.ts (grow, notesArea, tryUnit with fixed scales) with tests (note-grid-sets 145 pass; eslint, tsc clean). Notes' share of the container, before -> after, wide container: 100 notes by notes 69 -> 75%, softened 53 -> 65%, even 57 -> 66%; 500 softened 59 -> 74%; 5000 softened 59 -> 86%. Layout takes up to about 0.5s at 5000 notes.

@@ -33,13 +33,24 @@ export function spaceShares(counts: number[], exponent: number): number[] {
   return weights.map((weight) => weight / sum)
 }
 
+/** how many more (smaller) units, after the largest that fits, are tried and compared. */
+const UNIT_TRIES = 4
+
+/** the area the notes' own squares cover, px squared: what a layout is judged by. */
+export function notesArea(counts: number[], fit: ScaledFit): number {
+  return counts.reduce((sum, count, i) => sum + count * (fit.slots[i].scale * fit.unit) ** 2, 0)
+}
+
 /**
  * gives every set its share of a `width` x `height` box and lets its squares grow to fill it, in
  * whole multiples of one smallest square (`unit`, px): a set whose share is bigger than its
  * notes at unit size gets squares 2, 3... units wide. the sets (biggest first) are placed first fit,
- * left to right and top to bottom, as rectangles of squares; a set that does not fit at its scale
- * tries a smaller one. the unit is the largest whole px size at which the biggest set (the first)
- * has room for its notes at one unit and every set fits.
+ * left to right and top to bottom, as full square blocks (filler squares make up what the notes do
+ * not fill); a set that does not fit at its scale tries a smaller one. a unit is possible when the
+ * biggest set (the first) has room for its notes at one unit and every set fits. then the free space
+ * is used: each set in turn (the smallest first) grows one more multiple for as long as everything
+ * still fits. the largest possible unit and a few smaller ones are tried, and the layout whose
+ * notes cover the most area wins.
  */
 export function scaleLayout(
   counts: number[],
@@ -48,22 +59,60 @@ export function scaleLayout(
   height: number,
 ): ScaledFit {
   const shares = spaceShares(counts, exponent)
-  for (let unit = Math.min(width, height); unit >= 1; unit--) {
-    const fit = tryUnit(counts, shares, unit, Math.floor(width / unit), Math.floor(height / unit))
-    if (fit) return fit
+  let best: ScaledFit | null = null
+  let found = 0
+  for (let unit = Math.min(width, height); unit >= 1 && found < UNIT_TRIES; unit--) {
+    const columns = Math.floor(width / unit)
+    const rows = Math.floor(height / unit)
+    const base = tryUnit(counts, shares, unit, columns, rows)
+    if (!base) continue
+    found++
+    const fit = grow(counts, base)
+    if (!best || notesArea(counts, fit) > notesArea(counts, best)) best = fit
   }
-  return { unit: 1, columns: width, rows: height, slots: [], owner: [], shares }
+  return best ?? { unit: 1, columns: width, rows: height, slots: [], owner: [], shares }
 }
 
+/** makes the squares of each set one multiple bigger, smallest block first, while everything fits. */
+function grow(counts: number[], fit: ScaledFit): ScaledFit {
+  let best = fit
+  let improved = true
+  while (improved) {
+    improved = false
+    const order = counts
+      .map((_, i) => i)
+      .sort(
+        (a, b) =>
+          blockSide(counts[a]) * best.slots[a].scale - blockSide(counts[b]) * best.slots[b].scale,
+      )
+    for (const index of order) {
+      const scales = best.slots.map((slot) => slot.scale)
+      scales[index]++
+      const next = tryUnit(counts, best.shares, best.unit, best.columns, best.rows, scales)
+      if (next) {
+        best = next
+        improved = true
+      }
+    }
+  }
+  return best
+}
+
+/**
+ * places the sets on a `columns` x `rows` grid of units. without `fixed` every set gets the scale
+ * its share allows (or a smaller one that fits); with `fixed` scales every set must fit at exactly
+ * that scale, or null.
+ */
 function tryUnit(
   counts: number[],
   shares: number[],
   unit: number,
   columns: number,
   rows: number,
+  fixed?: number[],
 ): ScaledFit | null {
   // the smallest square is the one the biggest set needs: its share must hold all its notes at one unit
-  if (shares[0] * columns * rows < blockSide(counts[0]) ** 2) return null
+  if (!fixed && shares[0] * columns * rows < blockSide(counts[0]) ** 2) return null
   const owner = Array.from({ length: columns * rows }, () => -1)
   const used = Array.from({ length: columns * rows }, () => false)
   const free = (x: number, y: number, side: number) => {
@@ -72,9 +121,11 @@ function tryUnit(
       for (let cx = x; cx < x + side; cx++) if (used[cy * columns + cx]) return false
     return true
   }
-  const scales = counts.map((count, i) =>
-    Math.max(1, Math.floor(Math.sqrt(shares[i] * columns * rows) / blockSide(count))),
-  )
+  const scales =
+    fixed ??
+    counts.map((count, i) =>
+      Math.max(1, Math.floor(Math.sqrt(shares[i] * columns * rows) / blockSide(count))),
+    )
   const slots: ScaledSlot[] = []
   const order = counts
     .map((_, i) => i)
@@ -82,7 +133,14 @@ function tryUnit(
       (a, b) => (blockSide(counts[b]) * scales[b]) ** 2 - (blockSide(counts[a]) * scales[a]) ** 2,
     )
   for (const index of order) {
-    const slot = place(blockSide(counts[index]), scales[index], columns, rows, free)
+    const slot = place(
+      blockSide(counts[index]),
+      scales[index],
+      fixed ? scales[index] : 1,
+      columns,
+      rows,
+      free,
+    )
     if (!slot) return null
     slots[index] = slot
     for (let cy = slot.y; cy < slot.y + slot.rows * slot.scale; cy++)
@@ -98,15 +156,16 @@ function tryUnit(
   return { unit, columns, rows, slots, owner, shares }
 }
 
-/** the first free spot for a block of `side` x `side` squares of `scale` units, or a smaller scale when none fits. */
+/** the first free spot for a block of `side` x `side` squares of `scale` units, or of a smaller scale (down to `least`) when none fits. */
 function place(
   side: number,
   scale: number,
+  least: number,
   columns: number,
   rows: number,
   free: (x: number, y: number, side: number) => boolean,
 ): ScaledSlot | null {
-  for (let s = scale; s >= 1; s--) {
+  for (let s = scale; s >= least; s--) {
     for (let y = 0; y + side * s <= rows; y++) {
       for (let x = 0; x + side * s <= columns; x++) {
         if (free(x, y, side * s)) return { x, y, columns: side, rows: side, scale: s }
