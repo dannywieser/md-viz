@@ -7,10 +7,10 @@ const counts = [7, 2, 1]
 describe('groupStates', () => {
   const states = groupStates(counts, order, 200, 120)
 
-  it('fills the same frame in both states', () => {
+  it('fits both states to the same frame, leaving out the slack of under one unit', () => {
     for (const state of [states.grouped, states.natural]) {
-      expect(state.x0 * 2 + state.columns * state.unit).toBeLessThanOrEqual(200)
-      expect(state.y0 * 2 + state.rows * state.unit).toBeLessThanOrEqual(120)
+      expect(state.columns * state.unit).toBeLessThanOrEqual(200)
+      expect(state.rows * state.unit).toBeLessThanOrEqual(120)
       expect(state.squares).toHaveLength(10)
     }
     expect(states.width).toBe(200)

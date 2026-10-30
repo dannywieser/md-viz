@@ -26,6 +26,9 @@ type NoteGridProps = {
 export const MOTION_LIMIT = 1000
 const FADE_MS = 250
 
+/** how the block and its squares move to the size and places of the other state. */
+const MOVE = '450ms ease-in-out'
+
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
 
 function prefersReducedMotion(): boolean {
@@ -36,12 +39,13 @@ function prefersReducedMotion(): boolean {
 }
 
 /**
- * the notes as a grid of squares in a shadowed block that fills its container, floating on the page
- * and never inside a card. a bar across its top shows the totals, or the hovered note and its set,
- * and holds a toggle between two states: not grouped (the default; every note the same size in the
+ * the notes as a grid of squares in a shadowed block floating on the page and never inside a card.
+ * the block is as big as its squares, which are as big as fit its container (the slack of under one
+ * square is page background, at the right and bottom of the block). a bar across its top shows the totals, or the hovered note and its set,
+ * and holds a toggle (not with a single note, which has nothing to group) between two states: not grouped (the default; every note the same size in the
  * order of their ids, coloured by set) and grouped (the sets as outlined flowing shapes, the
- * squares of the smaller sets bigger). both fill the same frame, so the block never changes size;
- * every note is one square that keeps its identity, so switching moves and resizes each square
+ * squares of the smaller sets bigger). the block can differ in size between
+ * the two states, and follows the squares with a transition; every note is one square that keeps its identity, so switching moves and resizes each square
  * (above `MOTION_LIMIT` notes, or with reduced motion, the grid fades instead). one pointer handler
  * derives the hovered note from the layout of the current state.
  */
@@ -94,13 +98,15 @@ function NoteGrid({ sets, label, onCellChange, ref, className }: NoteGridProps) 
   function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
     if (!state) return
     const box = event.currentTarget.getBoundingClientRect()
-    const column = Math.floor((event.clientX - box.left - state.x0) / state.unit)
-    const row = Math.floor((event.clientY - box.top - state.y0) / state.unit)
+    const column = Math.floor((event.clientX - box.left) / state.unit)
+    const row = Math.floor((event.clientY - box.top) / state.unit)
     const inside = column >= 0 && column < state.columns && row >= 0 && row < state.rows
     const id = inside ? state.idAt[row * state.columns + column] : -1
     setHovered(id === -1 ? null : id)
   }
 
+  const gridWidth = state ? state.columns * state.unit : 0
+  const gridHeight = state ? state.rows * state.unit : 0
   const square = states && state && hovered !== null ? state.squares[hovered] : null
   const note = hovered === null ? null : model.notes[hovered]
   const set = hovered === null ? null : model.sets[model.order[hovered]]
@@ -123,55 +129,51 @@ function NoteGrid({ sets, label, onCellChange, ref, className }: NoteGridProps) 
         </div>
       )}
       {states && state && (
-        <div ref={ref} className="shrink-0 bg-card shadow-hard" style={{ width }}>
+        <div
+          ref={ref}
+          className="shrink-0 bg-card shadow-hard"
+          style={{ width: gridWidth, transition: animated ? `width ${MOVE}` : undefined }}
+        >
           <NoteGridBar
-            width={width}
             idle={idle}
             hovered={note && set && { title: note.title, setName: set.name, color: set.color }}
             action={
-              <GroupToggle grouped={grouped} onToggle={() => setGrouped((value) => !value)} />
+              total > 1 ? (
+                <GroupToggle grouped={grouped} onToggle={() => setGrouped((value) => !value)} />
+              ) : undefined
             }
           />
           <svg
             role="img"
             aria-label={`${grouped ? 'grouped' : 'not grouped'}: ${totals}`}
-            width={width}
-            height={height}
+            width={gridWidth}
+            height={gridHeight}
             shapeRendering="crispEdges"
             className="block overflow-visible bg-card"
-            style={{ width, height }}
+            style={{
+              width: gridWidth,
+              height: gridHeight,
+              transition: animated ? `width ${MOVE}, height ${MOVE}` : undefined,
+            }}
             onPointerMove={handlePointerMove}
             onPointerLeave={() => setHovered(null)}
           >
-            <path
-              data-gridlines
-              d={lines}
-              transform={`translate(${state.x0} ${state.y0})`}
-              fill="none"
-              style={{ stroke: 'var(--note-stroke)' }}
-            />
+            <path data-gridlines d={lines} fill="none" style={{ stroke: 'var(--note-stroke)' }} />
             {/* the page's dots line up with this square: it never moves, unlike the first note's. */}
             <rect
               className="note-square"
-              x={state.x0}
-              y={state.y0}
+              x={0}
+              y={0}
               width={state.unit}
               height={state.unit}
               style={{ fill: 'none', stroke: 'none', pointerEvents: 'none' }}
             />
             <g ref={squaresRef}>
-              <NoteGridSquares
-                squares={state.squares}
-                colors={colors}
-                x0={state.x0}
-                y0={state.y0}
-                animated={animated}
-              />
+              <NoteGridSquares squares={state.squares} colors={colors} animated={animated} />
             </g>
             <path
               data-outline
               d={states.grouped.outline}
-              transform={`translate(${states.grouped.x0} ${states.grouped.y0})`}
               fill="none"
               stroke="var(--focus)"
               strokeWidth={2}
@@ -183,8 +185,8 @@ function NoteGrid({ sets, label, onCellChange, ref, className }: NoteGridProps) 
             {square && (
               <rect
                 className="note-hover"
-                x={state.x0 + square.x}
-                y={state.y0 + square.y}
+                x={square.x}
+                y={square.y}
                 width={square.size}
                 height={square.size}
               />

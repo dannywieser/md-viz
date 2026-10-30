@@ -118,3 +118,21 @@ Phase 2 step 8 done. Design: component page note-grid (size presets and slider, 
 
 ### [2026.10.30 15:03:06] Claude
 Phase 2 step 9 done (with 9a). Interim adapters keep the apps green: the web AllNotesGrid and the Electron StatusGrid each put their notes in one grey set (Electron: StatusGrid lost cellStep/align, cells.ts and the web grid-note.ts return GridNote, web asks for titles only); both are replaced in Phases 3 and 4. CLAUDE.md updated for the new NoteGrid, set colours and the lattice paragraph. Gates: format:check, lint, typecheck clean; pnpm coverage passes in every workspace (ui 99.6% statements / 98.9% branches, design 98.4/98.3, sync 95.2% branches, electron 97.5/100, web 100%). Pausing for review before Phase 3.
+
+### [2026.10.30 15:05:04] User
+in the note grid demo at 50 notes, there is white space on either side of the grid. IS this unavoidable with a fixed width/height?
+
+### [2026.10.30 15:05:04] Claude
+Measured in the design viewer: frame 711x328, squares 65px, 10 columns x 5 rows, so 650px of squares in 711px: 30px of slack on each side (vertically 1-2px). It comes from whole-pixel square cells in a fixed frame (slack is up to one cell per axis, so it is biggest when squares are big, i.e. few notes). Not unavoidable: options offered (block hugs its squares per state; pick a cell that fills the width better at the cost of empty cells; leave it). No code changed.
+
+### [2026.10.30 15:08:25] User
+let's try 2
+
+### [2026.10.30 15:08:25] Claude
+Option 2 implemented: the block hugs its squares. Layout states lost x0/y0 (no centring in the frame); the block and svg are columns*unit by rows*unit (plus the 32px bar), at the top left of the container, with a width/height transition when animated; the bar is full width of its block (no width prop). Checked in the design viewer (ungrouped 50 notes no side margins; grouped fills the frame). CLAUDE.md updated. Gates: format, lint, typecheck, coverage pass.
+
+### [2026.10.30 15:08:25] User
+hide the group toggle when there is only one note
+
+### [2026.10.30 15:08:25] Claude
+Done: NoteGrid passes no toggle to the bar when it has one note (two or more keep it); tests and CLAUDE.md line updated.

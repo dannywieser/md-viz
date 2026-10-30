@@ -5,8 +5,6 @@ import { colorVar } from '../lib/note-colors'
 export const BAR_PX = 32
 
 type NoteGridBarProps = {
-  /** px: the width of the grid the bar sits on. */
-  width: number
   /** what to show while nothing is hovered. */
   idle: string
   /** the hovered note: its title and the name and colour of its set. */
@@ -16,12 +14,12 @@ type NoteGridBarProps = {
 }
 
 /** the bar flush across the top of a grid: the totals, or the hovered note with its set (and the set's colour). */
-export function NoteGridBar({ width, idle, hovered, action }: NoteGridBarProps) {
+export function NoteGridBar({ idle, hovered, action }: NoteGridBarProps) {
   return (
     <div
       data-slot="note-grid-bar"
-      className="flex items-center gap-2 border-b bg-card px-2 text-xs"
-      style={{ width, height: BAR_PX }}
+      className="flex w-full items-center gap-2 border-b bg-card px-2 text-xs"
+      style={{ height: BAR_PX }}
     >
       {hovered ? (
         <>

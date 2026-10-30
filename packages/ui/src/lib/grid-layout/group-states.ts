@@ -4,11 +4,8 @@ import { fillTileLayout } from './tile-layout'
 /** a note's square in px, in the frame of its grid. */
 export type Square = { x: number; y: number; size: number }
 
-/** where every note is in one state of the grid. the grid sits in the middle of a fixed frame. */
+/** where every note is in one state of the grid. the grid is `columns * unit` x `rows * unit` px, from the corner of its block. */
 export type StateLayout = {
-  /** px: where the grid starts in the frame (the slack of less than one unit, halved). */
-  x0: number
-  y0: number
   /** px: the cell the grid's squares are built from (the pointer reads the grid in these). */
   unit: number
   columns: number
@@ -20,7 +17,7 @@ export type StateLayout = {
 }
 
 export type GroupStates = {
-  /** px: the frame, the box both states fill; it does not change between them. */
+  /** px: the frame, the box both states are fitted to; each state is up to one unit smaller than it. */
   width: number
   height: number
   /** per natural note: its set. */
@@ -35,7 +32,8 @@ export type GroupStates = {
  * the two states of the grid for the same notes, so a note can move from one to the other:
  * natural (the notes as listed, one size) and grouped (by set, see `fillTileLayout`). `order` is
  * the set of each natural note and `counts` the notes of each set. both fill the same `width` x
- * `height` frame, so switching does not change the size of the grid.
+ * `height` frame, each as big as fits in it (the slack of less than one unit is left out, not
+ * split around the grid), so the two states can be a little different in size.
  */
 export function groupStates(
   counts: number[],
@@ -49,8 +47,6 @@ export function groupStates(
 
   const fit = fillTileLayout(counts, width, height)
   const grouped: GroupStates['grouped'] = {
-    x0: Math.floor((width - fit.columns * fit.unit) / 2),
-    y0: Math.floor((height - fit.rows * fit.unit) / 2),
     unit: fit.unit,
     columns: fit.columns,
     rows: fit.rows,
@@ -68,8 +64,6 @@ export function groupStates(
 
   const { cell, columns, rows } = fillGrid(total, width, height)
   const natural: StateLayout = {
-    x0: Math.floor((width - columns * cell) / 2),
-    y0: Math.floor((height - rows * cell) / 2),
     unit: cell,
     columns,
     rows,

@@ -51,16 +51,38 @@ describe('NoteGrid', () => {
     ])
   })
 
-  it('fills its container: a shadowed block as wide as it, the bar above the squares', () => {
+  it('is a shadowed block as big as its squares, which are as big as fit the container', () => {
     const { container } = render(<NoteGrid sets={sets} />)
     const svg = gridSvg(container) as SVGSVGElement
     const block = svg.parentElement as HTMLElement
+    const square = Number(
+      (squareRects(container)[0] as SVGRectElement).style.width.replace('px', ''),
+    )
 
     expect(block).toHaveClass('bg-card', 'shadow-hard')
-    expect(block.style.width).toBe('400px')
-    expect(svg.getAttribute('width')).toBe('400')
-    expect(svg.getAttribute('height')).toBe('288')
+    expect(block.style.width).toBe(`${svg.getAttribute('width')}px`)
+    expect(Number(svg.getAttribute('width')) % square).toBe(0)
+    expect(Number(svg.getAttribute('width'))).toBeLessThanOrEqual(400)
+    expect(Number(svg.getAttribute('height'))).toBeLessThanOrEqual(288)
+    expect(Number(svg.getAttribute('width')) + square).toBeGreaterThan(400)
     expect(block.firstElementChild).toHaveAttribute('data-slot', 'note-grid-bar')
+  })
+
+  it('puts the block at the top left of its container', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+
+    expect(container.querySelector('[data-slot="note-grid"]')).toHaveClass(
+      'items-start',
+      'justify-start',
+    )
+  })
+
+  it('moves the size of the block to the other state with a transition', () => {
+    const { container } = render(<NoteGrid sets={sets} />)
+    const svg = gridSvg(container) as SVGSVGElement
+
+    expect(svg.style.transition).toContain('width')
+    expect((svg.parentElement as HTMLElement).style.transition).toContain('width')
   })
 
   it('starts not grouped and shows the totals, and the label before them', () => {
@@ -184,6 +206,18 @@ describe('NoteGrid', () => {
     expect(ref.current).toHaveClass('shadow-hard')
     expect(ref.current?.style.width).toBe('400px')
     expect(ref.current?.style.height).toBe('320px')
+  })
+
+  it('has no toggle for a single note, which has nothing to group', () => {
+    render(<NoteGrid sets={makeFakeSets([1])} />)
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('has the toggle for two notes', () => {
+    render(<NoteGrid sets={makeFakeSets([1, 1])} />)
+
+    expect(screen.getByRole('button', { name: 'group notes by set' })).toBeInTheDocument()
   })
 
   it('says note and set in the singular for one', () => {
