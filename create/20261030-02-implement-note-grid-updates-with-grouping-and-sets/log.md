@@ -160,3 +160,12 @@ so here's a good example for us to dig into. In the sync app now, there are 2 no
 
 ### [2026.10.30 15:22:20] Claude
 Reproduced with fillTileLayout([2, 4862]) in several frames: scales 1,1 with 86-1152 empty cells, or 16,1 with 8706 empty cells. Causes: (1) the exact-fit search needed the cell count to equal the notes' area and both sides to be multiples of the biggest square, which a set of thousands makes almost impossible, so it fell to a near fit that either gave up the size or left a band empty; (2) placeTiles dropped the strip under a full column of big squares. Fix in packages/ui: fillTileLayout now picks, per combination of sizes near the ideal ones (ideal capped at 16), the largest unit that fits (binary search), scores sizes against how much smaller the unit gets (SMALLER_WEIGHT 3), trims the rows to what the notes need and verifies the placement; placeTiles keeps the strip; the ungrouped state trims rows too. Result: 2/4862 gives scales 16,1 with 16-54 empty cells (was up to 8706). Design page: new uneven sets demo (2 and thousands; seven sets). Tests and CLAUDE.md updated; gates pass.
+
+### [2026.10.30 15:26:22] User
+the main grid is slightly smaller than the other cards in the sync app, leading to a mismatch in margin on the right edge
+
+### [2026.10.30 15:26:22] User
+can we have a fixed width for the grid, or does it need to be a bit dynamic?
+
+### [2026.10.30 15:26:22] Claude
+Cause: since the block hugs its squares (option 2), its width is columns x unit, under the container's by less than one square. A fixed width is possible: squares are whole pixels, so the width equals the container's only when the square size divides it. fillGrid and fillTileLayout now also try the divisors of the width and use one when it is at most a fifth smaller (EXACT_WIDTH_SHARE 0.8) than the biggest unit; otherwise they hug as before. Height stays dynamic (rows the notes need). At 880px wide: 5, 18, 50, 500, 1200 and 5000 notes come out exactly 880 wide; 150 notes keeps 874 (no divisor between 31 and 38). Tests, CLAUDE.md updated; gates pass.

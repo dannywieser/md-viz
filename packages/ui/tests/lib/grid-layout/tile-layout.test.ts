@@ -95,14 +95,39 @@ describe('fillTileLayout', () => {
     expect(fit.columns * (fit.rows - 1)).toBeLessThan(5374)
   })
 
-  it('makes the squares as big as the box allows for the sizes it picks', () => {
+  it('makes the squares as big as the box allows for the sizes it picks, or at most a fifth smaller to be as wide as the box', () => {
     const fit = fillTileLayout([60, 20, 5], 400, 300)
-    const bigger = fit.unit + 1
     const area = fit.tiles.reduce((sum, tile) => sum + tile.size ** 2, 0)
+    let biggest = fit.unit
+    while (Math.floor(400 / (biggest + 1)) * Math.floor(300 / (biggest + 1)) >= area) biggest++
 
-    expect(Math.floor(400 / bigger) * Math.floor(300 / bigger)).toBeLessThan(area)
+    expect(fit.unit).toBeGreaterThanOrEqual(biggest * 0.8)
     expect(fit.scales[2]).toBeGreaterThanOrEqual(fit.scales[0])
     expect(fit.tiles).toHaveLength(85)
+  })
+
+  it('is exactly as wide as the box when a unit that divides the width is not much smaller', () => {
+    for (const counts of [[2, 4862], [300, 120, 40, 6, 1], [18]]) {
+      const fit = fillTileLayout(counts, 880, 300)
+
+      expect(fit.columns * fit.unit).toBe(880)
+    }
+  })
+
+  it('hugs its squares instead when a width that divides is much smaller', () => {
+    // 887 is prime: the only units that divide it are 1 and 887
+    const fit = fillTileLayout([2, 4862], 887, 300)
+
+    expect(fit.unit).toBeGreaterThan(3)
+    expect(fit.columns * fit.unit).toBeLessThan(887)
+    expect(fit.tiles).toHaveLength(4864)
+  })
+
+  it('is as wide as the box for many sets and for one-unit squares too', () => {
+    const counts = Array.from({ length: MAX_TILED_SETS + 1 }, (_, i) => 50 + i)
+    const fit = fillTileLayout(counts, 880, 300)
+
+    expect(fit.columns * fit.unit).toBe(880)
   })
 
   it('lays one set out as a plain grid', () => {

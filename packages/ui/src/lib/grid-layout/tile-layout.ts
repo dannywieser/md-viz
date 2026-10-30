@@ -1,3 +1,5 @@
+import { divisorsOf, EXACT_WIDTH_SHARE } from './grid-geometry'
+
 /** one note's square on the unit grid: `size` units wide. */
 export type Tile = { set: number; note: number; x: number; y: number; size: number }
 
@@ -170,36 +172,42 @@ function largestUnit(area: number, top: number, width: number, height: number, m
   return low
 }
 
-/** the sets as one-unit squares on the biggest unit for which they fit the box; the rows are only as many as the notes need. */
-function uniformFit(counts: number[], width: number, height: number): TileFit {
+/** how a unit is made to fit the width: as it is, or the biggest divisor of the width not over it (and at least `min`; 0 when there is none). */
+type Snap = (unit: number, min: number) => number
+
+const keep: Snap = (unit) => unit
+
+const divisorSnap = (width: number): Snap => {
+  const divisors = divisorsOf(width)
+  return (unit, min) => {
+    const found = divisors.find((divisor) => divisor <= unit)
+    return found !== undefined && found >= min ? found : 0
+  }
+}
+
+/** the sets as one-unit squares on the biggest unit for which they fit the box; the rows are only as many as the notes need. null when `snap` leaves no unit. */
+function uniformFit(counts: number[], width: number, height: number, snap: Snap): TileFit | null {
   const ones = counts.map(() => 1)
   const total = counts.reduce((sum, count) => sum + count, 0)
-  const unit = largestUnit(total, 1, width, height, 1)
-  if (unit === 0) return { ...placeTiles(counts, ones, width, Math.ceil(total / width)), unit: 1 }
+  const fitted = largestUnit(total, 1, width, height, 1)
+  if (fitted === 0) return { ...placeTiles(counts, ones, width, Math.ceil(total / width)), unit: 1 }
+  const unit = snap(fitted, 1)
+  if (unit === 0) return null
   const columns = Math.floor(width / unit)
   return { ...placeTiles(counts, ones, columns, Math.ceil(total / columns)), unit }
 }
 
-/**
- * the grid of the sets as flowing shapes in the `width` x `height` box. every combination of
- * square sizes near the ideal ones (see `idealScales`) is tried: the squares are as big as the
- * box allows for those sizes (the largest unit, in whole px, for which the notes' cells fit), and a
- * combination wins by being close to the ideal sizes without making the squares much smaller than
- * all one-unit squares would. the grid has only as many rows as its cells need, so what the sets
- * do not fill is a few empty cells at the end, not a band of the box. above `MAX_TILED_SETS` sets
- * the sizes are not searched and all squares are the same, and so they are when the box is too
- * small for squares of 3px.
- */
-export function fillTileLayout(counts: number[], width: number, height: number): TileFit {
-  if (counts.length > MAX_TILED_SETS) return uniformFit(counts, width, height)
+/** the best combination of sizes for the box with the units `snap` allows; null when no combination gets a unit of 3px. */
+function searchFit(counts: number[], width: number, height: number, snap: Snap): TileFit | null {
   const total = counts.reduce((sum, count) => sum + count, 0)
-  const biggest = largestUnit(total, 1, width, height, 1)
-  if (biggest < MIN_UNIT) return uniformFit(counts, width, height)
+  const biggest = snap(largestUnit(total, 1, width, height, 1), MIN_UNIT)
+  if (biggest < MIN_UNIT) return null
 
   const ideal = idealScales(counts).map((scale) => Math.min(scale, MAX_SCALE))
   const ranked = scaleCombos(counts, ideal)
     .map((combo) => {
-      const unit = largestUnit(combo.area, combo.top, width, height, MIN_UNIT)
+      const fitted = largestUnit(combo.area, combo.top, width, height, MIN_UNIT)
+      const unit = fitted === 0 ? 0 : snap(fitted, MIN_UNIT)
       return { ...combo, unit, score: combo.cost + SMALLER_WEIGHT * (1 - unit / biggest) }
     })
     .filter((combo) => combo.unit > 0)
@@ -213,5 +221,26 @@ export function fillTileLayout(counts: number[], width: number, height: number):
       if (fit.tiles.length === total) return { ...fit, unit: combo.unit }
     }
   }
-  return uniformFit(counts, width, height)
+  return null
+}
+
+/**
+ * the grid of the sets as flowing shapes in the `width` x `height` box. every combination of
+ * square sizes near the ideal ones (see `idealScales`) is tried: the squares are as big as the
+ * box allows for those sizes (the largest unit, in whole px, for which the notes' cells fit), and a
+ * combination wins by being close to the ideal sizes without making the squares much smaller than
+ * all one-unit squares would. the grid has only as many rows as its cells need, so what the sets
+ * do not fill is a few empty cells at the end, not a band of the box. the units that divide the
+ * width are tried as well, for a grid exactly as wide as the box, and one is used when it is at
+ * most a fifth smaller (`EXACT_WIDTH_SHARE`) than the biggest unit. above `MAX_TILED_SETS` sets
+ * the sizes are not searched and all squares are the same, and so they are when the box is too
+ * small for squares of 3px.
+ */
+export function fillTileLayout(counts: number[], width: number, height: number): TileFit {
+  const fit = (snap: Snap) =>
+    (counts.length <= MAX_TILED_SETS ? searchFit(counts, width, height, snap) : null) ??
+    uniformFit(counts, width, height, snap)
+  const plain = fit(keep) as TileFit
+  const exact = fit(divisorSnap(width))
+  return exact && exact.unit >= plain.unit * EXACT_WIDTH_SHARE ? exact : plain
 }
