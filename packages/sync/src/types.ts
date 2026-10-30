@@ -39,9 +39,6 @@ export interface SyncProgress {
   total: number
 }
 
-/** the colour index of each tag, into the note palette; kept by the cache so a tag keeps its colour. */
-export type TagColors = Record<string, number>
-
 export interface NoteRef {
   id: string
   title: string
@@ -69,8 +66,6 @@ export interface SyncResult {
   failed: number
   /** the notes behind the counts above. */
   notes: SyncNotes
-  /** the colour of every tag the cache knows, including the ones this sync added. */
-  tagColors: TagColors
 }
 
 /** the last completed sync of a source (of a folder, for files), kept in the app's state file. */
@@ -78,8 +73,6 @@ export interface LastSync {
   /** when the sync completed, as an ISO timestamp. */
   syncedAt: string
   notes: SyncNotes
-  /** the tag colours of that sync. */
-  tagColors: TagColors
 }
 
 /** a source with the folder chosen for it and the last sync of that selection. */

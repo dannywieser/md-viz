@@ -90,3 +90,6 @@ Implement everything (option 1), committing and pushing after each numbered plan
 
 ### [2026.10.30 08:10:01] Claude
 Steps 1-2 done (cache store + API): store.ts (sets keyed by source/grouping/id with colour and rank, soft delete via `deleted` field, facet-aware listNotes, old tables dropped on open), schemas.ts, app.ts (PUT /sets, GET /sets, GET/DELETE /set, grouping on GET /notes, /tag-colors removed), tests, openapi.json regenerated, README. Cache tests and typecheck pass. No deviations.
+
+### [2026.10.30 08:12:50] Claude
+Steps 3-6 done (sync package): set-colors.ts (was tag-colors.ts, generic per grouping, SET_COLOR_COUNT), tag-sets.ts, sync-sets.ts (7 sets), note-sets.ts removed, sync.ts rewired (no tag-colour calls; sets worked out from the cache after push/delete using grouping=sync listing), TagColors removed from types/state/run, tests per file, README. Deviation from plan: the tag and sync sets are built from the cache listing after the push (not from the loaded notes), so unreadable notes keep their place; sync package tests and coverage pass.

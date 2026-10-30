@@ -8,5 +8,5 @@ export {
   type SyncRunOptions,
 } from './run'
 export { DEFAULT_CACHE_URL } from './pipeline/sync'
-export { TAG_COLOR_COUNT, topLevelTag } from './pipeline/tag-colors'
+export { SET_COLOR_COUNT, topLevelTag } from './pipeline/set-colors'
 export { parseSource, parseTarget } from './target'

@@ -41,7 +41,6 @@ describe('state file', () => {
     const lastSync = {
       syncedAt: '2026-10-20T09:30:00.000Z',
       notes: { updated: [{ id: 'a', title: 'a', tags: ['x'] }], deleted: [], unchanged: [] },
-      tagColors: { x: 3 },
     }
     await updateState(file, (state) => {
       state.lastFolder = '/notes'
@@ -72,7 +71,7 @@ describe('state file', () => {
       await writeFile(file, JSON.stringify({ lastSource: 'file', lastFolder: null, syncs }))
     }
 
-    it('reads notes without tags and a sync without tag colours', async () => {
+    it('reads notes without tags', async () => {
       await save({
         '/notes': {
           syncedAt: '2026-10-20T09:30:00.000Z',
@@ -83,11 +82,10 @@ describe('state file', () => {
       expect((await readState(file)).syncs['/notes']).toEqual({
         syncedAt: '2026-10-20T09:30:00.000Z',
         notes: { updated: [{ id: 'a', title: 'a', tags: [] }], deleted: [], unchanged: [] },
-        tagColors: {},
       })
     })
 
-    it('keeps the tags and colours that are valid and drops the rest', async () => {
+    it('keeps the tags that are valid, drops the rest and ignores the tag colours of older files', async () => {
       await save({
         '/notes': {
           syncedAt: '2026-10-20T09:30:00.000Z',
@@ -95,27 +93,14 @@ describe('state file', () => {
             updated: [{ id: 'a', title: 'a', tags: ['x', 5, 'y'] }, { id: 'b' }, 'nope'],
             deleted: 'nope',
           },
-          tagColors: { x: 1, y: 'red' },
+          tagColors: { x: 1 },
         },
       })
 
       expect((await readState(file)).syncs['/notes']).toEqual({
         syncedAt: '2026-10-20T09:30:00.000Z',
         notes: { updated: [{ id: 'a', title: 'a', tags: ['x', 'y'] }], deleted: [], unchanged: [] },
-        tagColors: { x: 1 },
       })
-    })
-
-    it('treats tag colours that are not an object as none', async () => {
-      await save({
-        '/notes': {
-          syncedAt: '2026-10-20T09:30:00.000Z',
-          notes: { updated: [], deleted: [], unchanged: [] },
-          tagColors: [1, 2],
-        },
-      })
-
-      expect((await readState(file)).syncs['/notes']?.tagColors).toEqual({})
     })
 
     it('drops syncs that are not readable', async () => {

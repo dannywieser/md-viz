@@ -54,11 +54,10 @@ All of them are in `src/types.ts`.
 | `ScanProgress`  | `{ dirs, mdFiles }`: directories visited and markdown files found so far                                                             |
 | `ScanResult`    | `{ count }`: markdown files, or Bear notes that are neither trashed nor locked                                                       |
 | `SyncProgress`  | `{ synced, deleted, total }`: notes pushed and deleted so far, and how many there will be in this sync                               |
-| `TagColors`     | `Record<string, number>`: the colour index of each top-level tag, into the UI's note palette                                         |
 | `NoteRef`       | `{ id, title, tags }`: a note named in a result, with its tags                                                                       |
 | `SyncNotes`     | `{ updated, deleted, unchanged }`, each a `NoteRef[]`: what happened to each note; unreadable notes are in none of them              |
-| `SyncResult`    | `{ scanned, synced, unchanged, deleted, failed, notes, tagColors }`: counts, the `SyncNotes` behind them and the colour of every tag |
-| `LastSync`      | `{ syncedAt, notes, tagColors }`: the last completed sync of a target (`syncedAt` is an ISO timestamp)                               |
+| `SyncResult`    | `{ scanned, synced, unchanged, deleted, failed, notes }`: counts and the `SyncNotes` behind them                                     |
+| `LastSync`      | `{ syncedAt, notes }`: the last completed sync of a target (`syncedAt` is an ISO timestamp)                                          |
 | `LastSelection` | `{ source, folder, lastSync }`: a source with the folder chosen for it (null for Bear, or when the folder is gone) and its last sync |
 
 `Note` is the one internal shape the pipeline works with, so it is not part of the public API:
@@ -85,13 +84,15 @@ interface Note {
 2. **Load** the notes with the source's loader, which returns `{ notes: Note[], failed: string[] }`. `failed` are the ids of notes that exist but could not be read.
    - File (`sources/file/load.ts`): walks the folder for `.md` files (dot-directories and `node_modules` are skipped, symlinks are not followed). The id is the first 16 hex characters of the SHA-256 of the path relative to the folder, the title is the file name without `.md`, `modified` is the mtime, there are no tags and `created` is empty. It fails when the folder cannot be read, so an unreadable folder cannot look empty and wipe its notes from the cache.
    - Bear (`sources/bear/load.ts`, `sources/bear/bearcli.ts`): runs Bear's own `bearcli list -l all --format json --fields all,content` (macOS only; `BEAR_CLI` overrides the path `/Applications/Bear.app/Contents/MacOS/bearcli`). The id is Bear's note id, tags lose the leading `#` and only the deepest tag of a nested tag is kept (bearcli lists every level, `#daily`, `#daily/10` and `#daily/10/28`, and the parts are not tags of their own), trashed and locked notes are skipped and archived ones are kept.
-3. **List the cache** (`syncNotes` in `pipeline/sync.ts`): the cached notes whose `source` is this source, with their `synced` time, title and tags, and the colour the cache has for each tag. If this fails, nothing has been changed yet.
+3. **List the cache** (`syncNotes` in `pipeline/sync.ts`): the cached notes whose `source` is this source (the cache leaves out the ones it has marked deleted), with their `synced` time, title and tags. If this fails, nothing has been changed yet.
 4. **Diff**: a note needs pushing when the cache has never seen it or its `modified` is newer than the cached `synced` (the cache stamps `synced` itself). Cached notes of this source that are neither loaded nor in `failed` are gone.
-5. **Give the new tags a colour** (`pipeline/tag-colors.ts`): colours follow only the top level of a nested tag (`daily/10/28` is tracked as `daily`; the notes keep their full tags, and a tag that starts with a slash is kept whole). The top-level tags of all loaded notes (changed or not) that have no colour in the cache each take the palette colour the fewest tags use so far, the lowest on a tie, in alphabetical order, and are added to the cache with `addTagColors` before any note is pushed. A tag that has a colour keeps it, so colours are the same on every sync and in every app; there are 24 hue colours (`TAG_COLOR_COUNT`, `HUE_COLORS` in `@md-viz/ui`) and past that colours are used again. The grey after them is for notes without tags and is never given to a tag.
-6. **Push** the new and changed notes with `upsertNotes`, 200 per request, reporting progress after each batch.
-7. **Delete** the gone notes, 20 requests at a time, reporting progress after each group.
-8. **Replace the automatic sets** (`pipeline/note-sets.ts`) of the source, on every sync, even when no note changed, because they move with the clock: `<source>:created-today`, `<source>:modified-today`, `<source>:created-last-30-days` and `<source>:modified-last-30-days`. Today is the local calendar day and the last 30 days are a rolling 30 x 24 hours, both on the PC's clock. The file source has no `created` sets. A set with no members is still replaced.
-9. **Record** the sync in the state file (`syncTarget` only, and only when stages 2-8 succeeded), with the tags of its notes and the colour of every tag, so a UI can draw the last sync without asking the cache.
+5. **Push** the new and changed notes with `upsertNotes`, 200 per request, reporting progress after each batch. Pushing an id the cache had marked deleted brings it back (file ids are not unique).
+6. **Delete** the gone notes, 20 requests at a time, reporting progress after each group. The cache only marks them deleted (a `deleted` time) and keeps them, so the `sync` sets can list them.
+7. **Replace the sets** of the source, on every sync, even when no note changed, because the sync sets move with the clock. They are worked out from the cache after the push and the deletes (`listNotes` with `grouping: 'sync'`, the one grouping that includes deleted notes), so a note that could not be read keeps its old place. A set is identified by source, grouping and id (`bear:tags:daily`) and has a colour and a rank:
+   - grouping `tags` (`pipeline/tag-sets.ts`): one set per top-level tag (`daily/10/28` is in `daily`; the notes keep their full tags, and a tag that starts with a slash is kept whole), rank 0, holding the notes that have it. The order of a note's tags is the source's order, kept in the note's `tags` field (the first will be the primary one). A tag that no note has any more keeps its set, empty, so its colour is kept.
+   - grouping `sync` (`pipeline/sync-sets.ts`), ranked in this order: `created-today`, `created-last-30-days`, `updated-today`, `updated-last-30-days`, `deleted-today`, `deleted-last-30-days`, `unchanged`. Today is the local calendar day and the last 30 days are a rolling 30 x 24 hours, both on the PC's clock. Updated is the cache's `synced` time, created the note's `created` field, deleted the cache's `deleted` time; unchanged is every note that exists and was not updated in the last 30 days. A deleted note is only in the deleted sets. The file source has no `created` sets. A set with no members is still replaced.
+   - colours (`pipeline/set-colors.ts`): a set the cache has no colour for takes the palette colour the fewest sets of its source and grouping use so far, the lowest on a tie, in alphabetical order, and keeps it, so colours are the same on every sync and in every app. Each grouping uses the whole palette on its own; there are 24 hue colours (`SET_COLOR_COUNT`, `HUE_COLORS` in `@md-viz/ui`) and past that colours are used again. The grey after them is for notes without tags and is never given to a set.
+8. **Record** the sync in the state file (`syncTarget` only, and only when stages 2-7 succeeded), with the tags of its notes, so a UI can draw the last sync without asking the cache.
 
 Safety rules the stages keep:
 
@@ -99,7 +100,7 @@ Safety rules the stages keep:
 - A failed load or a failed cache listing deletes nothing and records nothing.
 - Cached notes with no `source` (or another source) are never deleted.
 - Syncing one source never touches another source's notes or sets.
-- Tag colours are added before notes are pushed, never changed, and a failed colour listing changes nothing.
+- A set keeps the colour it was given; a failed listing of the cache replaces no set.
 
 ## State file
 
@@ -118,13 +119,12 @@ A JSON file at the path the caller passes (Electron uses `state.json` in its `us
         "deleted": [],
         "unchanged": [],
       },
-      "tagColors": { "work": 3, "q4": 11 },
     },
   },
 }
 ```
 
-`loadLastSelection` and `selectSource` turn it into a `LastSelection` through the source's `restore` and `key`: for files the folder is returned only if it still exists and the `lastSync` is the one stored under that folder's key; for Bear it is the one `bear` entry. A state file saved before tags were kept still reads: its notes get `tags: []` and its syncs `tagColors: {}`, and entries that are not readable are dropped. `lastFolder` is a top-level field for compatibility with saved files; the file source owns it (`remember` writes it, `restore` reads it).
+`loadLastSelection` and `selectSource` turn it into a `LastSelection` through the source's `restore` and `key`: for files the folder is returned only if it still exists and the `lastSync` is the one stored under that folder's key; for Bear it is the one `bear` entry. A state file saved before tags were kept still reads: its notes get `tags: []` (a `tagColors` an older file kept is ignored), and entries that are not readable are dropped. `lastFolder` is a top-level field for compatibility with saved files; the file source owns it (`remember` writes it, `restore` reads it).
 
 ## Sources: public and private
 
@@ -150,7 +150,7 @@ interface SourceAdapter<T extends SyncTarget> {
 3. Add the adapter to `sources` in `src/sources/index.ts`.
 4. Add tests under `tests/sources/<name>/`, one file per source file.
 
-`run.ts`, `state.ts`, `target.ts` and the pipeline need no change, except one thing: the automatic sets skip `created-*` for a source that cannot tell when a note was created, and that rule is still a source check in `pipeline/note-sets.ts`. A source that learns to read more (the file source will get tags and frontmatter) only fills more `Note` fields.
+`run.ts`, `state.ts`, `target.ts` and the pipeline need no change, except one thing: the `sync` sets skip `created-*` for a source that cannot tell when a note was created, and that rule is still a source check in `pipeline/sync-sets.ts`. A source that learns to read more (the file source will get tags and frontmatter) only fills more `Note` fields.
 
 ## Layout
 
@@ -164,7 +164,9 @@ src/
   pipeline/             source-agnostic: knows only `Note`
     sync.ts             syncNotes: the cache pipeline, DEFAULT_CACHE_URL
     notes.ts            Note, noteToFields
-    note-sets.ts        buildNoteSets
+    tag-sets.ts         buildTagSets (the tags grouping)
+    sync-sets.ts        buildSyncSets (the sync grouping)
+    set-colors.ts       assignColors, topLevelTag, SET_COLOR_COUNT
   sources/
     types.ts            LoadedNotes, SourceAdapter
     index.ts            the registry: sources, adapterFor

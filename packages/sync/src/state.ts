@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { isSource } from './sources'
-import type { LastSync, NoteRef, Source, TagColors } from './types'
+import type { LastSync, NoteRef, Source } from './types'
 
 export interface AppState {
   /** the source selected when the app last ran. */
@@ -34,17 +34,7 @@ function readRef(value: unknown): NoteRef | null {
 const readRefs = (value: unknown): NoteRef[] =>
   Array.isArray(value) ? value.flatMap((ref) => readRef(ref) ?? []) : []
 
-/** the tag colours of a saved sync; files from before they were kept have none. */
-function readTagColors(value: unknown): TagColors {
-  if (!isRecord(value)) return {}
-  return Object.fromEntries(
-    Object.entries(value).filter(
-      (entry): entry is [string, number] => typeof entry[1] === 'number',
-    ),
-  )
-}
-
-/** the saved syncs that are readable, completed with what older files lack. */
+/** the saved syncs that are readable; the tag colours an older file kept are ignored. */
 function readSyncs(value: unknown): Record<string, LastSync> {
   if (!isRecord(value)) return {}
   const syncs = new Map<string, LastSync>()
@@ -58,7 +48,6 @@ function readSyncs(value: unknown): Record<string, LastSync> {
         deleted: readRefs(sync['notes']['deleted']),
         unchanged: readRefs(sync['notes']['unchanged']),
       },
-      tagColors: readTagColors(sync['tagColors']),
     })
   }
   return Object.fromEntries(syncs)
