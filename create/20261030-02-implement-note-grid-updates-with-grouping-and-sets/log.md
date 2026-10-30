@@ -100,3 +100,12 @@ Phase 1 step 3 done: docs for exclusive sets and the new sync order in CLAUDE.md
 
 ### [2026.10.30 14:49:32] Decision
 Phase 1 complete and verified: format:check, lint, typecheck clean; packages/sync coverage 100% lines/statements/functions, 95.2% branches. Pausing for review before Phase 2.
+
+### [2026.10.30 14:52:11] User
+Start phase 2
+
+### [2026.10.30 14:52:11] Decision
+Starting Phase 2 (steps 5-9): new NoteGrid in packages/ui, layout code copied from the exploration, design page updated.
+
+### [2026.10.30 14:54:31] Claude
+Phase 2 step 5 done. New packages/ui/src/lib/grid-layout/: grid-geometry.ts (fillGrid, ownerOutline), tile-layout.ts (idealScales with the even share, placeTiles, fillTileLayout; above MAX_TILED_SETS = 8 sets the sizes are not searched, all squares one size; measured 33 ms for 8 sets), group-states.ts (groupStates(counts, order, w, h), takes the set per natural note), grid-model.ts (GridNote, GridSet, buildGridModel: drops empty sets, first set wins for a duplicated note, natural order = notes sorted by id). Tests in packages/ui/tests/lib/grid-layout/. Deviations: the exploration's non-fill tileLayout and the scaled-slots/natural-order code were not copied (not needed); natural order is by note id instead of the exploration's seeded shuffle.
