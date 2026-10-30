@@ -115,3 +115,12 @@ Iteration 4 (on top; 1-3 kept): the outlined container of iteration 3 with a whi
 
 ### [2026.10.30 06:18:28] Claude
 Iteration 4 done: bar-slotting-section.tsx, iteration-4.tsx, iterations.ts (4 on top), container-grid.tsx bar prop, with tests (note-grid-sets: 121 pass). Checked in the design viewer: bar-to-grid gap 0, equal widths, hover shows "set a note 55" in the bar, no tooltip. Format and lint clean; full coverage not re-run this iteration.
+
+### [2026.10.30 06:26:25] User
+ok, this is a good start. we're missing one exploration though. can you add an ability to show more notes (in the same space) for iteration 4. 100/500/5000
+
+### [2026.10.30 06:26:25] Decision
+Added to iteration 4 (not a new iteration): a notes switch 100 / 500 / 5000 (default 100) that scales the sample sets (each keeps its share, at least one note, the biggest takes the rounding remainder; scale-sets.ts) into the same container, so the cell shrinks.
+
+### [2026.10.30 06:26:25] Claude
+Done: scale-sets.ts, notes switch in bar-slotting-section.tsx, with tests (note-grid-sets: 126 pass; eslint, tsc, prettier clean). Viewer, wide container: 500 notes = 36 x 16 squares of 20px, 5000 = 120 x 53 of 6px; hover still names the set and note in the bar. At 5000 about a third of the container stays empty because the groups are slotted by rectangle, not packed tight.
