@@ -62,7 +62,7 @@ function fakeCache() {
     }
     return Promise.resolve(json({ error: 'not found' }, 404))
   }
-  return { fetch: handler as typeof fetch, requests }
+  return { fetch: handler, requests }
 }
 
 describe('loadNoteSets', () => {
@@ -152,5 +152,20 @@ describe('loadNoteSets', () => {
 
     expect(seen[0]).toMatch(/^http:\/\/localhost:8787\/sets/)
     expect(seen.at(-1)).toMatch(/^http:\/\/cache:1\//)
+  })
+
+  it('uses the global fetch when none is given', async () => {
+    const cache = fakeCache()
+    vi.stubGlobal('fetch', cache.fetch)
+    // the cache client keeps what an earlier call configured, so this one starts from a fresh one.
+    vi.resetModules()
+    try {
+      const fresh = await import('../../src/pipeline/note-sets')
+      const result = await fresh.loadNoteSets('file', { grouping: 'sync' })
+
+      expect(result.map((set) => set.id)).toEqual(['unchanged'])
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

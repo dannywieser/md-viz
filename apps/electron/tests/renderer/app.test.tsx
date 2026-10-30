@@ -1,12 +1,14 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { Api, LastSelection, LastSync, SyncTarget } from '../../src/shared/ipc'
+import type { Api, LastSelection, LastSync, NoteSet, SyncTarget } from '../../src/shared/ipc'
 import { App } from '../../src/renderer/src/app'
 import { useScan } from '../../src/renderer/src/hooks/use-scan'
+import { useSets } from '../../src/renderer/src/hooks/use-sets'
 import { useSync } from '../../src/renderer/src/hooks/use-sync'
 
 vi.mock('../../src/renderer/src/hooks/use-scan', () => ({ useScan: vi.fn() }))
 vi.mock('../../src/renderer/src/hooks/use-sync', () => ({ useSync: vi.fn() }))
+vi.mock('../../src/renderer/src/hooks/use-sets', () => ({ useSets: vi.fn() }))
 
 const scan = vi.fn()
 const reset = vi.fn()
@@ -18,6 +20,16 @@ const lastSync: LastSync = {
   notes: { updated: [], deleted: [], unchanged: [{ id: 'k1', title: 'same idea', tags: [] }] },
 }
 
+const noteSets: NoteSet[] = [
+  {
+    id: 'created-today',
+    name: 'created-today',
+    color: 3,
+    notes: [{ id: 'k2', title: 'new idea' }],
+  },
+  { id: 'unchanged', name: 'unchanged', color: 0, notes: [{ id: 'k1', title: 'same idea' }] },
+]
+
 const clear = vi.fn()
 const idleScan = { target: null, progress: null, count: null, scanning: false, scan, clear }
 const idleSync = { syncing: false, progress: null, lastSync: null, reset, sync }
@@ -25,9 +37,11 @@ const idleSync = { syncing: false, progress: null, lastSync: null, reset, sync }
 function mockHooks({
   scanState = {},
   syncState = {},
-}: { scanState?: object; syncState?: object } = {}) {
+  sets = null,
+}: { scanState?: object; syncState?: object; sets?: NoteSet[] | null } = {}) {
   vi.mocked(useScan).mockReturnValue({ ...idleScan, ...scanState })
   vi.mocked(useSync).mockReturnValue({ ...idleSync, ...syncState })
+  vi.mocked(useSets).mockReturnValue(sets)
 }
 
 function stubApi(overrides: Partial<Api> = {}) {
@@ -157,27 +171,45 @@ describe('App', () => {
     expect(screen.getByText('18 notes')).toBeInTheDocument()
   })
 
-  it('shows the note grids of the last sync under the one-line folder card', () => {
-    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
+  it('shows the grid of the sync sets under the one-line folder card', () => {
+    mockHooks({ scanState: { target: file }, syncState: { lastSync }, sets: noteSets })
     render(<App />)
 
-    expect(screen.getByRole('region', { name: 'unchanged' })).toHaveTextContent('1')
-    expect(screen.getAllByRole('region')).toHaveLength(3)
+    expect(screen.getByRole('img', { name: 'not grouped: 2 notes in 2 sets' })).toBeInTheDocument()
     expect(screen.getByLabelText('chosen source')).toBeInTheDocument()
   })
 
-  it('shows empty grids for a source that has not been synced', () => {
-    mockHooks({ scanState: { target: file } })
+  it('shows an empty grid for a source with no notes in the cache', () => {
+    mockHooks({ scanState: { target: file }, sets: [] })
     render(<App />)
 
-    expect(screen.getAllByRole('region')).toHaveLength(3)
+    expect(screen.getByText('the notes went out for coffee')).toBeInTheDocument()
     expect(screen.getByText(/never synced/)).toBeInTheDocument()
   })
 
-  it('shows no grids until a source is chosen', () => {
+  it('shows no grid until the sets are loaded', () => {
+    mockHooks({ scanState: { target: file }, sets: null })
     render(<App />)
 
-    expect(screen.queryByRole('region')).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /notes in/ })).not.toBeInTheDocument()
+    expect(screen.queryByText('the notes went out for coffee')).not.toBeInTheDocument()
+  })
+
+  it('shows no grid until a source is chosen', () => {
+    mockHooks({ sets: noteSets })
+    render(<App />)
+
+    expect(screen.queryByRole('img', { name: /notes in/ })).not.toBeInTheDocument()
+  })
+
+  it('loads the sets of the source once it has a target, again after each sync', () => {
+    render(<App />)
+    expect(useSets).toHaveBeenLastCalledWith('file', undefined, false, expect.any(Function))
+
+    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
+    render(<App />)
+
+    expect(useSets).toHaveBeenLastCalledWith('file', lastSync.syncedAt, true, expect.any(Function))
   })
 
   it('shows the scan progress over the grids while scanning', () => {
@@ -194,12 +226,13 @@ describe('App', () => {
     mockHooks({
       scanState: { target: file },
       syncState: { lastSync, syncing: true, progress: { synced: 1, deleted: 0, total: 4 } },
+      sets: noteSets,
     })
     render(<App />)
 
     expect(screen.getByRole('dialog', { name: 'syncing' })).toBeInTheDocument()
     expect(screen.getByText('1 pushed, 0 deleted of 4')).toBeInTheDocument()
-    expect(screen.getAllByRole('region')).toHaveLength(3)
+    expect(screen.getByRole('img', { name: /notes in/ })).toBeInTheDocument()
   })
 
   it('shows no overlay while idle', () => {
@@ -210,12 +243,12 @@ describe('App', () => {
   })
 
   it('shows the error in place of the grids', () => {
-    mockHooks({ scanState: { target: file }, syncState: { lastSync } })
+    mockHooks({ scanState: { target: file }, syncState: { lastSync }, sets: noteSets })
     render(<App />)
     act(() => vi.mocked(useScan).mock.lastCall![0]('cache is down'))
 
     expect(screen.getByRole('alert')).toHaveTextContent('cache is down')
-    expect(screen.queryByRole('region')).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /notes in/ })).not.toBeInTheDocument()
   })
 
   it('shows an error reported by either hook, and clears it', () => {
