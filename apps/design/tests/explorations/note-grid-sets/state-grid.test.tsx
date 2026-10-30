@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { groupStates } from '../../../src/explorations/note-grid-sets/group-states'
-import { StateGrid } from '../../../src/explorations/note-grid-sets/state-grid'
+import { MOTION_LIMIT, StateGrid } from '../../../src/explorations/note-grid-sets/state-grid'
 
 const sets = [
   { id: 'a', name: 'set a', count: 6, color: 0 },
@@ -28,7 +28,7 @@ describe('StateGrid', () => {
       <StateGrid sets={sets} states={states} grouped onToggle={vi.fn()} />,
     )
     const moves = () =>
-      [...document.querySelectorAll('svg > rect')].map((r) => (r as SVGElement).style.transform)
+      [...document.querySelectorAll('svg > g > rect')].map((r) => (r as SVGElement).style.transform)
     const before = moves()
 
     rerender(<StateGrid sets={sets} states={states} grouped={false} onToggle={vi.fn()} />)
@@ -83,5 +83,33 @@ describe('StateGrid', () => {
     fireEvent.pointerMove(svg, { clientX: 900, clientY: 1 })
 
     expect(document.querySelector('.note-hover')).toBeNull()
+  })
+
+  it('moves the squares with a transition up to the motion limit', () => {
+    renderGrid(true)
+
+    const rect = document.querySelector('svg > g > rect') as SVGElement
+    expect(rect.style.transition).toContain('transform')
+  })
+
+  it('does not move thousands of squares one by one: no transitions, one fade of the grid', () => {
+    const big = groupStates([MOTION_LIMIT, 1], 720, 320)
+    const bigSets = [
+      { id: 'a', name: 'set a', count: MOTION_LIMIT, color: 0 },
+      { id: 'b', name: 'set b', count: 1, color: 1 },
+    ]
+    const animate = vi.fn()
+    SVGElement.prototype.animate = animate
+    const { rerender } = render(
+      <StateGrid sets={bigSets} states={big} grouped onToggle={vi.fn()} />,
+    )
+    const rect = document.querySelector('svg > g > rect') as SVGElement
+    expect(rect.style.transition).toBe('')
+    expect(animate).not.toHaveBeenCalled()
+
+    rerender(<StateGrid sets={bigSets} states={big} grouped={false} onToggle={vi.fn()} />)
+
+    expect(animate).toHaveBeenCalledTimes(1)
+    delete (SVGElement.prototype as { animate?: unknown }).animate
   })
 })

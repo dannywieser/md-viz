@@ -1,4 +1,4 @@
-import { useMemo, useState, type PointerEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { ownerOutline } from './flow-layout'
 import type { GroupStates } from './group-states'
 import { GroupToggle } from './group-toggle'
@@ -16,15 +16,37 @@ type StateGridProps = {
 
 const MOVE = '450ms ease-in-out'
 
+/** above this many notes the squares do not move one by one (thousands of transitions are too heavy): the grid fades instead. */
+export const MOTION_LIMIT = 1000
+const FADE_MS = 250
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
 /**
  * the grid in one of two states, with a toggle in its header bar: grouped (the flowing shapes of
  * iteration 7, outlined) or not (natural order, one size, coloured by set). every note is one
  * square that keeps its identity, so switching moves and resizes each square to its place in the
- * other state with a transition. one pointer handler derives the hovered note from the layout of
+ * other state with a transition; with more than `MOTION_LIMIT` notes (or when the user prefers
+ * reduced motion) they jump and the squares fade in instead, one animation for the whole grid. one pointer handler derives the hovered note from the layout of
  * the current state.
  */
 export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
   const [hovered, setHovered] = useState<number | null>(null)
+  const squares = useRef<SVGGElement>(null)
+  const animated = states.order.length <= MOTION_LIMIT && !prefersReducedMotion()
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) {
+      first.current = false
+      return
+    }
+    if (!animated) squares.current?.animate?.([{ opacity: 0 }, { opacity: 1 }], FADE_MS)
+  }, [grouped, animated])
   const state = grouped ? states.grouped : states.natural
   const { unit, columns, rows } = state
   const w = columns * unit
@@ -67,22 +89,26 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
           onPointerMove={handlePointerMove}
           onPointerLeave={() => setHovered(null)}
         >
-          {state.squares.map((s, id) => (
-            <rect
-              key={id}
-              className={id === 0 ? 'note-square' : undefined}
-              width={s.size}
-              height={s.size}
-              style={{
-                width: s.size,
-                height: s.size,
-                transform: `translate(${s.x}px, ${s.y}px)`,
-                fill: colorVar(sets[states.order[id]].color),
-                stroke: 'var(--note-stroke)',
-                transition: `transform ${MOVE}, width ${MOVE}, height ${MOVE}`,
-              }}
-            />
-          ))}
+          <g ref={squares}>
+            {state.squares.map((s, id) => (
+              <rect
+                key={id}
+                className={id === 0 ? 'note-square' : undefined}
+                width={s.size}
+                height={s.size}
+                style={{
+                  width: s.size,
+                  height: s.size,
+                  transform: `translate(${s.x}px, ${s.y}px)`,
+                  fill: colorVar(sets[states.order[id]].color),
+                  stroke: 'var(--note-stroke)',
+                  transition: animated
+                    ? `transform ${MOVE}, width ${MOVE}, height ${MOVE}`
+                    : undefined,
+                }}
+              />
+            ))}
+          </g>
           <path
             data-outline
             d={outline}
@@ -91,7 +117,7 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
             strokeWidth={2}
             style={{
               opacity: grouped ? 1 : 0,
-              transition: `opacity 200ms ease ${grouped ? '300ms' : '0ms'}`,
+              transition: `opacity 200ms ease ${grouped && animated ? '300ms' : '0ms'}`,
             }}
           />
           {square && (

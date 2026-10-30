@@ -200,3 +200,12 @@ Iteration 8 (on top; 1-7 kept): the iteration 7 grid with the even share fixed, 
 
 ### [2026.10.30 07:03:32] Claude
 Iteration 8 done: natural-order.ts, group-states.ts, group-toggle.tsx, state-grid.tsx, state-section.tsx, iteration-8.tsx, hover-bar action slot, iterations.ts, with tests (note-grid-sets 199 pass; eslint, tsc clean). Viewer, wide 100: grouped is 720 x 288 (iteration 7 layout), not grouped 20 x 5 of 36px; the toggle animates (squares mid-move after 150ms) and the outline hides when not grouped. Not checked: 5000-note transition smoothness.
+
+### [2026.10.30 07:06:01] User
+I like the animation and it works really well at 100/500 but is not good at 5000. We'll have to optimize/minimize motion there
+
+### [2026.10.30 07:06:01] Decision
+Above MOTION_LIMIT (1000 notes) or with prefers-reduced-motion, StateGrid no longer gives each square a transition (5000 simultaneous transitions of transform, width and height were the cost): the squares jump to the other state and the group of squares fades in once (one Web Animations API animation of 250ms on the squares' <g>). 100 and 500 notes keep the per-square motion. The card's width and height transition and the outline fade stay (cheap, single elements). Other options not taken: moving only transform (still 5000 compositor layers), animating per set, or a canvas.
+
+### [2026.10.30 07:06:01] Claude
+Done in state-grid.tsx with tests (note-grid-sets 201 pass; eslint, tsc clean). Measured in the viewer at 5000: one render hitch of roughly 100-160ms on toggle and no animation work after it; the frame timing in this hidden pane is not reliable, so smoothness on a real display is not verified.
