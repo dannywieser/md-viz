@@ -5,6 +5,7 @@ import {
   HUE_ORDER,
   NOTE_COLORS,
   TIERS,
+  colorVar,
 } from '../../src/lib/note-colors'
 
 describe('note colours', () => {
@@ -21,5 +22,9 @@ describe('note colours', () => {
 
   it('names every hue once', () => {
     expect(new Set(HUE_ORDER).size).toBe(ACCENT_COLORS)
+  })
+
+  it('names a colour as the theme variable', () => {
+    expect(colorVar(3)).toBe('var(--note-3)')
   })
 })
