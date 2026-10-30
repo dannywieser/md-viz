@@ -169,3 +169,9 @@ can we have a fixed width for the grid, or does it need to be a bit dynamic?
 
 ### [2026.10.30 15:26:22] Claude
 Cause: since the block hugs its squares (option 2), its width is columns x unit, under the container's by less than one square. A fixed width is possible: squares are whole pixels, so the width equals the container's only when the square size divides it. fillGrid and fillTileLayout now also try the divisors of the width and use one when it is at most a fifth smaller (EXACT_WIDTH_SHARE 0.8) than the biggest unit; otherwise they hug as before. Height stays dynamic (rows the notes need). At 880px wide: 5, 18, 50, 500, 1200 and 5000 notes come out exactly 880 wide; 150 notes keeps 874 (no divisor between 31 and 38). Tests, CLAUDE.md updated; gates pass.
+
+### [2026.10.30 15:31:03] User
+the match is still off in the sync app. The _shadow_ is lining up, but not the edge of the grid. Is that the problem?
+
+### [2026.10.30 15:31:03] Claude
+Reproduced by running the Electron renderer alone in the browser at 912x520 with a temporary window.api stub (removed again; I also started an extra Electron window by mistake and closed it). With 4864 notes the container is 880px (cards 16 to 896), the grid block 875px (16 to 891): the biggest cell is 7px, 875 = 125 columns of 7, and the only divisor of 880 near it is 5, below the 0.8 limit, so the grid hugged and fell 5px short (its shadow 5px short too). 880 has few divisors: only 590 of 857 sampled counts tile it exactly, against 855/857 for 960 and 856/857 for 720. Fix: the window content width is now 992 (960 after the page padding), so the squares tile it. CLAUDE.md updated. The running electron dev needs a restart for the main process to take the new size. The web app has no fixed width, so it can still be a few px short at some counts: a horizontal stretch of under 3% would be the next step if wanted.
