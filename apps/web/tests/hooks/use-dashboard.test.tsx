@@ -34,9 +34,9 @@ function queries({
 }: { sets?: Result; notes?: Result; details?: Result[] } = {}) {
   vi.mocked(useQuery).mockImplementation(((options: { queryKey: string[] }) =>
     options.queryKey[0] === 'sets' ? sets : notesResult) as unknown as typeof useQuery)
-  vi.mocked(useQueries).mockImplementation(((options: {
-    combine: (results: Result[]) => unknown
-  }) => options.combine(details)) as unknown as typeof useQueries)
+  vi.mocked(useQueries).mockImplementation((options: { combine: (results: Result[]) => unknown }) =>
+    options.combine(details),
+  )
 }
 
 describe('useDashboard', () => {
