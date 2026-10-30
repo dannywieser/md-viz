@@ -24,41 +24,33 @@ describe('StatusGrid', () => {
         notes={notes}
         reference={false}
         onCellChange={vi.fn()}
-        cellStep={undefined}
         gridRef={gridRef}
         height={160}
-        align="start"
       />,
     )
 
     expect(screen.getByRole('region', { name: 'updated' })).toHaveStyle({
       width: `${COLUMN_WIDTH}px`,
     })
-    expect(lastProps()).toMatchObject({
-      label: 'updated',
-      height: 160,
-      align: 'start',
-      compactEmpty: true,
-    })
-    expect(lastProps().notes).toEqual([{ id: 'a', title: 'plan', colors: [], tags: [] }])
+    expect(lastProps().label).toBe('updated')
+    expect(lastProps().sets).toEqual([
+      { id: 'updated', name: 'updated', color: 24, notes: [{ id: 'a', title: 'plan' }] },
+    ])
   })
 
-  it('fills the height of the column when it has no height, and can sit at the end of it', () => {
-    render(
+  it('fills the height of the column when it has no height', () => {
+    const { container } = render(
       <StatusGrid
         label="unchanged"
         notes={notes}
         reference={false}
         onCellChange={vi.fn()}
-        cellStep={undefined}
         gridRef={gridRef}
         height={undefined}
-        align="end"
       />,
     )
 
-    expect(lastProps().height).toBeUndefined()
-    expect(lastProps().align).toBe('end')
+    expect(container.querySelector('section > div')).toHaveClass('h-full')
   })
 
   it('lets the reference grid report its cell and hold the ref', () => {
@@ -69,53 +61,43 @@ describe('StatusGrid', () => {
         notes={notes}
         reference
         onCellChange={onCellChange}
-        cellStep={20}
         gridRef={gridRef}
         height={undefined}
-        align="start"
       />,
     )
 
     expect(lastProps().onCellChange).toBe(onCellChange)
     expect(lastProps().ref).toBe(gridRef)
-    expect(lastProps().cellStep).toBeUndefined()
   })
 
-  it('has the other grids follow whole multiples of the reference cell', () => {
+  it('gives the other grids neither the ref nor the cell callback', () => {
     render(
       <StatusGrid
         label="deleted"
         notes={notes}
         reference={false}
         onCellChange={vi.fn()}
-        cellStep={20}
         gridRef={gridRef}
         height={160}
-        align="start"
       />,
     )
 
-    expect(lastProps().cellStep).toBe(20)
     expect(lastProps().onCellChange).toBeUndefined()
     expect(lastProps().ref).toBeUndefined()
   })
 
-  it('draws the notes as squares that list their tags', () => {
-    render(
+  it('leaves room for the bar above a fixed drawing height', () => {
+    const { container } = render(
       <StatusGrid
-        label="updated"
-        notes={[{ id: 'a', title: 'plan', tags: ['work', 'home', 'new'] }]}
+        label="deleted"
+        notes={notes}
         reference={false}
         onCellChange={vi.fn()}
-        cellStep={undefined}
         gridRef={gridRef}
         height={160}
-        align="start"
       />,
     )
 
-    expect(lastProps().notes).toEqual([
-      { id: 'a', title: 'plan', colors: [], tags: ['work', 'home', 'new'] },
-    ])
+    expect(container.querySelector('section > div')).toHaveStyle({ height: '192px' })
   })
 })

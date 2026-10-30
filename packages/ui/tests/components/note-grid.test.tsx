@@ -149,15 +149,15 @@ describe('NoteGrid', () => {
   })
 
   it('reports the cell of the state shown', () => {
-    const onCellChange = vi.fn()
+    const onCellChange = vi.fn<(cell: number) => void>()
     render(<NoteGrid sets={makeFakeSets([30, 6, 2])} onCellChange={onCellChange} />)
 
     expect(onCellChange).toHaveBeenCalledWith(expect.any(Number))
-    const natural = onCellChange.mock.calls.at(-1)?.[0]
+    const natural = onCellChange.mock.lastCall?.[0]
 
     fireEvent.click(screen.getByRole('button', { name: 'group notes by set' }))
 
-    expect(onCellChange.mock.calls.at(-1)?.[0]).not.toBe(natural)
+    expect(onCellChange.mock.lastCall?.[0]).not.toBe(natural)
   })
 
   it('has an unseen square at the corner of the first cell for the dots to follow', () => {

@@ -7,14 +7,17 @@ vi.mock('@md-viz/ui', async (importOriginal) => ({
   NoteGrid: vi.fn(() => <div data-testid="note-grid" />),
 }))
 
-const notes = [{ id: 'a', title: 'plan', colors: [] }]
+const notes = [{ id: 'a', title: 'plan' }]
 
 describe('AllNotesGrid', () => {
   it('shows every note in a grid labelled all notes', () => {
     render(<AllNotesGrid notes={notes} />)
 
     expect(screen.getByTestId('note-grid')).toBeInTheDocument()
-    expect(vi.mocked(NoteGrid).mock.lastCall![0]).toMatchObject({ label: 'all notes', notes })
+    expect(vi.mocked(NoteGrid).mock.lastCall![0]).toMatchObject({
+      label: 'all notes',
+      sets: [{ id: 'all', name: 'all notes', color: 24, notes }],
+    })
   })
 
   it('hands the lattice ref and cell callback to the grid', () => {

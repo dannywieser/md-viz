@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listNotesOptions } from '@md-viz/api-client/cache/react-query'
-import type { Note } from '@md-viz/ui'
+import type { GridNote } from '@md-viz/ui'
 import { toGridNote } from '../lib/grid-note'
 
-/** the cached notes as grid notes; `retry` reloads them after a failure. */
+/** the cached notes as grid notes (one grey set for now: the grid by tag sets comes in a later step); `retry` reloads them after a failure. */
 export function useDashboard() {
-  const notesQuery = useQuery(listNotesOptions({ query: { fields: 'title,tags' } }))
+  const notesQuery = useQuery(listNotesOptions({ query: { fields: 'title' } }))
 
-  const notes = useMemo<Note[]>(
+  const notes = useMemo<GridNote[]>(
     () => (notesQuery.data ?? []).map((row) => toGridNote(row)),
     [notesQuery.data],
   )

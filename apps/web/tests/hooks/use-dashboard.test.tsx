@@ -18,11 +18,11 @@ describe('useDashboard', () => {
     vi.clearAllMocks()
   })
 
-  it('asks the cache for the note titles and tags', () => {
+  it('asks the cache for the note titles', () => {
     notesQueryReturns({ isPending: false, data: [] })
     renderHook(() => useDashboard())
 
-    expect(listNotesOptions).toHaveBeenCalledWith({ query: { fields: 'title,tags' } })
+    expect(listNotesOptions).toHaveBeenCalledWith({ query: { fields: 'title' } })
   })
 
   it('is pending while the notes load', () => {
@@ -38,7 +38,7 @@ describe('useDashboard', () => {
     notesQueryReturns({
       isPending: false,
       data: [
-        { id: 'a', fields: { title: 'plan', tags: '["work","other"]' } },
+        { id: 'a', fields: { title: 'plan' } },
         { id: 'untitled', fields: {} },
       ],
     })
@@ -46,8 +46,8 @@ describe('useDashboard', () => {
 
     expect(result.current.status).toBe('ready')
     expect(result.current.notes).toEqual([
-      { id: 'a', title: 'plan', colors: [], tags: ['work', 'other'] },
-      { id: 'untitled', title: 'untitled', colors: [], tags: [] },
+      { id: 'a', title: 'plan' },
+      { id: 'untitled', title: 'untitled' },
     ])
   })
 

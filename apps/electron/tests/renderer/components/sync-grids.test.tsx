@@ -81,14 +81,6 @@ describe('SyncGrids', () => {
     expect(grids().unchanged.height).toBe(SMALL_GRID_HEIGHT)
   })
 
-  it('pins the last block to the right of its column, the others to the left', () => {
-    render(<SyncGrids notes={{ updated: [], deleted: [], unchanged: [] }} />)
-
-    expect(grids().updated.align).toBe('start')
-    expect(grids().deleted.align).toBe('start')
-    expect(grids().unchanged.align).toBe('end')
-  })
-
   it('gives the reference grid the lattice ref and cell callback', () => {
     render(<SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />)
 
@@ -96,22 +88,20 @@ describe('SyncGrids', () => {
     expect(grids().updated.onCellChange).toBe(onCellChange)
   })
 
-  it('has the plain gap and no cell step until the reference reports its cell', () => {
+  it('has the plain gap until the reference reports its cell', () => {
     const { container } = render(
       <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
 
-    expect(grids().deleted.cellStep).toBeUndefined()
     expect(container.firstElementChild).toHaveStyle({ columnGap: '32px' })
   })
 
-  it('follows the reference cell: spacing for the other grids and a gap in whole spacings', () => {
+  it('follows the reference cell: a gap in whole dot spacings', () => {
     latticeCell(30)
     const { container } = render(
       <SyncGrids notes={{ updated: [note('a')], deleted: [], unchanged: [] }} />,
     )
 
-    expect(grids().deleted.cellStep).toBe(30)
     // the column pitch is 10 spacings of 30 (300px), so the gap is 300 - 272.
     expect(container.firstElementChild).toHaveStyle({ columnGap: `${300 - COLUMN_WIDTH}px` })
   })

@@ -7,9 +7,7 @@ import { StatusGrid } from './status-grid'
 /**
  * the notes of a sync as three grids in columns of one width: updated, deleted and unchanged. a
  * grid of many notes fills the height it is given, one of a few keeps the small height. the page's
- * dots line up with the squares of the biggest grid; the others use whole multiples of its dot spacing.
- * a block is only as wide as its squares, so the last one is pinned to the right of its column and
- * its edge meets the status card's (that column is off the dots by the leftover width).
+ * dots line up with the squares of the biggest grid.
  */
 export function SyncGrids({ notes }: { notes: SyncNotes }) {
   const reference = GROUPS.reduce((most, group) =>
@@ -29,10 +27,8 @@ export function SyncGrids({ notes }: { notes: SyncNotes }) {
           notes={notes[group]}
           reference={group === reference}
           onCellChange={onCellChange}
-          cellStep={spacing}
           gridRef={ref}
           height={gridHeight(notes[group].length)}
-          align={group === GROUPS[GROUPS.length - 1] ? 'end' : 'start'}
         />
       ))}
     </div>
