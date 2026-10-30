@@ -112,4 +112,13 @@ describe('StateGrid', () => {
     expect(animate).toHaveBeenCalledTimes(1)
     delete (SVGElement.prototype as { animate?: unknown }).animate
   })
+
+  it('draws gridlines under the squares so the empty cells show as a grid', () => {
+    renderGrid(false)
+
+    const lines = document.querySelector('[data-gridlines]') as SVGElement
+    expect(lines).not.toBeNull()
+    expect(lines.getAttribute('d')).toMatch(/^M0,0V/)
+    expect(lines.nextElementSibling?.tagName).toBe('g')
+  })
 })

@@ -218,3 +218,12 @@ Cause: both layouts chose the grid by an exact fit of cells to notes (columns x 
 
 ### [2026.10.30 07:13:46] Claude
 Done: tile-layout.ts (fillTileLayout), flow-layout.ts (fillGrid), group-states.ts (frame, x0/y0), state-grid.tsx (fixed frame, offsets), tests (design explorations 322+ pass; eslint, tsc clean). Viewer: the frame is identical in both states for all 9 container / notes combinations. Share of the frame covered by squares, grouped: 90-100% (wide 100 is the low one, 90%); not grouped 70-100% (5000 in the tall container 70%, because equal squares cannot fill an arbitrary box with exactly the number of notes).
+
+### [2026.10.30 07:15:34] User
+this is good with one tweak: fill the empty space with gridlines
+
+### [2026.10.30 07:15:34] Decision
+StateGrid draws the current state's unit gridlines (one path, note-stroke colour, offset to the grid) under the squares, so the cells no note covers show as a grid in both states, like the empty squares of iteration 2.
+
+### [2026.10.30 07:15:34] Claude
+Done in state-grid.tsx with a test (note-grid-sets 213 pass; eslint, tsc clean). Viewer, wide 500 not grouped: the empty cells at the end of the last row show the grid. The lines swap with the state, they do not animate.

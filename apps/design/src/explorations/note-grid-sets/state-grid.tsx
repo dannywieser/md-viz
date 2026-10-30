@@ -60,6 +60,14 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
     setHovered(id === -1 ? null : id)
   }
 
+  const lines = useMemo(() => {
+    const vertical = Array.from({ length: columns + 1 }, (_, i) => `M${i * unit},0V${rows * unit}`)
+    const horizontal = Array.from(
+      { length: rows + 1 },
+      (_, i) => `M0,${i * unit}H${columns * unit}`,
+    )
+    return [...vertical, ...horizontal].join('')
+  }, [columns, rows, unit])
   const g = states.grouped
   const outline = useMemo(
     () => ownerOutline(g.owner, g.columns, g.rows, g.unit),
@@ -88,6 +96,13 @@ export function StateGrid({ sets, states, grouped, onToggle }: StateGridProps) {
           onPointerMove={handlePointerMove}
           onPointerLeave={() => setHovered(null)}
         >
+          <path
+            data-gridlines
+            d={lines}
+            transform={`translate(${x0} ${y0})`}
+            fill="none"
+            style={{ stroke: 'var(--note-stroke)' }}
+          />
           <g ref={squares}>
             {state.squares.map((s, id) => (
               <rect
